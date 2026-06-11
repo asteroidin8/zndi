@@ -11,6 +11,7 @@ import { AppText } from '@/components/AppText';
 import { Divider } from '@/components/Divider';
 import { RoutineItem } from '@/components/RoutineItem';
 import { RoutineModal } from '@/components/RoutineModal';
+import { SwipeToDelete } from '@/components/SwipeToDelete';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { type Routine, type Weekday, useRoutineStore } from '@/stores/useRoutineStore';
 
@@ -92,16 +93,18 @@ export default function RoutineScreen() {
     return function ({ item, drag, isActive }: RenderItemParams<Routine>) {
       return (
         <ScaleDecorator>
-          <View style={{ opacity: isActive ? 0.85 : 1 }}>
-            <RoutineItem
-              routine={item}
-              isCompleted={isCompleted(item.id)}
-              onToggle={() => onToggle(item.id)}
-              onLongPress={drag}
-              onPress={() => openEdit(item)}
-            />
-            <Divider />
-          </View>
+          <SwipeToDelete onDelete={() => removeRoutine(item.id)}>
+            <View style={{ opacity: isActive ? 0.85 : 1 }}>
+              <RoutineItem
+                routine={item}
+                isCompleted={isCompleted(item.id)}
+                onToggle={() => onToggle(item.id)}
+                onLongPress={drag}
+                onPress={() => openEdit(item)}
+              />
+              <Divider />
+            </View>
+          </SwipeToDelete>
         </ScaleDecorator>
       );
     };

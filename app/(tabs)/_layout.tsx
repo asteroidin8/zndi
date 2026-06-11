@@ -1,81 +1,110 @@
-import { Tabs } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { useRef, useState } from 'react';
+import { Pressable, View } from 'react-native';
+import PagerView from 'react-native-pager-view';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { TabBarIcon } from '@/components/TabBarIcon';
-import { colors } from '@/constants/colors';
+import { AppText } from '@/components/AppText';
+import { useThemeColors } from '@/hooks/useThemeColors';
+import { TabNavigationContext, type TabIndex } from '@/contexts/TabNavigationContext';
+
+import FastingScreen from './fasting';
+import RoutineScreen from './routine';
+import HomeScreen from './index';
+import TodoScreen from './todo';
+import StatsScreen from './stats';
+
+const TABS = [
+  { key: 'fasting', title: '단식', icon: 'Timer' },
+  { key: 'routine', title: '루틴', icon: 'CheckSquare' },
+  { key: 'home', title: '홈', icon: 'Home' },
+  { key: 'todo', title: '투두', icon: 'ListTodo' },
+  { key: 'stats', title: '통계', icon: 'BarChart2' },
+] as const;
+
+const HOME_INDEX = 2;
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const c = useThemeColors();
+  const pagerRef = useRef<PagerView>(null);
+  const [activeTab, setActiveTab] = useState(HOME_INDEX);
 
-  const bg = isDark ? colors.dark.surface : colors.light.surface;
-  const border = isDark ? colors.dark.border : colors.light.border;
-  const active = isDark ? colors.dark.ink : colors.light.ink;
-  const inactive = isDark ? colors.dark.inkDisabled : colors.light.inkDisabled;
+  function navigateTo(index: TabIndex) {
+    pagerRef.current?.setPage(index);
+    setActiveTab(index);
+  }
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: bg,
-          borderTopColor: border,
-          borderTopWidth: 1,
+    <TabNavigationContext.Provider value={{ navigateTo }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['bottom']}>
+      <PagerView
+        ref={pagerRef}
+        style={{ flex: 1 }}
+        initialPage={HOME_INDEX}
+        onPageSelected={(e) => setActiveTab(e.nativeEvent.position)}
+        overdrag
+      >
+        <View key="fasting" style={{ flex: 1 }}>
+          <FastingScreen />
+        </View>
+        <View key="routine" style={{ flex: 1 }}>
+          <RoutineScreen />
+        </View>
+        <View key="home" style={{ flex: 1 }}>
+          <HomeScreen />
+        </View>
+        <View key="todo" style={{ flex: 1 }}>
+          <TodoScreen />
+        </View>
+        <View key="stats" style={{ flex: 1 }}>
+          <StatsScreen />
+        </View>
+      </PagerView>
+
+      {/* 커스텀 탭 바 */}
+      <View
+        style={{
+          flexDirection: 'row',
           height: 56,
-          paddingBottom: 6,
-          paddingTop: 6,
-        },
-        tabBarActiveTintColor: active,
-        tabBarInactiveTintColor: inactive,
-        tabBarLabelStyle: { fontSize: 10, fontWeight: '500' },
-      }}
-    >
-      <Tabs.Screen
-        name="fasting"
-        options={{
-          title: '단식',
-          tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="Timer" color={color as string} size={size} />
-          ),
+          borderTopWidth: 1,
+          borderTopColor: c.border,
+          backgroundColor: c.surface,
         }}
-      />
-      <Tabs.Screen
-        name="routine"
-        options={{
-          title: '루틴',
-          tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="CheckSquare" color={color as string} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: '홈',
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="Home" color={color as string} size={26} />
-          ),
-          tabBarLabelStyle: { fontSize: 10, fontWeight: '700' },
-        }}
-      />
-      <Tabs.Screen
-        name="todo"
-        options={{
-          title: '투두',
-          tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="ListTodo" color={color as string} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="stats"
-        options={{
-          title: '통계',
-          tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="BarChart2" color={color as string} size={size} />
-          ),
-        }}
-      />
-    </Tabs>
+      >
+        {TABS.map((tab, i) => {
+          const isActive = activeTab === i;
+          const isHome = i === HOME_INDEX;
+          return (
+            <Pressable
+              key={tab.key}
+              onPress={() => navigateTo(i)}
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: 2,
+              }}
+            >
+              <TabBarIcon
+                name={tab.icon}
+                size={isHome ? 26 : 22}
+                color={isActive ? (c.ink as string) : (c.inkDisabled as string)}
+              />
+              <AppText
+                variant="caption"
+                style={{
+                  fontSize: 10,
+                  fontWeight: isActive ? '700' : '400',
+                  color: isActive ? c.ink : c.inkDisabled,
+                }}
+              >
+                {tab.title}
+              </AppText>
+            </Pressable>
+          );
+        })}
+      </View>
+    </SafeAreaView>
+    </TabNavigationContext.Provider>
   );
 }

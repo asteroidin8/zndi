@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { Divider } from '@/components/Divider';
+import { SwipeToDelete } from '@/components/SwipeToDelete';
 import { TodoEditModal } from '@/components/TodoEditModal';
 import { TodoItem } from '@/components/TodoItem';
 import { type TodoCreatePayload, TodoModal } from '@/components/TodoModal';
@@ -111,17 +112,19 @@ export default function TodoScreen() {
     return function ({ item, drag, isActive }: RenderItemParams<Todo>) {
       return (
         <ScaleDecorator>
-          <View style={{ opacity: isActive ? 0.85 : 1 }}>
-            <TodoItem
-              todo={item}
-              onToggle={() =>
-                item.completedAt ? uncompleteTodo(item.id) : completeTodo(item.id)
-              }
-              onLongPress={drag}
-              onPress={() => setEditTarget(item)}
-            />
-            <Divider />
-          </View>
+          <SwipeToDelete onDelete={() => removeTodo(item.id)}>
+            <View style={{ opacity: isActive ? 0.85 : 1 }}>
+              <TodoItem
+                todo={item}
+                onToggle={() =>
+                  item.completedAt ? uncompleteTodo(item.id) : completeTodo(item.id)
+                }
+                onLongPress={drag}
+                onPress={() => setEditTarget(item)}
+              />
+              <Divider />
+            </View>
+          </SwipeToDelete>
         </ScaleDecorator>
       );
     };
@@ -142,14 +145,16 @@ export default function TodoScreen() {
         ) : (
           <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
             {completedTodos.map((todo, i) => (
-              <View key={todo.id} style={{ paddingHorizontal: 20 }}>
-                <TodoItem
-                  todo={todo}
-                  onToggle={() => uncompleteTodo(todo.id)}
-                  onPress={() => setEditTarget(todo)}
-                />
-                {i < completedTodos.length - 1 && <Divider />}
-              </View>
+              <SwipeToDelete key={todo.id} onDelete={() => removeTodo(todo.id)}>
+                <View style={{ paddingHorizontal: 20 }}>
+                  <TodoItem
+                    todo={todo}
+                    onToggle={() => uncompleteTodo(todo.id)}
+                    onPress={() => setEditTarget(todo)}
+                  />
+                  {i < completedTodos.length - 1 && <Divider />}
+                </View>
+              </SwipeToDelete>
             ))}
           </ScrollView>
         )}

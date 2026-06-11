@@ -7,6 +7,7 @@ import { AppText } from '@/components/AppText';
 import { DailySummaryRow } from '@/components/DailySummaryRow';
 import { FastingCard } from '@/components/FastingCard';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useTabNavigation } from '@/contexts/TabNavigationContext';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -21,6 +22,7 @@ function getTodayLabel() {
 
 export default function HomeScreen() {
   const c = useThemeColors();
+  const { navigateTo } = useTabNavigation();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }}>
@@ -44,10 +46,13 @@ export default function HomeScreen() {
         </View>
 
         {/* 단식 히어로 카드 */}
-        <FastingCard onPress={() => router.push('/(tabs)/fasting')} />
+        <FastingCard onPress={() => navigateTo(0)} />
 
-        {/* 루틴·투두 1줄 요약 */}
-        <DailySummaryRow />
+        {/* 루틴·투두 간략 섹션 */}
+        <DailySummaryRow
+          onRoutinePress={() => navigateTo(1)}
+          onTodoPress={() => navigateTo(3)}
+        />
       </ScrollView>
     </SafeAreaView>
   );

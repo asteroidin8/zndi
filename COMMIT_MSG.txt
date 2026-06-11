@@ -1,7 +1,11 @@
-﻿프로젝트 초기 설정: Expo blank-typescript 템플릿
+feat: 스와이프 탭/삭제/단식 포기 꾸그 누르기 구현
 
-- create-expo-app blank-typescript 기반 프로젝트 생성
-- NativeWind v4, tailwindcss 설치
-- Prettier, eslint-config-prettier 설치
-- ESLint (eslint-config-expo) 자동 설정
-- TypeScript strict 모드 활성화
+- PagerView 기반 좌우 스와이프 탭 전환
+- TabNavigationContext로 자식 화면에서 탭 이동 지원
+- DailySummaryRow: 홈 화면에 루틴/투두 최대 3개 간략 표시
+- SwipeToDelete: 좌우 어느 방향 스와이프든 삭제 액션 발생
+- 투두/루틴 DraggableFlatList 아이템에 SwipeToDelete 적용
+- HoldToConfirmButton: 1.6초 꾸그 누르기로 단식 포기 확인
+- 게이지 fill 애니메이션 및 텍스트 색상 자동 반전
+- 구간별 햅틱 (light / medium / heavy / success)
+- Alert 팝업 방식 단식 포기 제거

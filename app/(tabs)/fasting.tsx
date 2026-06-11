@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/AppText';
 import { Divider } from '@/components/Divider';
+import { HoldToConfirmButton } from '@/components/HoldToConfirmButton';
 import { WheelPicker } from '@/components/WheelPicker';
 import {
   estimateCaloriesBurned,
@@ -99,16 +100,6 @@ export default function FastingScreen() {
 
   const phaseMessage = status === 'fasting' ? getFastingMessage(elapsedMs) : null;
 
-  function handleAbandon() {
-    Alert.alert(
-      '단식 포기',
-      '정말 포기하시겠어요?\n지금까지의 기록은 자동으로 보존돼요.',
-      [
-        { text: '계속 단식', style: 'cancel' },
-        { text: '포기', style: 'destructive', onPress: () => stopFasting('abandoned') },
-      ],
-    );
-  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }}>
@@ -331,20 +322,11 @@ export default function FastingScreen() {
             </AppText>
           </Pressable>
         ) : (
-          <Pressable
-            onPress={handleAbandon}
-            style={{
-              borderWidth: 1,
-              borderColor: c.border,
-              borderRadius: 14,
-              paddingVertical: 18,
-              alignItems: 'center',
-            }}
-          >
-            <AppText variant="body" tone="tertiary">
-              단식 포기
-            </AppText>
-          </Pressable>
+          <HoldToConfirmButton
+            label="단식 포기"
+            subLabel="꾹 눌러서 포기"
+            onConfirm={() => stopFasting('abandoned')}
+          />
         )}
       </View>
 
