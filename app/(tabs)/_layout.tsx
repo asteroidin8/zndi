@@ -35,7 +35,7 @@ export default function TabLayout() {
         options={{
           title: '단식',
           tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="Timer" color={color} size={size} />
+            <TabBarIcon name="Timer" color={color as string} size={size} />
           ),
         }}
       />
@@ -44,7 +44,7 @@ export default function TabLayout() {
         options={{
           title: '루틴',
           tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="CheckSquare" color={color} size={size} />
+            <TabBarIcon name="CheckSquare" color={color as string} size={size} />
           ),
         }}
       />
@@ -53,7 +53,7 @@ export default function TabLayout() {
         options={{
           title: '홈',
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="Home" color={color} size={26} />
+            <TabBarIcon name="Home" color={color as string} size={26} />
           ),
           tabBarLabelStyle: { fontSize: 10, fontWeight: '700' },
         }}
@@ -63,7 +63,7 @@ export default function TabLayout() {
         options={{
           title: '투두',
           tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="ListTodo" color={color} size={size} />
+            <TabBarIcon name="ListTodo" color={color as string} size={size} />
           ),
         }}
       />
@@ -72,7 +72,7 @@ export default function TabLayout() {
         options={{
           title: '통계',
           tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="BarChart2" color={color} size={size} />
+            <TabBarIcon name="BarChart2" color={color as string} size={size} />
           ),
         }}
       />

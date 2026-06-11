@@ -1,4 +1,4 @@
-import { and, eq, isNull, lt } from 'drizzle-orm';
+import { and, eq, isNotNull, isNull, lt } from 'drizzle-orm';
 
 import { db } from '../client';
 import { todos } from '../schema/todo';
@@ -13,7 +13,7 @@ export async function getAllCompletedTodos() {
   return db
     .select()
     .from(todos)
-    .where(and(isNull(todos.completedAt).not()));
+    .where(isNotNull(todos.completedAt));
 }
 
 export async function insertTodo(todo: InsertTodo) {

@@ -82,6 +82,7 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
   const today = todayStr();
 
   return (
+    <>
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -286,5 +287,6 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
       }}
       onClose={() => setDatePickerVisible(false)}
     />
+    </>
   );
 }
