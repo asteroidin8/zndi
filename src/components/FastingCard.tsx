@@ -29,7 +29,7 @@ type Props = {
 
 export function FastingCard({ onPress }: Props) {
   const c = useThemeColors();
-  const { status, startedAt, goalHours, startFasting } = useFastingStore();
+  const { status, startedAt, goalHours } = useFastingStore();
   const [now, setNow] = useState(Date.now());
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 

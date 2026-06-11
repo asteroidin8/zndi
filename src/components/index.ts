@@ -5,3 +5,4 @@ export { Divider } from './Divider';
 export { FastingCard } from './FastingCard';
 export { ScreenPlaceholder } from './ScreenPlaceholder';
 export { TabBarIcon } from './TabBarIcon';
+export { WheelPicker } from './WheelPicker';
