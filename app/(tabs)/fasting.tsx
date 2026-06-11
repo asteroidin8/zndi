@@ -204,13 +204,8 @@ export default function FastingScreen() {
                 </View>
 
                 <View style={{ alignItems: 'flex-end', gap: 2 }}>
-                  <AppText variant="caption" tone="tertiary">
-                    {isOverGoal ? '완료 예정 초과 중' : '완료 예정'}
-                  </AppText>
-                  <AppText
-                    variant="body"
-                    style={{ fontWeight: '700', letterSpacing: -0.5, color: isOverGoal ? c.inkSecondary : c.ink }}
-                  >
+                  <AppText variant="caption" tone="tertiary">완료 예정</AppText>
+                  <AppText variant="body" style={{ fontWeight: '700', letterSpacing: -0.5 }}>
                     {end.timeLabel}
                   </AppText>
                   <AppText variant="caption" tone="secondary">{end.dayLabel}</AppText>
@@ -223,7 +218,7 @@ export default function FastingScreen() {
                   style={{
                     height: 3,
                     width: `${progress * 100}%`,
-                    backgroundColor: isOverGoal ? c.inkSecondary : c.ink,
+                    backgroundColor: c.ink,
                     borderRadius: 2,
                   }}
                 />
