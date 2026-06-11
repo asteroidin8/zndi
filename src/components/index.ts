@@ -3,6 +3,8 @@ export { AppText } from './AppText';
 export { DailySummaryRow } from './DailySummaryRow';
 export { Divider } from './Divider';
 export { FastingCard } from './FastingCard';
+export { RoutineItem } from './RoutineItem';
+export { RoutineModal } from './RoutineModal';
 export { ScreenPlaceholder } from './ScreenPlaceholder';
 export { TabBarIcon } from './TabBarIcon';
 export { WheelPicker } from './WheelPicker';
