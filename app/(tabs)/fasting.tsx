@@ -34,21 +34,29 @@ function formatOverElapsed(ms: number) {
   return `+${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function formatDatetime(startTs: number, targetTs: number) {
-  const start = new Date(startTs);
-  const target = new Date(targetTs);
-  const isDiff =
-    start.getDate() !== target.getDate() || start.getMonth() !== target.getMonth();
+const WEEKDAYS_KO = ['일', '월', '화', '수', '목', '금', '토'];
 
-  function fmt(d: Date, showDay: boolean) {
-    const h = d.getHours();
-    const min = d.getMinutes();
-    const ampm = h < 12 ? '오전' : '오후';
-    const time = `${ampm} ${h % 12 || 12}:${String(min).padStart(2, '0')}`;
-    return showDay ? `${d.getMonth() + 1}/${d.getDate()} ${time}` : time;
-  }
+function formatRelativeDate(ts: number): { timeLabel: string; dayLabel: string } {
+  const date = new Date(ts);
 
-  return `${fmt(start, isDiff)} 시작 → ${fmt(target, isDiff)} 완료 예정`;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dateMidnight = new Date(date);
+  dateMidnight.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((dateMidnight.getTime() - today.getTime()) / 86_400_000);
+
+  const h = date.getHours();
+  const min = date.getMinutes();
+  const ampm = h < 12 ? '오전' : '오후';
+  const timeLabel = `${ampm} ${h % 12 || 12}:${String(min).padStart(2, '0')}`;
+
+  let dayLabel: string;
+  if (diffDays === 0) dayLabel = '오늘';
+  else if (diffDays === 1) dayLabel = '내일';
+  else if (diffDays === 2) dayLabel = '모레';
+  else dayLabel = `${date.getMonth() + 1}/${date.getDate()} (${WEEKDAYS_KO[date.getDay()]})`;
+
+  return { timeLabel, dayLabel };
 }
 
 function formatTotalHours(ms: number) {
@@ -179,34 +187,50 @@ export default function FastingScreen() {
           </View>
         )}
 
-        {status === 'fasting' && startedAt && completionTs && (
-          <AppText variant="caption" tone="tertiary" style={{ textAlign: 'center' }}>
-            {formatDatetime(startedAt, completionTs)}
-          </AppText>
-        )}
+        {/* 타임라인 카드 */}
+        {status === 'fasting' && startedAt && completionTs && (() => {
+          const start = formatRelativeDate(startedAt);
+          const end = formatRelativeDate(completionTs);
+          return (
+            <View style={{ width: '85%', gap: 10, marginTop: 4 }}>
+              {/* 시작 / 완료 예정 */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <View style={{ gap: 2 }}>
+                  <AppText variant="caption" tone="tertiary">시작</AppText>
+                  <AppText variant="body" style={{ fontWeight: '700', letterSpacing: -0.5 }}>
+                    {start.timeLabel}
+                  </AppText>
+                  <AppText variant="caption" tone="secondary">{start.dayLabel}</AppText>
+                </View>
 
-        {/* 진행 바 */}
-        {status === 'fasting' && (
-          <View
-            style={{
-              width: '70%',
-              height: 3,
-              backgroundColor: c.surfaceMuted,
-              borderRadius: 2,
-              overflow: 'hidden',
-              marginTop: 4,
-            }}
-          >
-            <View
-              style={{
-                height: 3,
-                width: `${progress * 100}%`,
-                backgroundColor: c.ink,
-                borderRadius: 2,
-              }}
-            />
-          </View>
-        )}
+                <View style={{ alignItems: 'flex-end', gap: 2 }}>
+                  <AppText variant="caption" tone="tertiary">
+                    {isOverGoal ? '완료 예정 초과 중' : '완료 예정'}
+                  </AppText>
+                  <AppText
+                    variant="body"
+                    style={{ fontWeight: '700', letterSpacing: -0.5, color: isOverGoal ? c.inkSecondary : c.ink }}
+                  >
+                    {end.timeLabel}
+                  </AppText>
+                  <AppText variant="caption" tone="secondary">{end.dayLabel}</AppText>
+                </View>
+              </View>
+
+              {/* 진행 바 */}
+              <View style={{ height: 3, backgroundColor: c.surfaceMuted, borderRadius: 2, overflow: 'hidden' }}>
+                <View
+                  style={{
+                    height: 3,
+                    width: `${progress * 100}%`,
+                    backgroundColor: isOverGoal ? c.inkSecondary : c.ink,
+                    borderRadius: 2,
+                  }}
+                />
+              </View>
+            </View>
+          );
+        })()}
 
         {/* 과학 멘트 + 칼로리 */}
         {status === 'fasting' && (
