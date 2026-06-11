@@ -5,6 +5,12 @@ import { AppText } from './AppText';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import type { Todo } from '@/stores/useTodoStore';
 
+const PRIORITY_COLORS: Record<string, string> = {
+  high: '#EF4444',
+  mid: '#F59E0B',
+  low: '#6B7280',
+};
+
 type Props = {
   todo: Todo;
   onToggle?: () => void;
@@ -14,11 +20,12 @@ type Props = {
 export function TodoItem({ todo, onToggle, onLongPress }: Props) {
   const c = useThemeColors();
   const isCompleted = !!todo.completedAt;
+  const dotColor = PRIORITY_COLORS[todo.priority] ?? c.inkTertiary;
 
   return (
     <Pressable
       onLongPress={onLongPress}
-      delayLongPress={450}
+      delayLongPress={400}
       style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, gap: 14 }}
     >
       {/* 체크박스 */}
@@ -54,6 +61,18 @@ export function TodoItem({ todo, onToggle, onLongPress }: Props) {
           </AppText>
         )}
       </View>
+
+      {/* 우선순위 점 */}
+      {!isCompleted && (
+        <View
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: dotColor,
+          }}
+        />
+      )}
     </Pressable>
   );
 }

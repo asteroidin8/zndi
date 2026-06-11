@@ -1,22 +1,24 @@
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { Divider } from '@/components/Divider';
+import { TodoEditModal } from '@/components/TodoEditModal';
 import { TodoItem } from '@/components/TodoItem';
 import { TodoModal } from '@/components/TodoModal';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { useTodoStore } from '@/stores/useTodoStore';
+import { type Todo, useTodoStore } from '@/stores/useTodoStore';
 
 type TabFilter = 'active' | 'completed';
 
 export default function TodoScreen() {
   const c = useThemeColors();
-  const { todos, addTodo, completeTodo, uncompleteTodo, removeTodo } = useTodoStore();
+  const { todos, addTodo, updateTodo, completeTodo, uncompleteTodo, removeTodo } = useTodoStore();
   const [filter, setFilter] = useState<TabFilter>('active');
-  const [modalVisible, setModalVisible] = useState(false);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editTarget, setEditTarget] = useState<Todo | null>(null);
 
   const activeTodos = todos.filter((t) => !t.completedAt);
   const completedTodos = todos.filter((t) => !!t.completedAt);
@@ -31,17 +33,19 @@ export default function TodoScreen() {
       completedAt: null,
       createdAt: Date.now(),
     });
-    setModalVisible(false);
+    setAddModalVisible(false);
   }
 
-  function handleLongPress(id: string, isCompleted: boolean) {
-    Alert.alert('할 일 관리', undefined, [
-      isCompleted
-        ? { text: '되돌리기', onPress: () => uncompleteTodo(id) }
-        : { text: '완료 표시', onPress: () => completeTodo(id) },
-      { text: '삭제', style: 'destructive', onPress: () => removeTodo(id) },
-      { text: '취소', style: 'cancel' },
-    ]);
+  function handleEditSave(updates: Pick<Todo, 'title' | 'priority'>) {
+    if (!editTarget) return;
+    updateTodo(editTarget.id, updates);
+    setEditTarget(null);
+  }
+
+  function handleEditDelete() {
+    if (!editTarget) return;
+    removeTodo(editTarget.id);
+    setEditTarget(null);
   }
 
   return (
@@ -58,7 +62,7 @@ export default function TodoScreen() {
         }}
       >
         <AppText variant="title">투두</AppText>
-        <Pressable onPress={() => setModalVisible(true)} hitSlop={8}>
+        <Pressable onPress={() => setAddModalVisible(true)} hitSlop={8}>
           <AppIcon name="Plus" size={22} />
         </Pressable>
       </View>
@@ -72,17 +76,29 @@ export default function TodoScreen() {
           marginBottom: 4,
         }}
       >
-        {(['active', 'completed'] as TabFilter[]).map((tab) => (
-          <Pressable key={tab} onPress={() => setFilter(tab)} hitSlop={4}>
-            <AppText
-              variant="caption"
-              tone={filter === tab ? 'primary' : 'tertiary'}
-              style={filter === tab ? { fontWeight: '700', borderBottomWidth: 1.5, borderBottomColor: c.ink, paddingBottom: 2 } : {}}
-            >
-              {tab === 'active' ? `진행 중 ${activeTodos.length}` : `완료됨 ${completedTodos.length}`}
-            </AppText>
-          </Pressable>
-        ))}
+        {(['active', 'completed'] as TabFilter[]).map((tab) => {
+          const isActive = filter === tab;
+          return (
+            <Pressable key={tab} onPress={() => setFilter(tab)} hitSlop={4}>
+              <AppText
+                variant="caption"
+                tone={isActive ? 'primary' : 'tertiary'}
+                style={
+                  isActive
+                    ? {
+                        fontWeight: '700',
+                        borderBottomWidth: 1.5,
+                        borderBottomColor: c.ink,
+                        paddingBottom: 2,
+                      }
+                    : {}
+                }
+              >
+                {tab === 'active' ? `진행 중 ${activeTodos.length}` : `완료됨 ${completedTodos.length}`}
+              </AppText>
+            </Pressable>
+          );
+        })}
       </View>
 
       <Divider />
@@ -95,7 +111,7 @@ export default function TodoScreen() {
               <AppText variant="body" tone="tertiary">
                 오늘 할 일을 추가해보세요
               </AppText>
-              <Pressable onPress={() => setModalVisible(true)}>
+              <Pressable onPress={() => setAddModalVisible(true)}>
                 <AppText variant="caption" tone="secondary">
                   할 일 추가하기
                 </AppText>
@@ -119,7 +135,7 @@ export default function TodoScreen() {
                 onToggle={() =>
                   todo.completedAt ? uncompleteTodo(todo.id) : completeTodo(todo.id)
                 }
-                onLongPress={() => handleLongPress(todo.id, !!todo.completedAt)}
+                onLongPress={() => setEditTarget(todo)}
               />
               {i < displayTodos.length - 1 && <Divider />}
             </View>
@@ -127,10 +143,20 @@ export default function TodoScreen() {
         </ScrollView>
       )}
 
+      {/* 추가 모달 */}
       <TodoModal
-        visible={modalVisible}
+        visible={addModalVisible}
         onSave={handleAdd}
-        onClose={() => setModalVisible(false)}
+        onClose={() => setAddModalVisible(false)}
+      />
+
+      {/* 편집 모달 */}
+      <TodoEditModal
+        visible={editTarget !== null}
+        todo={editTarget}
+        onSave={handleEditSave}
+        onDelete={handleEditDelete}
+        onClose={() => setEditTarget(null)}
       />
     </SafeAreaView>
   );
