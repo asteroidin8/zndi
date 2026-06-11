@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
+import { BarChart, type BarChartItem } from '@/components/BarChart';
 import { Divider } from '@/components/Divider';
 import { FastingRecordEditModal } from '@/components/FastingRecordEditModal';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -20,8 +21,8 @@ import {
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CELL_SIZE = Math.floor((SCREEN_WIDTH - 40 - 6 * 6) / 7);
-
 const DAY_LABELS = ['?', '?', '?', '?', '?', '?', '?'];
+const WEEKDAY_SHORT = ['?', '?', '?', '?', '?', '?', '?'];
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -31,7 +32,6 @@ function dateStr(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-// ?? ??? ????
 function MonthGrid({
   year,
   month,
@@ -41,7 +41,7 @@ function MonthGrid({
   getRoutineTotalCount,
 }: {
   year: number;
-  month: number; // 0-indexed
+  month: number;
   summaries: DailyFastingSummary[];
   onSelect: (s: DailyFastingSummary) => void;
   getRoutineCompletedCount: (date: string) => number;
@@ -51,7 +51,7 @@ function MonthGrid({
   const dateMap = new Map(summaries.map((s) => [s.date, s]));
   const today = todayStr();
 
-  const firstDay = new Date(year, month, 1).getDay(); // 0=?
+  const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const cells: (string | null)[] = [
@@ -61,7 +61,6 @@ function MonthGrid({
 
   return (
     <View style={{ alignItems: 'center' }}>
-      {/* ?? ?? */}
       <View style={{ flexDirection: 'row', gap: 6, marginBottom: 4 }}>
         {DAY_LABELS.map((d) => (
           <View key={d} style={{ width: CELL_SIZE, alignItems: 'center' }}>
@@ -72,7 +71,6 @@ function MonthGrid({
         ))}
       </View>
 
-      {/* ?? ? */}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
         {cells.map((date, i) => {
           if (!date) {
@@ -109,7 +107,6 @@ function MonthGrid({
               >
                 {new Date(date + 'T00:00:00').getDate()}
               </AppText>
-              {/* ?? ??? ? */}
               {hasRoutine && (
                 <View style={{ flexDirection: 'row', gap: 2 }}>
                   <View
@@ -117,7 +114,8 @@ function MonthGrid({
                       width: 4,
                       height: 4,
                       borderRadius: 2,
-                      backgroundColor: routineRate >= 1 ? c.ink : routineRate > 0 ? c.inkTertiary : c.surfaceMuted,
+                      backgroundColor:
+                        routineRate >= 1 ? c.ink : routineRate > 0 ? c.inkTertiary : c.surfaceMuted,
                     }}
                   />
                 </View>
@@ -130,7 +128,6 @@ function MonthGrid({
   );
 }
 
-// ?? ?? ?? ?? ???????????????????????????????????????????
 function DayDetailModal({
   summary,
   onEditRecord,
@@ -144,10 +141,7 @@ function DayDetailModal({
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable
-        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }}
-        onPress={onClose}
-      />
+      <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={onClose} />
       <View
         style={{
           backgroundColor: c.surface,
@@ -169,11 +163,18 @@ function DayDetailModal({
             marginBottom: 16,
           }}
         />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 4,
+          }}
+        >
           <AppText variant="title">{summary.date}</AppText>
         </View>
         <AppText variant="caption" tone="tertiary" style={{ marginBottom: 20 }}>
-          ? {formatMinutes(summary.totalMinutes)} ? {summary.count}?
+          ? {formatMinutes(summary.totalMinutes)} · {summary.count}?
         </AppText>
         <ScrollView showsVerticalScrollIndicator={false}>
           {summary.records.map((r, i) => (
@@ -190,7 +191,9 @@ function DayDetailModal({
                 }
                 style={{ paddingVertical: 12, gap: 4 }}
               >
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View
+                  style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+                >
                   <AppText variant="body">
                     {formatMinutes(Math.floor((r.endedAt - r.startedAt) / 60_000))}
                   </AppText>
@@ -217,7 +220,6 @@ function DayDetailModal({
   );
 }
 
-// ?? ?? ?? ????????????????????????????????????????????????
 function SummaryCard({ label, value }: { label: string; value: string }) {
   const c = useThemeColors();
   return (
@@ -242,7 +244,6 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-// ?? ?? ?? ????????????????????????????????????????????????
 function SectionHeader({ title }: { title: string }) {
   const c = useThemeColors();
   return (
@@ -255,7 +256,6 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
-// ?? ?? ?? ????????????????????????????????????????????????
 export default function StatsScreen() {
   const c = useThemeColors();
   const { records, removeRecord, updateRecord } = useFastingStore();
@@ -279,9 +279,8 @@ export default function StatsScreen() {
     })),
   );
 
-  // ? ?? ?? ?
+  // ?? ??
   const completedFasts = records.filter((r) => r.result === 'completed').length;
-  const abandonedFasts = records.filter((r) => r.result === 'abandoned').length;
   const finishedFasts = records.filter((r) => r.endedAt);
   const avgFastMinutes =
     finishedFasts.length > 0
@@ -293,7 +292,7 @@ export default function StatsScreen() {
         )
       : 0;
 
-  // ?? ?? ??
+  // ?? ??
   const todayWeekday = now.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
   const todayRoutines = routines.filter((r) => r.repeatDays.includes(todayWeekday));
   const maxStreak = routines.reduce((max, r) => {
@@ -301,14 +300,31 @@ export default function StatsScreen() {
     return s > max ? s : max;
   }, 0);
 
-  // ?? ?? ??
-  const totalTodos = todos.length;
+  // ?? ??
   const completedTodos = todos.filter((t) => t.completedAt !== null).length;
   const totalHighPriority = todos.filter((t) => t.priority === 'high').length;
   const completedHighPriority = todos.filter((t) => t.priority === 'high' && !!t.completedAt).length;
-  const completionRate = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0;
+  const completionRate = todos.length > 0 ? Math.round((completedTodos / todos.length) * 100) : 0;
 
-  // ? ? ?? ?
+  // ?? 7? ?? ?? ???
+  const last7Days: BarChartItem[] = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const ds = d.toISOString().slice(0, 10);
+    const dayRecords = records.filter(
+      (r) => new Date(r.startedAt).toISOString().slice(0, 10) === ds,
+    );
+    const totalHours = Math.round(
+      dayRecords.reduce(
+        (acc, r) => acc + ((r.endedAt ?? r.startedAt) - r.startedAt) / 3_600_000,
+        0,
+      ),
+    );
+    return { label: WEEKDAY_SHORT[d.getDay()], value: totalHours };
+  });
+  const hasChartData = last7Days.some((d) => d.value > 0);
+
+  // ? ?????
   function prevMonth() {
     if (viewMonth === 0) {
       setViewYear((y) => y - 1);
@@ -318,9 +334,7 @@ export default function StatsScreen() {
     }
   }
   function nextMonth() {
-    const maxYear = now.getFullYear();
-    const maxMonth = now.getMonth();
-    if (viewYear === maxYear && viewMonth === maxMonth) return;
+    if (viewYear === now.getFullYear() && viewMonth === now.getMonth()) return;
     if (viewMonth === 11) {
       setViewYear((y) => y + 1);
       setViewMonth(0);
@@ -352,6 +366,14 @@ export default function StatsScreen() {
           </View>
         </View>
 
+        {/* ?? 7? ?? ?? */}
+        {hasChartData && (
+          <View style={{ gap: 8 }}>
+            <AppText variant="caption" tone="tertiary">?? 7? ?? ??</AppText>
+            <BarChart data={last7Days} width={SCREEN_WIDTH - 40} height={130} unit="h" />
+          </View>
+        )}
+
         {/* ?? ?? ?? */}
         <View style={{ gap: 12 }}>
           <SectionHeader title="??" />
@@ -367,21 +389,21 @@ export default function StatsScreen() {
           <SectionHeader title="??" />
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <SummaryCard label="???" value={`${completionRate}%`} />
-            <SummaryCard label="??? ?" value={totalHighPriority > 0 ? `${completedHighPriority}/${totalHighPriority}` : '-'} />
+            <SummaryCard
+              label="??? ?"
+              value={totalHighPriority > 0 ? `${completedHighPriority}/${totalHighPriority}` : '-'}
+            />
           </View>
         </View>
 
         <Divider />
 
-        {/* ?? ?? ?? ?? */}
+        {/* ?? ?? */}
         <View style={{ gap: 12 }}>
-          {/* ??: < ?? > ?? */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-            <Pressable
-              onPress={prevMonth}
-              hitSlop={8}
-              style={{ padding: 4 }}
-            >
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
+          >
+            <Pressable onPress={prevMonth} hitSlop={8} style={{ padding: 4 }}>
               <AppIcon name="ChevronLeft" size={18} color={c.inkSecondary} />
             </Pressable>
 
@@ -422,14 +444,14 @@ export default function StatsScreen() {
             summaries={summaries}
             onSelect={setSelected}
             getRoutineCompletedCount={(date) => {
-              const dayOfWeek = new Date(date + 'T00:00:00').getDay() as 0|1|2|3|4|5|6;
+              const dayOfWeek = new Date(date + 'T00:00:00').getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
               const dayRoutines = routines.filter((r) => r.repeatDays.includes(dayOfWeek));
               if (dayRoutines.length === 0) return 0;
               const completedIds = new Set(getCompletedIds(date));
               return dayRoutines.filter((r) => completedIds.has(r.id)).length;
             }}
             getRoutineTotalCount={(date) => {
-              const dayOfWeek = new Date(date + 'T00:00:00').getDay() as 0|1|2|3|4|5|6;
+              const dayOfWeek = new Date(date + 'T00:00:00').getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
               return routines.filter((r) => r.repeatDays.includes(dayOfWeek)).length;
             }}
           />

@@ -8,6 +8,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { DatabaseProvider } from '@/db/DatabaseProvider';
 import { useFastingNotification } from '@/hooks/useFastingNotification';
 import { useMidnightArchive } from '@/hooks/useMidnightArchive';
+import { useRoutineNotifications } from '@/hooks/useRoutineNotifications';
+import { useTodoNotifications } from '@/hooks/useTodoNotifications';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 function AppContent() {
@@ -15,6 +17,8 @@ function AppContent() {
   const isDark = c.surface === '#0a0a0a';
   useFastingNotification();
   useMidnightArchive();
+  useRoutineNotifications();
+  useTodoNotifications();
 
   return (
     <>

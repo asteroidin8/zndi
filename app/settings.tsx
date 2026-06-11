@@ -121,8 +121,16 @@ function ToggleRow({
 export default function SettingsScreen() {
   const c = useThemeColors();
   const { profile, setHeight, setWeight, setTargetWeight, setAge, setIsMale } = useUserStore();
-  const { foregroundServiceEnabled, toggleForegroundService, themeMode, setThemeMode } =
-    useSettingsStore();
+  const {
+    foregroundServiceEnabled,
+    toggleForegroundService,
+    themeMode,
+    setThemeMode,
+    routineNotificationsEnabled,
+    setRoutineNotifications,
+    todoNotificationsEnabled,
+    setTodoNotifications,
+  } = useSettingsStore();
   const [pickerType, setPickerType] = useState<PickerType>(null);
 
   function getPickerProps() {
@@ -310,6 +318,20 @@ export default function SettingsScreen() {
           description="단식 중 알림 바에 진행 상황을 표시해요"
           value={foregroundServiceEnabled}
           onToggle={toggleForegroundService}
+        />
+        <Divider />
+        <ToggleRow
+          label="루틴 리마인더"
+          description="루틴에 설정된 시간에 알림을 보내드려요"
+          value={routineNotificationsEnabled}
+          onToggle={() => setRoutineNotifications(!routineNotificationsEnabled)}
+        />
+        <Divider />
+        <ToggleRow
+          label="할일 마감 알림"
+          description="마감일 당일 오전 9시에 알려드려요"
+          value={todoNotificationsEnabled}
+          onToggle={() => setTodoNotifications(!todoNotificationsEnabled)}
         />
 
         {/* 데이터 */}
