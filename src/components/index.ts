@@ -1,5 +1,7 @@
 export { AppIcon } from './AppIcon';
 export { AppText } from './AppText';
+export { DailySummaryRow } from './DailySummaryRow';
 export { Divider } from './Divider';
+export { FastingCard } from './FastingCard';
 export { ScreenPlaceholder } from './ScreenPlaceholder';
 export { TabBarIcon } from './TabBarIcon';
