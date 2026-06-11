@@ -7,7 +7,7 @@ import { AppText } from '@/components/AppText';
 import { Divider } from '@/components/Divider';
 import { TodoEditModal } from '@/components/TodoEditModal';
 import { TodoItem } from '@/components/TodoItem';
-import { TodoModal } from '@/components/TodoModal';
+import { type TodoCreatePayload, TodoModal } from '@/components/TodoModal';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { type Todo, useTodoStore } from '@/stores/useTodoStore';
 
@@ -24,12 +24,12 @@ export default function TodoScreen() {
   const completedTodos = todos.filter((t) => !!t.completedAt);
   const displayTodos = filter === 'active' ? activeTodos : completedTodos;
 
-  function handleAdd(title: string) {
+  function handleAdd({ title, priority, dueDate }: TodoCreatePayload) {
     addTodo({
       id: String(Date.now()),
       title,
-      priority: 'mid',
-      dueDate: null,
+      priority,
+      dueDate,
       completedAt: null,
       createdAt: Date.now(),
     });
