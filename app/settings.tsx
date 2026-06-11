@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, Switch, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Pressable, ScrollView, Switch, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIcon } from '@/components/AppIcon';
@@ -7,18 +8,25 @@ import { AppText } from '@/components/AppText';
 import { Divider } from '@/components/Divider';
 import { WheelPicker } from '@/components/WheelPicker';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useFastingStore } from '@/stores/useFastingStore';
+import { useRoutineStore } from '@/stores/useRoutineStore';
+import { type ThemeMode, useSettingsStore } from '@/stores/useSettingsStore';
+import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
-import { useState } from 'react';
 
-const HEIGHT_VALUES = Array.from({ length: 101 }, (_, i) => i + 120); // 120~220
-const WEIGHT_VALUES = Array.from({ length: 151 }, (_, i) => i + 30); // 30~180 (0.5 단위는 추후)
-const AGE_VALUES = Array.from({ length: 83 }, (_, i) => i + 10); // 10~92
+const HEIGHT_VALUES = Array.from({ length: 101 }, (_, i) => i + 120);
+const WEIGHT_VALUES = Array.from({ length: 151 }, (_, i) => i + 30);
+const AGE_VALUES = Array.from({ length: 83 }, (_, i) => i + 10);
 
 type PickerType = 'height' | 'weight' | 'targetWeight' | 'age' | null;
 
+const THEME_OPTIONS: { mode: ThemeMode; label: string }[] = [
+  { mode: 'system', label: '시스템' },
+  { mode: 'light', label: '라이트' },
+  { mode: 'dark', label: '다크' },
+];
+
 function SectionHeader({ label }: { label: string }) {
-  const c = useThemeColors();
   return (
     <AppText
       variant="caption"
@@ -34,10 +42,12 @@ function SettingRow({
   label,
   value,
   onPress,
+  danger,
 }: {
   label: string;
   value?: string;
   onPress?: () => void;
+  danger?: boolean;
 }) {
   const c = useThemeColors();
 
@@ -52,7 +62,9 @@ function SettingRow({
         paddingVertical: 14,
       }}
     >
-      <AppText variant="body">{label}</AppText>
+      <AppText variant="body" tone={danger ? 'tertiary' : 'primary'} style={danger ? { color: '#EF4444' } : {}}>
+        {label}
+      </AppText>
       {value !== undefined && (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <AppText variant="body" tone="tertiary">
@@ -109,7 +121,8 @@ function ToggleRow({
 export default function SettingsScreen() {
   const c = useThemeColors();
   const { profile, setHeight, setWeight, setTargetWeight, setAge, setIsMale } = useUserStore();
-  const { foregroundServiceEnabled, toggleForegroundService } = useSettingsStore();
+  const { foregroundServiceEnabled, toggleForegroundService, themeMode, setThemeMode } =
+    useSettingsStore();
   const [pickerType, setPickerType] = useState<PickerType>(null);
 
   function getPickerProps() {
@@ -135,6 +148,34 @@ export default function SettingsScreen() {
       case 'age': setAge(value); break;
     }
     setPickerType(null);
+  }
+
+  function handleDataReset() {
+    Alert.alert(
+      '데이터 전체 초기화',
+      '모든 단식 기록, 루틴, 투두, 설정이 삭제됩니다.\n이 작업은 되돌릴 수 없어요.',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '초기화',
+          style: 'destructive',
+          onPress: () => {
+            useFastingStore.setState({ status: 'idle', startedAt: null, records: [] });
+            useRoutineStore.setState({ routines: [] });
+            useTodoStore.setState({ todos: [] });
+            useUserStore.setState({
+              profile: {
+                heightCm: null,
+                weightKg: null,
+                targetWeightKg: null,
+                ageYears: null,
+                isMale: null,
+              },
+            });
+          },
+        },
+      ],
+    );
   }
 
   const { values, selected, unit, title } = getPickerProps();
@@ -202,13 +243,56 @@ export default function SettingsScreen() {
           </AppText>
         </Pressable>
 
+        {/* 화면 */}
+        <SectionHeader label="화면" />
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: 8,
+            paddingHorizontal: 20,
+            paddingVertical: 12,
+          }}
+        >
+          {THEME_OPTIONS.map((opt) => (
+            <Pressable
+              key={opt.mode}
+              onPress={() => setThemeMode(opt.mode)}
+              style={{
+                flex: 1,
+                paddingVertical: 10,
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: themeMode === opt.mode ? c.ink : c.border,
+                backgroundColor: themeMode === opt.mode ? c.surfaceSubtle : 'transparent',
+                alignItems: 'center',
+              }}
+            >
+              <AppText
+                variant="caption"
+                tone={themeMode === opt.mode ? 'primary' : 'tertiary'}
+                style={themeMode === opt.mode ? { fontWeight: '700' } : {}}
+              >
+                {opt.label}
+              </AppText>
+            </Pressable>
+          ))}
+        </View>
+
         {/* 알림 */}
         <SectionHeader label="알림" />
         <ToggleRow
-          label="단식 포그라운드 서비스"
-          description="단식 중 알림 바에 진행 상황을 표시합니다"
+          label="단식 알림바"
+          description="단식 중 알림 바에 진행 상황을 표시해요"
           value={foregroundServiceEnabled}
           onToggle={toggleForegroundService}
+        />
+
+        {/* 데이터 */}
+        <SectionHeader label="데이터" />
+        <SettingRow
+          label="전체 데이터 초기화"
+          onPress={handleDataReset}
+          danger
         />
 
         <View style={{ height: 40 }} />
