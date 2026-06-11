@@ -227,20 +227,6 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
                 </AppText>
               </Pressable>
 
-              {dueDate && (
-                <Pressable
-                  onPress={() => setDueDate(null)}
-                  style={{
-                    paddingHorizontal: 14,
-                    paddingVertical: 8,
-                    borderRadius: 10,
-                    borderWidth: 1,
-                    borderColor: c.border,
-                  }}
-                >
-                  <AppText variant="caption" tone="disabled">해제</AppText>
-                </Pressable>
-              )}
             </View>
             {dueDate && (
               <AppText variant="caption" tone="secondary" style={{ marginBottom: 4 }}>
