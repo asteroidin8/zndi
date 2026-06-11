@@ -1,1 +1,2 @@
-// 앱 전역 상수 배럴 파일
+export { colors } from './colors';
+export type { ColorScheme } from './colors';

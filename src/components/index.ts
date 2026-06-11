@@ -1,1 +1,2 @@
-// 공통 UI 컴포넌트 배럴 파일
+export { ScreenPlaceholder } from './ScreenPlaceholder';
+export { TabBarIcon } from './TabBarIcon';

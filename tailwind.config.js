@@ -1,11 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./App.{js,jsx,ts,tsx}', './src/**/*.{js,jsx,ts,tsx}'],
+  content: ['./App.{js,jsx,ts,tsx}', './app/**/*.{js,jsx,ts,tsx}', './src/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
       colors: {
-        // 미니멀 흑백 팔레트
+        // 라이트 모드 (기본)
         surface: {
           DEFAULT: '#ffffff',
           subtle: '#f5f5f5',
@@ -22,6 +22,7 @@ module.exports = {
           strong: '#d4d4d4',
         },
       },
+      // 다크 모드는 dark: 접두사로 사용
       fontFamily: {
         sans: ['System'],
         mono: ['SpaceMono'],
