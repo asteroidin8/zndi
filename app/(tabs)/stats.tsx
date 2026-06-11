@@ -337,7 +337,7 @@ export default function StatsScreen() {
           <SectionHeader title="투두" />
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <SummaryCard label="완료율" value={`${completionRate}%`} />
-            <SummaryCard label="긴급 할 일" value={`${highPriority}개`} />
+            <SummaryCard label="중요한 일" value={`${highPriority}개`} />
           </View>
         </View>
 
