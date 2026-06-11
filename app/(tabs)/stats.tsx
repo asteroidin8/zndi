@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Dimensions, Modal, Pressable, ScrollView, View } from 'react-native';
+import { Alert, Dimensions, Modal, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { Divider } from '@/components/Divider';
+import { FastingRecordEditModal } from '@/components/FastingRecordEditModal';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { useFastingStore } from '@/stores/useFastingStore';
+import { type FastingRecord, useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import {
@@ -109,9 +110,11 @@ function MonthGrid({
 // ── 일간 상세 모달 ───────────────────────────────────────────
 function DayDetailModal({
   summary,
+  onEditRecord,
   onClose,
 }: {
   summary: DailyFastingSummary;
+  onEditRecord: (record: FastingRecord) => void;
   onClose: () => void;
 }) {
   const c = useThemeColors();
@@ -143,31 +146,45 @@ function DayDetailModal({
             marginBottom: 16,
           }}
         />
-        <AppText variant="title" style={{ marginBottom: 4 }}>
-          {summary.date}
-        </AppText>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <AppText variant="title">{summary.date}</AppText>
+        </View>
         <AppText variant="caption" tone="tertiary" style={{ marginBottom: 20 }}>
           총 {formatMinutes(summary.totalMinutes)} · {summary.count}회
         </AppText>
         <ScrollView showsVerticalScrollIndicator={false}>
           {summary.records.map((r, i) => (
             <View key={r.id}>
-              <View style={{ paddingVertical: 12, gap: 4 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Pressable
+                onPress={() =>
+                  onEditRecord({
+                    id: r.id,
+                    startedAt: r.startedAt,
+                    endedAt: r.endedAt,
+                    goalHours: r.goalHours,
+                    result: r.result,
+                  })
+                }
+                style={{ paddingVertical: 12, gap: 4 }}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <AppText variant="body">
                     {formatMinutes(Math.floor((r.endedAt - r.startedAt) / 60_000))}
                   </AppText>
-                  <AppText
-                    variant="caption"
-                    tone={r.result === 'completed' ? 'secondary' : 'tertiary'}
-                  >
-                    {r.result === 'completed' ? '완료' : '중도 포기'}
-                  </AppText>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <AppText
+                      variant="caption"
+                      tone={r.result === 'completed' ? 'secondary' : 'tertiary'}
+                    >
+                      {r.result === 'completed' ? '완료' : '중도 포기'}
+                    </AppText>
+                    <AppIcon name="ChevronRight" size={14} color={c.inkDisabled} />
+                  </View>
                 </View>
                 <AppText variant="caption" tone="tertiary">
                   {formatHHMM(r.startedAt)} → {formatHHMM(r.endedAt)}
                 </AppText>
-              </View>
+              </Pressable>
               {i < summary.records.length - 1 && <Divider />}
             </View>
           ))}
@@ -223,7 +240,7 @@ function SectionHeader({ title }: { title: string }) {
 // ── 메인 화면 ────────────────────────────────────────────────
 export default function StatsScreen() {
   const c = useThemeColors();
-  const { records } = useFastingStore();
+  const { records, removeRecord, updateRecord } = useFastingStore();
   const { routines } = useRoutineStore();
   const { todos } = useTodoStore();
 
@@ -231,6 +248,7 @@ export default function StatsScreen() {
   const [viewYear, setViewYear] = useState(now.getFullYear());
   const [viewMonth, setViewMonth] = useState(now.getMonth());
   const [selected, setSelected] = useState<DailyFastingSummary | null>(null);
+  const [editingRecord, setEditingRecord] = useState<FastingRecord | null>(null);
 
   const summaries = groupFastingByDay(
     records.map((r) => ({
@@ -389,8 +407,39 @@ export default function StatsScreen() {
       </ScrollView>
 
       {selected && (
-        <DayDetailModal summary={selected} onClose={() => setSelected(null)} />
+        <DayDetailModal
+          summary={selected}
+          onEditRecord={(r) => {
+            setEditingRecord(r);
+            setSelected(null);
+          }}
+          onClose={() => setSelected(null)}
+        />
       )}
+
+      <FastingRecordEditModal
+        visible={editingRecord !== null}
+        record={editingRecord}
+        onSave={(updates) => {
+          if (editingRecord) updateRecord(editingRecord.id, updates);
+          setEditingRecord(null);
+        }}
+        onDelete={() => {
+          if (!editingRecord) return;
+          Alert.alert('기록 삭제', '이 단식 기록을 삭제하시겠어요?', [
+            { text: '취소', style: 'cancel' },
+            {
+              text: '삭제',
+              style: 'destructive',
+              onPress: () => {
+                removeRecord(editingRecord.id);
+                setEditingRecord(null);
+              },
+            },
+          ]);
+        }}
+        onClose={() => setEditingRecord(null)}
+      />
     </SafeAreaView>
   );
 }
