@@ -14,6 +14,7 @@ export type Todo = {
 type TodoStore = {
   todos: Todo[];
   addTodo: (todo: Todo) => void;
+  updateTodo: (id: string, updates: Partial<Todo>) => void;
   completeTodo: (id: string) => void;
   uncompleteTodo: (id: string) => void;
   removeTodo: (id: string) => void;
@@ -22,6 +23,10 @@ type TodoStore = {
 export const useTodoStore = create<TodoStore>((set) => ({
   todos: [],
   addTodo: (todo) => set((state) => ({ todos: [...state.todos, todo] })),
+  updateTodo: (id, updates) =>
+    set((state) => ({
+      todos: state.todos.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+    })),
   completeTodo: (id) =>
     set((state) => ({
       todos: state.todos.map((t) =>
