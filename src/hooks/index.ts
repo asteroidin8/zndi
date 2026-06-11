@@ -1,1 +1,1 @@
-// 커스텀 훅 배럴 파일
+export { useThemeColors } from './useThemeColors';
