@@ -43,32 +43,48 @@ export function WheelPicker({
   const [selected, setSelected] = useState(selectedValue);
   const [editingText, setEditingText] = useState<string | null>(null);
 
+  // 프로그래매틱 스크롤 중에는 scroll 이벤트를 무시하기 위한 플래그
+  const isProgrammatic = useRef(false);
+  // handleConfirm 시 최신 selected 값을 즉시 참조하기 위한 ref
+  const selectedRef = useRef(selectedValue);
+
+  function scrollToIndex(idx: number, animated = false) {
+    isProgrammatic.current = true;
+    scrollRef.current?.scrollTo({ y: idx * ITEM_HEIGHT, animated });
+    // animated: false는 즉시 완료되므로 짧은 timeout으로 플래그 해제
+    setTimeout(() => { isProgrammatic.current = false; }, animated ? 400 : 50);
+  }
+
   useEffect(() => {
     if (visible) {
       setSelected(selectedValue);
+      selectedRef.current = selectedValue;
       setEditingText(null);
       setTimeout(() => {
         const idx = values.indexOf(selectedValue);
-        if (idx >= 0) {
-          scrollRef.current?.scrollTo({ y: idx * ITEM_HEIGHT, animated: false });
-        }
+        if (idx >= 0) scrollToIndex(idx, false);
       }, 100);
     }
   }, [visible, selectedValue, values]);
 
   function handleScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
-    const idx = Math.round(e.nativeEvent.contentOffset.y / ITEM_HEIGHT);
-    setSelected(values[Math.max(0, Math.min(values.length - 1, idx))]);
-  }
-
-  function handleMomentumEnd(e: NativeSyntheticEvent<NativeScrollEvent>) {
+    if (isProgrammatic.current) return;
     const idx = Math.round(e.nativeEvent.contentOffset.y / ITEM_HEIGHT);
     const clamped = Math.max(0, Math.min(values.length - 1, idx));
     setSelected(values[clamped]);
-    scrollRef.current?.scrollTo({ y: clamped * ITEM_HEIGHT, animated: true });
+    selectedRef.current = values[clamped];
   }
 
-  // 중앙 선택 항목 탭 → 인라인 텍스트 편집
+  function handleMomentumEnd(e: NativeSyntheticEvent<NativeScrollEvent>) {
+    if (isProgrammatic.current) return;
+    const idx = Math.round(e.nativeEvent.contentOffset.y / ITEM_HEIGHT);
+    const clamped = Math.max(0, Math.min(values.length - 1, idx));
+    setSelected(values[clamped]);
+    selectedRef.current = values[clamped];
+    // snap 보정은 animated: false — 다시 이벤트를 유발하지 않음
+    scrollToIndex(clamped, false);
+  }
+
   function handleCenterTap() {
     setEditingText(String(selected));
     setTimeout(() => inputRef.current?.focus(), 50);
@@ -86,15 +102,25 @@ export function WheelPicker({
         Math.abs(curr - parsed) < Math.abs(prev - parsed) ? curr : prev,
       );
       setSelected(closest);
-      const idx = values.indexOf(closest);
-      scrollRef.current?.scrollTo({ y: idx * ITEM_HEIGHT, animated: true });
+      selectedRef.current = closest;
+      scrollToIndex(values.indexOf(closest), false);
     }
     setEditingText(null);
   }
 
   function handleConfirm() {
-    if (editingText !== null) commitTextEdit();
-    setTimeout(() => onConfirm(selected), 50);
+    if (editingText !== null) {
+      // 텍스트 편집 중 확인: ref에서 즉시 값 읽기
+      const parsed = parseInt(editingText, 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        const closest = values.reduce((prev, curr) =>
+          Math.abs(curr - parsed) < Math.abs(prev - parsed) ? curr : prev,
+        );
+        selectedRef.current = closest;
+      }
+      setEditingText(null);
+    }
+    onConfirm(selectedRef.current);
   }
 
   const centerIdx = Math.floor(VISIBLE_ITEMS / 2);
@@ -158,7 +184,7 @@ export function WheelPicker({
               snapToInterval={ITEM_HEIGHT}
               decelerationRate="fast"
               onScroll={handleScroll}
-              scrollEventThrottle={16}
+              scrollEventThrottle={32}
               onMomentumScrollEnd={handleMomentumEnd}
               contentContainerStyle={{
                 paddingTop: ITEM_HEIGHT * centerIdx,
@@ -180,7 +206,8 @@ export function WheelPicker({
                         handleCenterTap();
                       } else {
                         setSelected(v);
-                        scrollRef.current?.scrollTo({ y: i * ITEM_HEIGHT, animated: true });
+                        selectedRef.current = v;
+                        scrollToIndex(i, true);
                       }
                     }}
                   >
