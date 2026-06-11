@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { AppText } from './AppText';
+import { DatePickerModal } from './DatePickerModal';
 import { Divider } from './Divider';
 import { type TodoPriority } from '@/stores/useTodoStore';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -59,6 +60,7 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<TodoPriority>('mid');
   const [dueDate, setDueDate] = useState<string | null>(null);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
 
   function reset() {
     setTitle('');
@@ -180,7 +182,7 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
             <AppText variant="caption" tone="tertiary" style={{ marginBottom: 10 }}>
               마감일
             </AppText>
-            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
               {DUE_SHORTCUTS.map((s) => {
                 const dateVal = shiftDate(today, s.offset);
                 const selected = dueDate === dateVal;
@@ -189,13 +191,12 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
                     key={s.label}
                     onPress={() => setDueDate(selected ? null : dateVal)}
                     style={{
-                      flex: 1,
-                      paddingVertical: 10,
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
                       borderRadius: 10,
                       borderWidth: 1,
                       borderColor: selected ? c.ink : c.border,
                       backgroundColor: selected ? c.surfaceSubtle : 'transparent',
-                      alignItems: 'center',
                     }}
                   >
                     <AppText
@@ -208,13 +209,40 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
                   </Pressable>
                 );
               })}
+
+              {/* 직접 선택 */}
+              <Pressable
+                onPress={() => setDatePickerVisible(true)}
+                style={{
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: c.border,
+                }}
+              >
+                <AppText variant="caption" tone="tertiary">
+                  직접 선택
+                </AppText>
+              </Pressable>
+
+              {dueDate && (
+                <Pressable
+                  onPress={() => setDueDate(null)}
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 8,
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderColor: c.border,
+                  }}
+                >
+                  <AppText variant="caption" tone="disabled">해제</AppText>
+                </Pressable>
+              )}
             </View>
             {dueDate && (
-              <AppText
-                variant="caption"
-                tone="secondary"
-                style={{ textAlign: 'center', marginBottom: 4 }}
-              >
+              <AppText variant="caption" tone="secondary" style={{ marginBottom: 4 }}>
                 {formatDueDate(dueDate)} 마감
               </AppText>
             )}
@@ -247,5 +275,16 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
         </View>
       </KeyboardAvoidingView>
     </Modal>
+
+    <DatePickerModal
+      visible={datePickerVisible}
+      value={dueDate}
+      minimumDate={today}
+      onConfirm={(date) => {
+        setDueDate(date);
+        setDatePickerVisible(false);
+      }}
+      onClose={() => setDatePickerVisible(false)}
+    />
   );
 }
