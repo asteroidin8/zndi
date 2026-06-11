@@ -1,0 +1,35 @@
+---
+description: React Native / Expo 컴포넌트 작성 패턴
+globs: **/*.{tsx,ts}
+alwaysApply: false
+---
+
+# React Native 컴포넌트 패턴
+
+## 컴포넌트 구조
+- 함수형 컴포넌트만 사용한다. 클래스 컴포넌트 금지.
+- Props 타입은 컴포넌트 파일 상단에 `type Props = { ... }` 형식으로 선언한다.
+- 스타일은 NativeWind className으로 작성하고, 동적 스타일만 `StyleSheet`를 사용한다.
+
+## 파일 위치 규칙
+```
+src/
+  components/   # 재사용 공통 컴포넌트
+  screens/      # 화면 단위 컴포넌트
+  hooks/        # 커스텀 훅
+  stores/       # Zustand 스토어
+  db/           # drizzle 스키마 및 쿼리
+  utils/        # 순수 유틸 함수
+  constants/    # 상수 (색상, 폰트, 단식 구간 멘트 등)
+  types/        # 공유 타입 정의
+```
+
+## 훅 규칙
+- 비즈니스 로직은 커스텀 훅으로 분리한다.
+- 훅 이름은 `use`로 시작한다.
+
+## 임포트 순서
+1. React / React Native
+2. Expo 패키지
+3. 외부 라이브러리
+4. 내부 모듈 (`@/...` 경로 alias 사용)
