@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/AppText';
@@ -35,27 +35,29 @@ function formatOverElapsed(ms: number) {
 function formatDatetime(startTs: number, targetTs: number) {
   const start = new Date(startTs);
   const target = new Date(targetTs);
-  const startDay = start.getDate();
-  const endDay = target.getDate();
-  const isDiff = startDay !== endDay || start.getMonth() !== target.getMonth();
+  const isDiff =
+    start.getDate() !== target.getDate() || start.getMonth() !== target.getMonth();
 
   function fmt(d: Date, showDay: boolean) {
     const h = d.getHours();
     const min = d.getMinutes();
     const ampm = h < 12 ? '오전' : '오후';
-    const timeStr = `${ampm} ${h % 12 || 12}:${String(min).padStart(2, '0')}`;
-    return showDay ? `${d.getMonth() + 1}/${d.getDate()} ${timeStr}` : timeStr;
+    const time = `${ampm} ${h % 12 || 12}:${String(min).padStart(2, '0')}`;
+    return showDay ? `${d.getMonth() + 1}/${d.getDate()} ${time}` : time;
   }
 
-  if (isDiff) {
-    return `${fmt(start, true)} 시작 → ${fmt(target, true)} 완료 예정`;
-  }
-  return `${fmt(start, false)} 시작 → ${fmt(target, false)} 완료 예정`;
+  return `${fmt(start, isDiff)} 시작 → ${fmt(target, isDiff)} 완료 예정`;
+}
+
+function formatTotalHours(ms: number) {
+  const h = Math.floor(ms / 3_600_000);
+  if (h >= 1000) return `${(h / 1000).toFixed(1)}k h`;
+  return `${h}h`;
 }
 
 export default function FastingScreen() {
   const c = useThemeColors();
-  const { status, startedAt, goalHours, setGoalHours, startFasting, stopFasting } =
+  const { status, startedAt, goalHours, setGoalHours, startFasting, stopFasting, records } =
     useFastingStore();
   const { profile } = useUserStore();
   const [now, setNow] = useState(Date.now());
@@ -74,6 +76,15 @@ export default function FastingScreen() {
   const isOverGoal = elapsedMs >= goalMs;
   const progress = Math.min(elapsedMs / goalMs, 1);
   const completionTs = startedAt ? startedAt + goalMs : null;
+
+  // 누적 통계
+  const completedRecords = records.filter((r) => r.result === 'completed' && r.endedAt);
+  const totalFastMs = completedRecords.reduce(
+    (acc, r) => acc + ((r.endedAt ?? r.startedAt) - r.startedAt),
+    0,
+  );
+  const totalCount = records.length;
+  const completedCount = completedRecords.length;
 
   const calories =
     profile.weightKg && profile.heightCm
@@ -94,107 +105,144 @@ export default function FastingScreen() {
       '정말 포기하시겠어요?\n지금까지의 기록은 자동으로 보존돼요.',
       [
         { text: '계속 단식', style: 'cancel' },
-        {
-          text: '포기',
-          style: 'destructive',
-          onPress: () => stopFasting('abandoned'),
-        },
+        { text: '포기', style: 'destructive', onPress: () => stopFasting('abandoned') },
       ],
     );
   }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }}>
-      <ScrollView
-        contentContainerStyle={{ padding: 20, gap: 24 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* 헤더 */}
+      {/* ── 헤더 ── */}
+      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
         <AppText variant="title">단식</AppText>
+      </View>
 
-        {/* 타이머 영역 */}
-        <View style={{ alignItems: 'center', gap: 6 }}>
-          {/* 메인 타이머 */}
-          <AppText
-            variant="display"
-            style={{ fontSize: 64, letterSpacing: -3, lineHeight: 72 }}
-          >
-            {formatElapsed(elapsedMs)}
-          </AppText>
-
-          {/* 초과 표시 */}
-          {isOverGoal && status === 'fasting' && (
-            <View
-              style={{
-                backgroundColor: c.surfaceSubtle,
-                paddingHorizontal: 12,
-                paddingVertical: 4,
-                borderRadius: 8,
-              }}
-            >
-              <AppText variant="caption" tone="secondary" style={{ fontWeight: '600' }}>
-                {formatOverElapsed(elapsedMs - goalMs)} 초과
-              </AppText>
-            </View>
-          )}
-
-          {/* 시작 → 완료 예정 한 줄 표시 */}
-          {status === 'fasting' && startedAt && completionTs && (
-            <AppText
-              variant="caption"
-              tone="tertiary"
-              style={{ textAlign: 'center', marginTop: 2 }}
-            >
-              {formatDatetime(startedAt, completionTs)}
-            </AppText>
-          )}
-        </View>
-
-        {/* 진행 바 */}
+      {/* ── 누적 통계 카드 ── */}
+      <View style={{ paddingHorizontal: 20, marginBottom: 4 }}>
         <View
           style={{
-            height: 3,
-            backgroundColor: c.surfaceMuted,
-            borderRadius: 2,
-            overflow: 'hidden',
+            flexDirection: 'row',
+            backgroundColor: c.surfaceSubtle,
+            borderRadius: 16,
+            paddingVertical: 14,
+            paddingHorizontal: 20,
+            alignItems: 'center',
+            justifyContent: 'space-around',
           }}
         >
+          <View style={{ alignItems: 'center', gap: 2 }}>
+            <AppText variant="display" style={{ fontSize: 22, fontWeight: '800', letterSpacing: -1 }}>
+              {formatTotalHours(totalFastMs)}
+            </AppText>
+            <AppText variant="caption" tone="tertiary">
+              총 단식 시간
+            </AppText>
+          </View>
+
+          <View style={{ width: 1, height: 32, backgroundColor: c.border }} />
+
+          <View style={{ alignItems: 'center', gap: 2 }}>
+            <AppText variant="display" style={{ fontSize: 22, fontWeight: '800', letterSpacing: -1 }}>
+              {completedCount}
+            </AppText>
+            <AppText variant="caption" tone="tertiary">
+              완료 횟수
+            </AppText>
+          </View>
+
+          <View style={{ width: 1, height: 32, backgroundColor: c.border }} />
+
+          <View style={{ alignItems: 'center', gap: 2 }}>
+            <AppText variant="display" style={{ fontSize: 22, fontWeight: '800', letterSpacing: -1 }}>
+              {totalCount}
+            </AppText>
+            <AppText variant="caption" tone="tertiary">
+              전체 기록
+            </AppText>
+          </View>
+        </View>
+      </View>
+
+      {/* ── 타이머 (정중앙) ── */}
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 }}>
+        <AppText
+          variant="display"
+          style={{ fontSize: 62, letterSpacing: -3, lineHeight: 70, fontWeight: '700' }}
+        >
+          {formatElapsed(elapsedMs)}
+        </AppText>
+
+        {isOverGoal && status === 'fasting' && (
           <View
             style={{
-              height: 3,
-              width: `${progress * 100}%`,
-              backgroundColor: c.ink,
-              borderRadius: 2,
+              backgroundColor: c.surfaceSubtle,
+              paddingHorizontal: 12,
+              paddingVertical: 4,
+              borderRadius: 8,
             }}
-          />
-        </View>
+          >
+            <AppText variant="caption" tone="secondary" style={{ fontWeight: '700' }}>
+              {formatOverElapsed(elapsedMs - goalMs)} 초과
+            </AppText>
+          </View>
+        )}
+
+        {status === 'fasting' && startedAt && completionTs && (
+          <AppText variant="caption" tone="tertiary" style={{ textAlign: 'center' }}>
+            {formatDatetime(startedAt, completionTs)}
+          </AppText>
+        )}
+
+        {/* 진행 바 */}
+        {status === 'fasting' && (
+          <View
+            style={{
+              width: '70%',
+              height: 3,
+              backgroundColor: c.surfaceMuted,
+              borderRadius: 2,
+              overflow: 'hidden',
+              marginTop: 4,
+            }}
+          >
+            <View
+              style={{
+                height: 3,
+                width: `${progress * 100}%`,
+                backgroundColor: c.ink,
+                borderRadius: 2,
+              }}
+            />
+          </View>
+        )}
 
         {/* 과학 멘트 + 칼로리 */}
         {status === 'fasting' && (
-          <View style={{ gap: 4 }}>
+          <View style={{ gap: 4, alignItems: 'center', marginTop: 4 }}>
             {phaseMessage && (
               <AppText variant="body" tone="secondary" style={{ textAlign: 'center' }}>
                 {phaseMessage}
               </AppText>
             )}
             {calories !== null && (
-              <AppText variant="caption" tone="tertiary" style={{ textAlign: 'center' }}>
+              <AppText variant="caption" tone="tertiary">
                 약 {calories} kcal 소모
               </AppText>
             )}
           </View>
         )}
+      </View>
 
+      {/* ── 하단 ── */}
+      <View style={{ paddingHorizontal: 20, paddingBottom: 16, gap: 14 }}>
         <Divider />
 
-        {/* 목표 설정 (단식 중이 아닐 때만) */}
+        {/* 목표 설정 (idle 시만) */}
         {status === 'idle' && (
-          <View style={{ gap: 12 }}>
+          <View style={{ gap: 10 }}>
             <AppText variant="caption" tone="tertiary">
               목표 시간
             </AppText>
-
-            {/* 프리셋 버튼 */}
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {PRESETS.map((h) => (
                 <Pressable
@@ -219,8 +267,6 @@ export default function FastingScreen() {
                   </AppText>
                 </Pressable>
               ))}
-
-              {/* 직접 입력 */}
               <Pressable
                 onPress={() => setPickerVisible(true)}
                 style={{
@@ -247,7 +293,6 @@ export default function FastingScreen() {
                 </AppText>
               </Pressable>
             </View>
-
             {!PRESETS.includes(goalHours as (typeof PRESETS)[number]) && (
               <AppText variant="caption" tone="secondary" style={{ textAlign: 'center' }}>
                 목표: {goalHours}시간
@@ -256,7 +301,7 @@ export default function FastingScreen() {
           </View>
         )}
 
-        {/* 액션 버튼 */}
+        {/* CTA 버튼 */}
         {status === 'idle' ? (
           <Pressable
             onPress={startFasting}
@@ -272,7 +317,6 @@ export default function FastingScreen() {
             </AppText>
           </Pressable>
         ) : isOverGoal ? (
-          /* 목표 달성 이후: 완료 버튼만 표시 */
           <Pressable
             onPress={() => stopFasting('completed')}
             style={{
@@ -287,7 +331,6 @@ export default function FastingScreen() {
             </AppText>
           </Pressable>
         ) : (
-          /* 단식 중 (미달성): 포기 버튼만 표시 */
           <Pressable
             onPress={handleAbandon}
             style={{
@@ -303,9 +346,8 @@ export default function FastingScreen() {
             </AppText>
           </Pressable>
         )}
-      </ScrollView>
+      </View>
 
-      {/* 목표 시간 휠 피커 */}
       <WheelPicker
         visible={pickerVisible}
         title="목표 시간 선택"
