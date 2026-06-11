@@ -79,7 +79,9 @@ export default function TodoScreen() {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editTarget, setEditTarget] = useState<Todo | null>(null);
 
+  // ??? = completedAt ?? (???? ?? ???? ?? ??? ??)
   const activeTodos = todos.filter((t) => !t.completedAt);
+  // ??? = completedAt ?? (????? ?? ??? ?? ??)
   const completedTodos = todos.filter((t) => !!t.completedAt);
 
   function handleAdd({ title, priority, dueDate }: TodoCreatePayload) {
@@ -90,6 +92,7 @@ export default function TodoScreen() {
       priority,
       dueDate,
       completedAt: null,
+      archivedDate: null,
       createdAt: Date.now(),
       order: samePriorityCount,
     });

@@ -20,7 +20,7 @@ import {
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CELL_SIZE = Math.floor((SCREEN_WIDTH - 40 - 6 * 6) / 7);
 
-const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+const DAY_LABELS = ['?', '?', '?', '?', '?', '?', '?'];
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -30,7 +30,7 @@ function dateStr(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-// ── 달력 그리드 ────────────────────────────────────────────────
+// ?? ?? ??? ????????????????????????????????????????????????
 function MonthGrid({
   year,
   month,
@@ -46,7 +46,7 @@ function MonthGrid({
   const dateMap = new Map(summaries.map((s) => [s.date, s]));
   const today = todayStr();
 
-  const firstDay = new Date(year, month, 1).getDay(); // 0=일
+  const firstDay = new Date(year, month, 1).getDay(); // 0=?
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const cells: (string | null)[] = [
@@ -56,7 +56,7 @@ function MonthGrid({
 
   return (
     <View style={{ alignItems: 'center' }}>
-      {/* 요일 헤더 */}
+      {/* ?? ?? */}
       <View style={{ flexDirection: 'row', gap: 6, marginBottom: 4 }}>
         {DAY_LABELS.map((d) => (
           <View key={d} style={{ width: CELL_SIZE, alignItems: 'center' }}>
@@ -67,7 +67,7 @@ function MonthGrid({
         ))}
       </View>
 
-      {/* 날짜 셀 */}
+      {/* ?? ? */}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
         {cells.map((date, i) => {
           if (!date) {
@@ -107,7 +107,7 @@ function MonthGrid({
   );
 }
 
-// ── 일간 상세 모달 ───────────────────────────────────────────
+// ?? ?? ?? ?? ???????????????????????????????????????????
 function DayDetailModal({
   summary,
   onEditRecord,
@@ -150,7 +150,7 @@ function DayDetailModal({
           <AppText variant="title">{summary.date}</AppText>
         </View>
         <AppText variant="caption" tone="tertiary" style={{ marginBottom: 20 }}>
-          총 {formatMinutes(summary.totalMinutes)} · {summary.count}회
+          ? {formatMinutes(summary.totalMinutes)} � {summary.count}?
         </AppText>
         <ScrollView showsVerticalScrollIndicator={false}>
           {summary.records.map((r, i) => (
@@ -176,13 +176,13 @@ function DayDetailModal({
                       variant="caption"
                       tone={r.result === 'completed' ? 'secondary' : 'tertiary'}
                     >
-                      {r.result === 'completed' ? '완료' : '중도 포기'}
+                      {r.result === 'completed' ? '??' : '?? ??'}
                     </AppText>
                     <AppIcon name="ChevronRight" size={14} color={c.inkDisabled} />
                   </View>
                 </View>
                 <AppText variant="caption" tone="tertiary">
-                  {formatHHMM(r.startedAt)} → {formatHHMM(r.endedAt)}
+                  {formatHHMM(r.startedAt)} ? {formatHHMM(r.endedAt)}
                 </AppText>
               </Pressable>
               {i < summary.records.length - 1 && <Divider />}
@@ -194,7 +194,7 @@ function DayDetailModal({
   );
 }
 
-// ── 요약 카드 ────────────────────────────────────────────────
+// ?? ?? ?? ????????????????????????????????????????????????
 function SummaryCard({ label, value }: { label: string; value: string }) {
   const c = useThemeColors();
   return (
@@ -219,7 +219,7 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-// ── 섹션 헤더 ────────────────────────────────────────────────
+// ?? ?? ?? ????????????????????????????????????????????????
 function SectionHeader({ title }: { title: string }) {
   const c = useThemeColors();
   return (
@@ -232,7 +232,7 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
-// ── 메인 화면 ────────────────────────────────────────────────
+// ?? ?? ?? ????????????????????????????????????????????????
 export default function StatsScreen() {
   const c = useThemeColors();
   const { records, removeRecord, updateRecord } = useFastingStore();
@@ -255,7 +255,7 @@ export default function StatsScreen() {
     })),
   );
 
-  // ─ 단식 통계 ─
+  // ? ?? ?? ?
   const completedFasts = records.filter((r) => r.result === 'completed').length;
   const abandonedFasts = records.filter((r) => r.result === 'abandoned').length;
   const finishedFasts = records.filter((r) => r.endedAt);
@@ -269,17 +269,18 @@ export default function StatsScreen() {
         )
       : 0;
 
-  // ─ 루틴 통계 ─
+  // ? ?? ?? ?
   const todayWeekday = now.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
   const todayRoutines = routines.filter((r) => r.repeatDays.includes(todayWeekday));
 
-  // ─ 투두 통계 ─
+  // ? ?? ?? ?
   const totalTodos = todos.length;
   const completedTodos = todos.filter((t) => t.completedAt !== null).length;
-  const highPriority = todos.filter((t) => t.priority === 'high' && !t.completedAt).length;
+  const totalHighPriority = todos.filter((t) => t.priority === 'high').length;
+  const completedHighPriority = todos.filter((t) => t.priority === 'high' && !!t.completedAt).length;
   const completionRate = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0;
 
-  // ─ 월 이동 ─
+  // ? ? ?? ?
   function prevMonth() {
     if (viewMonth === 0) {
       setViewYear((y) => y - 1);
@@ -311,41 +312,41 @@ export default function StatsScreen() {
         contentContainerStyle={{ padding: 20, gap: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <AppText variant="title">통계</AppText>
+        <AppText variant="title">??</AppText>
 
-        {/* ── 단식 ── */}
+        {/* ?? ?? ?? */}
         <View style={{ gap: 12 }}>
-          <SectionHeader title="단식" />
+          <SectionHeader title="??" />
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            <SummaryCard label="총 기록" value={`${records.length}회`} />
-            <SummaryCard label="완료" value={`${completedFasts}회`} />
-            <SummaryCard label="평균 시간" value={formatMinutes(avgFastMinutes)} />
+            <SummaryCard label="? ??" value={`${records.length}?`} />
+            <SummaryCard label="??" value={`${completedFasts}?`} />
+            <SummaryCard label="?? ??" value={formatMinutes(avgFastMinutes)} />
           </View>
         </View>
 
-        {/* ── 루틴 ── */}
+        {/* ?? ?? ?? */}
         <View style={{ gap: 12 }}>
-          <SectionHeader title="루틴" />
+          <SectionHeader title="??" />
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            <SummaryCard label="전체 루틴" value={`${routines.length}개`} />
-            <SummaryCard label="오늘 루틴" value={`${todayRoutines.length}개`} />
+            <SummaryCard label="?? ??" value={`${routines.length}?`} />
+            <SummaryCard label="?? ??" value={`${todayRoutines.length}?`} />
           </View>
         </View>
 
-        {/* ── 투두 ── */}
+        {/* ?? ?? ?? */}
         <View style={{ gap: 12 }}>
-          <SectionHeader title="투두" />
+          <SectionHeader title="??" />
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            <SummaryCard label="완료율" value={`${completionRate}%`} />
-            <SummaryCard label="중요한 일" value={`${highPriority}개`} />
+            <SummaryCard label="???" value={`${completionRate}%`} />
+            <SummaryCard label="??? ?" value={totalHighPriority > 0 ? `${completedHighPriority}/${totalHighPriority}` : '-'} />
           </View>
         </View>
 
         <Divider />
 
-        {/* ── 월간 달력 ── */}
+        {/* ?? ?? ?? ?? */}
         <View style={{ gap: 12 }}>
-          {/* 헤더: < 연월 > 오늘 */}
+          {/* ??: < ?? > ?? */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
             <Pressable
               onPress={prevMonth}
@@ -356,7 +357,7 @@ export default function StatsScreen() {
             </Pressable>
 
             <AppText variant="body" style={{ fontWeight: '700', minWidth: 90, textAlign: 'center' }}>
-              {viewYear}년 {viewMonth + 1}월
+              {viewYear}? {viewMonth + 1}?
             </AppText>
 
             <Pressable
@@ -380,7 +381,7 @@ export default function StatsScreen() {
                 }}
               >
                 <AppText variant="caption" tone="tertiary">
-                  오늘
+                  ??
                 </AppText>
               </Pressable>
             )}
@@ -395,7 +396,7 @@ export default function StatsScreen() {
 
           {records.length === 0 && (
             <AppText variant="caption" tone="disabled" style={{ textAlign: 'center' }}>
-              아직 단식 기록이 없어요
+              ?? ?? ??? ???
             </AppText>
           )}
         </View>
@@ -421,10 +422,10 @@ export default function StatsScreen() {
         }}
         onDelete={() => {
           if (!editingRecord) return;
-          Alert.alert('기록 삭제', '이 단식 기록을 삭제하시겠어요?', [
-            { text: '취소', style: 'cancel' },
+          Alert.alert('?? ??', '? ?? ??? ????????', [
+            { text: '??', style: 'cancel' },
             {
-              text: '삭제',
+              text: '??',
               style: 'destructive',
               onPress: () => {
                 removeRecord(editingRecord.id);

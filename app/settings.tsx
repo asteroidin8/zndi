@@ -159,10 +159,17 @@ export default function SettingsScreen() {
         {
           text: '초기화',
           style: 'destructive',
-          onPress: () => {
-            useFastingStore.setState({ status: 'idle', startedAt: null, records: [] });
+          onPress: async () => {
+            await Promise.all([
+              useFastingStore.persist.clearStorage(),
+              useRoutineStore.persist.clearStorage(),
+              useTodoStore.persist.clearStorage(),
+              useUserStore.persist.clearStorage(),
+              useSettingsStore.persist.clearStorage(),
+            ]);
+            useFastingStore.setState({ status: 'idle', startedAt: null, records: [], goalHours: 16 });
             useRoutineStore.setState({ routines: [] });
-            useTodoStore.setState({ todos: [] });
+            useTodoStore.setState({ todos: [], lastArchiveDate: null });
             useUserStore.setState({
               profile: {
                 heightCm: null,
@@ -172,6 +179,7 @@ export default function SettingsScreen() {
                 isMale: null,
               },
             });
+            useSettingsStore.setState({ foregroundServiceEnabled: true, themeMode: 'system' });
           },
         },
       ],
