@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
+import DraggableFlatList, {
+  RenderItemParams,
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIcon } from '@/components/AppIcon';
@@ -9,22 +13,76 @@ import { TodoEditModal } from '@/components/TodoEditModal';
 import { TodoItem } from '@/components/TodoItem';
 import { type TodoCreatePayload, TodoModal } from '@/components/TodoModal';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { type Todo, useTodoStore } from '@/stores/useTodoStore';
+import { type Todo, type TodoPriority, useTodoStore } from '@/stores/useTodoStore';
 
 type TabFilter = 'active' | 'completed';
 
+const PRIORITY_SECTIONS: { key: TodoPriority; label: string }[] = [
+  { key: 'high', label: '높음' },
+  { key: 'mid', label: '보통' },
+  { key: 'low', label: '낮음' },
+];
+
+function PriorityBadge({ priority }: { priority: TodoPriority }) {
+  const colors: Record<TodoPriority, string> = {
+    high: '#EF4444',
+    mid: '#F59E0B',
+    low: '#6B7280',
+  };
+  return (
+    <View
+      style={{
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: colors[priority],
+        marginRight: 6,
+      }}
+    />
+  );
+}
+
+function SectionHeader({ label, priority, count }: { label: string; priority: TodoPriority; count: number }) {
+  const c = useThemeColors();
+  const colors: Record<TodoPriority, string> = {
+    high: '#EF4444',
+    mid: '#F59E0B',
+    low: '#6B7280',
+  };
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        backgroundColor: c.surface,
+      }}
+    >
+      <PriorityBadge priority={priority} />
+      <AppText variant="caption" style={{ color: colors[priority], fontWeight: '700', flex: 1 }}>
+        {label}
+      </AppText>
+      <AppText variant="caption" tone="disabled">
+        {count}
+      </AppText>
+    </View>
+  );
+}
+
 export default function TodoScreen() {
   const c = useThemeColors();
-  const { todos, addTodo, updateTodo, completeTodo, uncompleteTodo, removeTodo } = useTodoStore();
+  const { todos, addTodo, updateTodo, completeTodo, uncompleteTodo, removeTodo, reorderTodos } =
+    useTodoStore();
   const [filter, setFilter] = useState<TabFilter>('active');
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editTarget, setEditTarget] = useState<Todo | null>(null);
 
   const activeTodos = todos.filter((t) => !t.completedAt);
   const completedTodos = todos.filter((t) => !!t.completedAt);
-  const displayTodos = filter === 'active' ? activeTodos : completedTodos;
 
   function handleAdd({ title, priority, dueDate }: TodoCreatePayload) {
+    const samePriorityCount = todos.filter((t) => t.priority === priority && !t.completedAt).length;
     addTodo({
       id: String(Date.now()),
       title,
@@ -32,11 +90,12 @@ export default function TodoScreen() {
       dueDate,
       completedAt: null,
       createdAt: Date.now(),
+      order: samePriorityCount,
     });
     setAddModalVisible(false);
   }
 
-  function handleEditSave(updates: Pick<Todo, 'title' | 'priority'>) {
+  function handleEditSave(updates: Pick<Todo, 'title' | 'priority' | 'dueDate'>) {
     if (!editTarget) return;
     updateTodo(editTarget.id, updates);
     setEditTarget(null);
@@ -48,9 +107,140 @@ export default function TodoScreen() {
     setEditTarget(null);
   }
 
+  function renderDraggableItem(priority: TodoPriority) {
+    return function ({ item, drag, isActive }: RenderItemParams<Todo>) {
+      return (
+        <ScaleDecorator>
+          <View style={{ opacity: isActive ? 0.85 : 1 }}>
+            <TodoItem
+              todo={item}
+              onToggle={() =>
+                item.completedAt ? uncompleteTodo(item.id) : completeTodo(item.id)
+              }
+              onLongPress={drag}
+              onPress={() => setEditTarget(item)}
+            />
+            <Divider />
+          </View>
+        </ScaleDecorator>
+      );
+    };
+  }
+
+  if (filter === 'completed') {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }}>
+        <Header
+          filter={filter}
+          setFilter={setFilter}
+          activeTodos={activeTodos}
+          completedTodos={completedTodos}
+          onAdd={() => setAddModalVisible(true)}
+        />
+        {completedTodos.length === 0 ? (
+          <EmptyState message="완료된 항목이 없어요" />
+        ) : (
+          <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+            {completedTodos.map((todo, i) => (
+              <View key={todo.id} style={{ paddingHorizontal: 20 }}>
+                <TodoItem
+                  todo={todo}
+                  onToggle={() => uncompleteTodo(todo.id)}
+                  onPress={() => setEditTarget(todo)}
+                />
+                {i < completedTodos.length - 1 && <Divider />}
+              </View>
+            ))}
+          </ScrollView>
+        )}
+        <TodoEditModal
+          visible={editTarget !== null}
+          todo={editTarget}
+          onSave={handleEditSave}
+          onDelete={handleEditDelete}
+          onClose={() => setEditTarget(null)}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  const hasTodos = activeTodos.length > 0;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }}>
-      {/* 헤더 */}
+      <Header
+        filter={filter}
+        setFilter={setFilter}
+        activeTodos={activeTodos}
+        completedTodos={completedTodos}
+        onAdd={() => setAddModalVisible(true)}
+      />
+
+      {!hasTodos ? (
+        <EmptyState
+          message="오늘 할 일을 추가해보세요"
+          actionLabel="할 일 추가하기"
+          onAction={() => setAddModalVisible(true)}
+        />
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+          {PRIORITY_SECTIONS.map(({ key, label }) => {
+            const items = activeTodos
+              .filter((t) => t.priority === key)
+              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+            if (items.length === 0) return null;
+            return (
+              <View key={key}>
+                <SectionHeader label={label} priority={key} count={items.length} />
+                <View style={{ paddingHorizontal: 20 }}>
+                  <DraggableFlatList
+                    data={items}
+                    keyExtractor={(item) => item.id}
+                    onDragEnd={({ data }) => reorderTodos(key, data)}
+                    renderItem={renderDraggableItem(key)}
+                    scrollEnabled={false}
+                    activationDistance={8}
+                  />
+                </View>
+              </View>
+            );
+          })}
+        </ScrollView>
+      )}
+
+      <TodoModal
+        visible={addModalVisible}
+        onSave={handleAdd}
+        onClose={() => setAddModalVisible(false)}
+      />
+      <TodoEditModal
+        visible={editTarget !== null}
+        todo={editTarget}
+        onSave={handleEditSave}
+        onDelete={handleEditDelete}
+        onClose={() => setEditTarget(null)}
+      />
+    </SafeAreaView>
+  );
+}
+
+// ── 헤더 ────────────────────────────────────────────────────
+function Header({
+  filter,
+  setFilter,
+  activeTodos,
+  completedTodos,
+  onAdd,
+}: {
+  filter: TabFilter;
+  setFilter: (f: TabFilter) => void;
+  activeTodos: Todo[];
+  completedTodos: Todo[];
+  onAdd: () => void;
+}) {
+  const c = useThemeColors();
+  return (
+    <>
       <View
         style={{
           flexDirection: 'row',
@@ -62,20 +252,11 @@ export default function TodoScreen() {
         }}
       >
         <AppText variant="title">투두</AppText>
-        <Pressable onPress={() => setAddModalVisible(true)} hitSlop={8}>
+        <Pressable onPress={onAdd} hitSlop={8}>
           <AppIcon name="Plus" size={22} />
         </Pressable>
       </View>
-
-      {/* 탭 필터 */}
-      <View
-        style={{
-          flexDirection: 'row',
-          paddingHorizontal: 20,
-          gap: 16,
-          marginBottom: 4,
-        }}
-      >
+      <View style={{ flexDirection: 'row', paddingHorizontal: 20, gap: 16, marginBottom: 4 }}>
         {(['active', 'completed'] as TabFilter[]).map((tab) => {
           const isActive = filter === tab;
           return (
@@ -85,12 +266,7 @@ export default function TodoScreen() {
                 tone={isActive ? 'primary' : 'tertiary'}
                 style={
                   isActive
-                    ? {
-                        fontWeight: '700',
-                        borderBottomWidth: 1.5,
-                        borderBottomColor: c.ink,
-                        paddingBottom: 2,
-                      }
+                    ? { fontWeight: '700', borderBottomWidth: 1.5, borderBottomColor: c.ink, paddingBottom: 2 }
                     : {}
                 }
               >
@@ -100,64 +276,33 @@ export default function TodoScreen() {
           );
         })}
       </View>
-
       <Divider />
+    </>
+  );
+}
 
-      {/* 리스트 */}
-      {displayTodos.length === 0 ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 }}>
-          {filter === 'active' ? (
-            <>
-              <AppText variant="body" tone="tertiary">
-                오늘 할 일을 추가해보세요
-              </AppText>
-              <Pressable onPress={() => setAddModalVisible(true)}>
-                <AppText variant="caption" tone="secondary">
-                  할 일 추가하기
-                </AppText>
-              </Pressable>
-            </>
-          ) : (
-            <AppText variant="body" tone="tertiary">
-              완료된 항목이 없어요
-            </AppText>
-          )}
-        </View>
-      ) : (
-        <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {displayTodos.map((todo, i) => (
-            <View key={todo.id}>
-              <TodoItem
-                todo={todo}
-                onToggle={() =>
-                  todo.completedAt ? uncompleteTodo(todo.id) : completeTodo(todo.id)
-                }
-                onLongPress={() => setEditTarget(todo)}
-              />
-              {i < displayTodos.length - 1 && <Divider />}
-            </View>
-          ))}
-        </ScrollView>
+// ── 빈 상태 ─────────────────────────────────────────────────
+function EmptyState({
+  message,
+  actionLabel,
+  onAction,
+}: {
+  message: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 }}>
+      <AppText variant="body" tone="tertiary">
+        {message}
+      </AppText>
+      {actionLabel && onAction && (
+        <Pressable onPress={onAction}>
+          <AppText variant="caption" tone="secondary">
+            {actionLabel}
+          </AppText>
+        </Pressable>
       )}
-
-      {/* 추가 모달 */}
-      <TodoModal
-        visible={addModalVisible}
-        onSave={handleAdd}
-        onClose={() => setAddModalVisible(false)}
-      />
-
-      {/* 편집 모달 */}
-      <TodoEditModal
-        visible={editTarget !== null}
-        todo={editTarget}
-        onSave={handleEditSave}
-        onDelete={handleEditDelete}
-        onClose={() => setEditTarget(null)}
-      />
-    </SafeAreaView>
+    </View>
   );
 }

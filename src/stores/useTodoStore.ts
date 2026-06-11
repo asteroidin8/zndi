@@ -9,6 +9,7 @@ export type Todo = {
   dueDate: string | null; // 'YYYY-MM-DD' 형식
   completedAt: number | null; // Unix timestamp (ms)
   createdAt: number;
+  order: number;
 };
 
 type TodoStore = {
@@ -18,6 +19,7 @@ type TodoStore = {
   completeTodo: (id: string) => void;
   uncompleteTodo: (id: string) => void;
   removeTodo: (id: string) => void;
+  reorderTodos: (priority: TodoPriority, ordered: Todo[]) => void;
 };
 
 export const useTodoStore = create<TodoStore>((set) => ({
@@ -38,4 +40,10 @@ export const useTodoStore = create<TodoStore>((set) => ({
       todos: state.todos.map((t) => (t.id === id ? { ...t, completedAt: null } : t)),
     })),
   removeTodo: (id) => set((state) => ({ todos: state.todos.filter((t) => t.id !== id) })),
+  reorderTodos: (priority, ordered) =>
+    set((state) => {
+      const others = state.todos.filter((t) => t.priority !== priority);
+      const updated = ordered.map((t, i) => ({ ...t, order: i }));
+      return { todos: [...others, ...updated] };
+    }),
 }));

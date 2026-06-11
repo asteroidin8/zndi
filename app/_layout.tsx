@@ -3,6 +3,7 @@ import '../global.css';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DatabaseProvider } from '@/db/DatabaseProvider';
 import { useFastingNotification } from '@/hooks/useFastingNotification';
@@ -24,8 +25,10 @@ function AppContent() {
 
 export default function RootLayout() {
   return (
-    <DatabaseProvider>
-      <AppContent />
-    </DatabaseProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <DatabaseProvider>
+        <AppContent />
+      </DatabaseProvider>
+    </GestureHandlerRootView>
   );
 }

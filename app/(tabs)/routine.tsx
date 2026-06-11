@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
+import DraggableFlatList, {
+  RenderItemParams,
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIcon } from '@/components/AppIcon';
@@ -18,14 +22,18 @@ function getTodayDay(): Weekday {
 
 export default function RoutineScreen() {
   const c = useThemeColors();
-  const { routines, addRoutine, updateRoutine, removeRoutine } = useRoutineStore();
+  const { routines, addRoutine, updateRoutine, removeRoutine, reorderRoutines } = useRoutineStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [editTarget, setEditTarget] = useState<Routine | null>(null);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
 
   const today = getTodayDay();
-  const todayRoutines = routines.filter((r) => r.repeatDays.includes(today));
-  const otherRoutines = routines.filter((r) => !r.repeatDays.includes(today));
+  const todayRoutines = routines
+    .filter((r) => r.repeatDays.includes(today))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const otherRoutines = routines
+    .filter((r) => !r.repeatDays.includes(today))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   function openAdd() {
     setEditTarget(null);
@@ -41,12 +49,12 @@ export default function RoutineScreen() {
     if (editTarget) {
       updateRoutine(editTarget.id, data);
     } else {
-      const newRoutine: Routine = {
+      addRoutine({
         id: String(Date.now()),
         createdAt: Date.now(),
+        order: routines.length,
         ...data,
-      };
-      addRoutine(newRoutine);
+      });
     }
     setModalVisible(false);
   }
@@ -57,6 +65,46 @@ export default function RoutineScreen() {
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
+  }
+
+  // 드래그 후 전체 순서 재정렬 (오늘·그외 구간 각각 처리)
+  function handleTodayReorder({ data }: { data: Routine[] }) {
+    const merged = [
+      ...data,
+      ...otherRoutines,
+    ].map((r, i) => ({ ...r, order: i }));
+    reorderRoutines(merged);
+  }
+
+  function handleOtherReorder({ data }: { data: Routine[] }) {
+    const merged = [
+      ...todayRoutines,
+      ...data,
+    ].map((r, i) => ({ ...r, order: i }));
+    reorderRoutines(merged);
+  }
+
+  function renderRoutineItem(
+    isCompleted: (id: string) => boolean,
+    onToggle: (id: string) => void,
+    isToday: boolean,
+  ) {
+    return function ({ item, drag, isActive }: RenderItemParams<Routine>) {
+      return (
+        <ScaleDecorator>
+          <View style={{ opacity: isActive ? 0.85 : 1 }}>
+            <RoutineItem
+              routine={item}
+              isCompleted={isCompleted(item.id)}
+              onToggle={() => onToggle(item.id)}
+              onLongPress={drag}
+              onPress={() => openEdit(item)}
+            />
+            <Divider />
+          </View>
+        </ScaleDecorator>
+      );
+    };
   }
 
   const isEmpty = routines.length === 0;
@@ -92,31 +140,31 @@ export default function RoutineScreen() {
           </Pressable>
         </View>
       ) : (
-        <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
           {/* 오늘 루틴 */}
           {todayRoutines.length > 0 && (
             <>
               <AppText
                 variant="caption"
                 tone="tertiary"
-                style={{ marginTop: 16, marginBottom: 4 }}
+                style={{ marginTop: 16, marginBottom: 4, paddingHorizontal: 20 }}
               >
                 오늘 · {WEEKDAYS_KO[today]}요일
               </AppText>
-              {todayRoutines.map((r, i) => (
-                <View key={r.id}>
-                  <RoutineItem
-                    routine={r}
-                    isCompleted={completed.has(r.id)}
-                    onToggle={() => toggleCompleted(r.id)}
-                    onLongPress={() => openEdit(r)}
-                  />
-                  {i < todayRoutines.length - 1 && <Divider />}
-                </View>
-              ))}
+              <View style={{ paddingHorizontal: 20 }}>
+                <DraggableFlatList
+                  data={todayRoutines}
+                  keyExtractor={(r) => r.id}
+                  onDragEnd={handleTodayReorder}
+                  renderItem={renderRoutineItem(
+                    (id) => completed.has(id),
+                    toggleCompleted,
+                    true,
+                  )}
+                  scrollEnabled={false}
+                  activationDistance={8}
+                />
+              </View>
             </>
           )}
 
@@ -126,21 +174,24 @@ export default function RoutineScreen() {
               <AppText
                 variant="caption"
                 tone="disabled"
-                style={{ marginTop: 24, marginBottom: 4 }}
+                style={{ marginTop: 24, marginBottom: 4, paddingHorizontal: 20 }}
               >
                 그 외
               </AppText>
-              {otherRoutines.map((r, i) => (
-                <View key={r.id}>
-                  <RoutineItem
-                    routine={r}
-                    isCompleted={false}
-                    onToggle={() => {}}
-                    onLongPress={() => openEdit(r)}
-                  />
-                  {i < otherRoutines.length - 1 && <Divider />}
-                </View>
-              ))}
+              <View style={{ paddingHorizontal: 20 }}>
+                <DraggableFlatList
+                  data={otherRoutines}
+                  keyExtractor={(r) => r.id}
+                  onDragEnd={handleOtherReorder}
+                  renderItem={renderRoutineItem(
+                    () => false,
+                    () => {},
+                    false,
+                  )}
+                  scrollEnabled={false}
+                  activationDistance={8}
+                />
+              </View>
             </>
           )}
         </ScrollView>
@@ -150,6 +201,7 @@ export default function RoutineScreen() {
         visible={modalVisible}
         initial={editTarget ?? undefined}
         onSave={handleSave}
+        onDelete={editTarget ? () => { removeRoutine(editTarget.id); setModalVisible(false); } : undefined}
         onClose={() => setModalVisible(false)}
       />
     </SafeAreaView>

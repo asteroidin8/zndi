@@ -13,10 +13,11 @@ type Props = {
   visible: boolean;
   initial?: Partial<Routine>;
   onSave: (data: { name: string; repeatDays: Weekday[]; reminderTime: string | null }) => void;
+  onDelete?: () => void;
   onClose: () => void;
 };
 
-export function RoutineModal({ visible, initial, onSave, onClose }: Props) {
+export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Props) {
   const c = useThemeColors();
   const [name, setName] = useState(initial?.name ?? '');
   const [days, setDays] = useState<Weekday[]>(initial?.repeatDays ?? [1, 2, 3, 4, 5]);
@@ -137,6 +138,20 @@ export function RoutineModal({ visible, initial, onSave, onClose }: Props) {
             저장
           </AppText>
         </Pressable>
+
+        {onDelete && (
+          <>
+            <Divider spacing={4} />
+            <Pressable
+              onPress={onDelete}
+              style={{ paddingVertical: 12, alignItems: 'center' }}
+            >
+              <AppText variant="body" style={{ color: '#EF4444' }}>
+                삭제
+              </AppText>
+            </Pressable>
+          </>
+        )}
       </View>
       </KeyboardAvoidingView>
     </Modal>

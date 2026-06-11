@@ -15,15 +15,17 @@ type Props = {
   todo: Todo;
   onToggle?: () => void;
   onLongPress?: () => void;
+  onPress?: () => void;
 };
 
-export function TodoItem({ todo, onToggle, onLongPress }: Props) {
+export function TodoItem({ todo, onToggle, onLongPress, onPress }: Props) {
   const c = useThemeColors();
   const isCompleted = !!todo.completedAt;
   const dotColor = PRIORITY_COLORS[todo.priority] ?? c.inkTertiary;
 
   return (
     <Pressable
+      onPress={onPress}
       onLongPress={onLongPress}
       delayLongPress={400}
       style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, gap: 14 }}

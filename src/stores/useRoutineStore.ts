@@ -8,6 +8,7 @@ export type Routine = {
   repeatDays: Weekday[];
   reminderTime: string | null; // 'HH:mm' 형식, null이면 알림 없음
   createdAt: number;
+  order: number;
 };
 
 type RoutineStore = {
@@ -15,6 +16,7 @@ type RoutineStore = {
   addRoutine: (routine: Routine) => void;
   updateRoutine: (id: string, updates: Partial<Routine>) => void;
   removeRoutine: (id: string) => void;
+  reorderRoutines: (ordered: Routine[]) => void;
 };
 
 export const useRoutineStore = create<RoutineStore>((set) => ({
@@ -27,4 +29,6 @@ export const useRoutineStore = create<RoutineStore>((set) => ({
     })),
   removeRoutine: (id) =>
     set((state) => ({ routines: state.routines.filter((r) => r.id !== id) })),
+  reorderRoutines: (ordered) =>
+    set({ routines: ordered.map((r, i) => ({ ...r, order: i })) }),
 }));

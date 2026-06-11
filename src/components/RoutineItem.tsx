@@ -12,16 +12,17 @@ type Props = {
   isCompleted?: boolean;
   onToggle?: () => void;
   onLongPress?: () => void;
+  onPress?: () => void;
 };
 
-export function RoutineItem({ routine, isCompleted = false, onToggle, onLongPress }: Props) {
+export function RoutineItem({ routine, isCompleted = false, onToggle, onLongPress, onPress }: Props) {
   const c = useThemeColors();
 
   return (
     <Pressable
-      onPress={onToggle}
+      onPress={onPress ?? onToggle}
       onLongPress={onLongPress}
-      delayLongPress={450}
+      delayLongPress={400}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
