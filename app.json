@@ -2,6 +2,7 @@
   "expo": {
     "name": "routiner",
     "slug": "routiner",
+    "owner": "asteroidin8",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.asteroidin8.routiner",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -18,7 +20,10 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "permissions": ["NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED"]
+      "permissions": [
+        "NOTIFICATIONS",
+        "RECEIVE_BOOT_COMPLETED"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -26,6 +31,12 @@
     "plugins": [
       "expo-sqlite",
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f9e38d8d-3dce-48c9-a396-7522eb725121"
+      }
+    }
   }
 }

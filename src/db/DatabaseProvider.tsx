@@ -1,17 +1,17 @@
-import { useMigrations } from 'drizzle-orm/expo-sqlite';
+import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { db } from './client';
-import { migrations } from './migrations';
+import migrations from './migrations/migrations';
 
 type Props = {
   children: ReactNode;
 };
 
 export function DatabaseProvider({ children }: Props) {
-  const { success, error } = useMigrations(db, migrations as Parameters<typeof useMigrations>[1]);
+  const { success, error } = useMigrations(db, migrations);
 
   if (error) {
     return (
