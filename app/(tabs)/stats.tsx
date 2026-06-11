@@ -195,7 +195,7 @@ function DayDetailModal({
 }
 
 // ── 요약 카드 ────────────────────────────────────────────────
-function SummaryCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function SummaryCard({ label, value }: { label: string; value: string }) {
   const c = useThemeColors();
   return (
     <View
@@ -204,7 +204,7 @@ function SummaryCard({ label, value, sub }: { label: string; value: string; sub?
         backgroundColor: c.surfaceSubtle,
         borderRadius: 14,
         padding: 14,
-        gap: 4,
+        gap: 6,
         minHeight: 72,
         justifyContent: 'space-between',
       }}
@@ -215,11 +215,6 @@ function SummaryCard({ label, value, sub }: { label: string; value: string; sub?
       <AppText variant="title" style={{ fontSize: 20, fontWeight: '700' }}>
         {value}
       </AppText>
-      {sub ? (
-        <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>
-          {sub}
-        </AppText>
-      ) : null}
     </View>
   );
 }
@@ -323,7 +318,7 @@ export default function StatsScreen() {
           <SectionHeader title="단식" />
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <SummaryCard label="총 기록" value={`${records.length}회`} />
-            <SummaryCard label="완료" value={`${completedFasts}회`} sub={`포기 ${abandonedFasts}회`} />
+            <SummaryCard label="완료" value={`${completedFasts}회`} />
             <SummaryCard label="평균 시간" value={formatMinutes(avgFastMinutes)} />
           </View>
         </View>
@@ -333,7 +328,7 @@ export default function StatsScreen() {
           <SectionHeader title="루틴" />
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <SummaryCard label="전체 루틴" value={`${routines.length}개`} />
-            <SummaryCard label="오늘 루틴" value={`${todayRoutines.length}개`} sub="오늘 요일 기준" />
+            <SummaryCard label="오늘 루틴" value={`${todayRoutines.length}개`} />
           </View>
         </View>
 
@@ -341,8 +336,8 @@ export default function StatsScreen() {
         <View style={{ gap: 12 }}>
           <SectionHeader title="투두" />
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            <SummaryCard label="완료율" value={`${completionRate}%`} sub={`${completedTodos}/${totalTodos}개`} />
-            <SummaryCard label="미완료 고우선" value={`${highPriority}개`} sub="높은 우선순위" />
+            <SummaryCard label="완료율" value={`${completionRate}%`} />
+            <SummaryCard label="긴급 할 일" value={`${highPriority}개`} />
           </View>
         </View>
 
