@@ -113,7 +113,7 @@ export default function RoutineScreen() {
   const isEmpty = routines.length === 0;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       {/* 헤더 */}
       <View
         style={{

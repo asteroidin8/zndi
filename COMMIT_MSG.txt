@@ -1,11 +1,8 @@
-feat: 스와이프 탭/삭제/단식 포기 꾸그 누르기 구현
+fix: tsconfig ignoreDeprecations 수정 및 빌드 전 폴리시
 
-- PagerView 기반 좌우 스와이프 탭 전환
-- TabNavigationContext로 자식 화면에서 탭 이동 지원
-- DailySummaryRow: 홈 화면에 루틴/투두 최대 3개 간략 표시
-- SwipeToDelete: 좌우 어느 방향 스와이프든 삭제 액션 발생
-- 투두/루틴 DraggableFlatList 아이템에 SwipeToDelete 적용
-- HoldToConfirmButton: 1.6초 꾸그 누르기로 단식 포기 확인
-- 게이지 fill 애니메이션 및 텍스트 색상 자동 반전
-- 구간별 햅틱 (light / medium / heavy / success)
-- Alert 팝업 방식 단식 포기 제거
+- tsconfig ignoreDeprecations 5.0 -> 6.0 (TS6 baseUrl 경고 억제)
+- TS 타입 에러 3개 수정 (TabIndex cast, AppText variant)
+- 모든 탭 화면 SafeAreaView edges=['top'] 적용 (하단 이중 패딩 방지)
+- StatusBar 테마 모드 연동 (useThemeColors 기반)
+- TodoItem/RoutineItem 체크박스 스케일 애니메이션 + 햅틱 추가
+- 단식 완료 버튼 success 햅틱 추가

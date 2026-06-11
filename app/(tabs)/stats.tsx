@@ -306,7 +306,7 @@ export default function StatsScreen() {
   const isCurrentMonth = viewYear === now.getFullYear() && viewMonth === now.getMonth();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <ScrollView
         contentContainerStyle={{ padding: 20, gap: 24 }}
         showsVerticalScrollIndicator={false}

@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -102,7 +103,7 @@ export default function FastingScreen() {
 
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       {/* ── 헤더 ── */}
       <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
         <AppText variant="title">단식</AppText>
@@ -309,7 +310,10 @@ export default function FastingScreen() {
           </Pressable>
         ) : isOverGoal ? (
           <Pressable
-            onPress={() => stopFasting('completed')}
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+              stopFasting('completed');
+            }}
             style={{
               backgroundColor: c.ink,
               borderRadius: 14,

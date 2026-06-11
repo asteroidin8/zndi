@@ -41,7 +41,7 @@ export default function TabLayout() {
         ref={pagerRef}
         style={{ flex: 1 }}
         initialPage={HOME_INDEX}
-        onPageSelected={(e) => setActiveTab(e.nativeEvent.position)}
+        onPageSelected={(e) => setActiveTab(e.nativeEvent.position as TabIndex)}
         overdrag
       >
         <View key="fasting" style={{ flex: 1 }}>
@@ -77,7 +77,7 @@ export default function TabLayout() {
           return (
             <Pressable
               key={tab.key}
-              onPress={() => navigateTo(i)}
+              onPress={() => navigateTo(i as TabIndex)}
               style={{
                 flex: 1,
                 justifyContent: 'center',

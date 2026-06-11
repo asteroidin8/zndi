@@ -19,9 +19,9 @@ import { type Todo, type TodoPriority, useTodoStore } from '@/stores/useTodoStor
 type TabFilter = 'active' | 'completed';
 
 const PRIORITY_SECTIONS: { key: TodoPriority; label: string }[] = [
-  { key: 'high', label: '높음' },
-  { key: 'mid', label: '보통' },
-  { key: 'low', label: '낮음' },
+  { key: 'high', label: '??' },
+  { key: 'mid', label: '??' },
+  { key: 'low', label: '??' },
 ];
 
 function PriorityBadge({ priority }: { priority: TodoPriority }) {
@@ -132,7 +132,7 @@ export default function TodoScreen() {
 
   if (filter === 'completed') {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
         <Header
           filter={filter}
           setFilter={setFilter}
@@ -141,7 +141,7 @@ export default function TodoScreen() {
           onAdd={() => setAddModalVisible(true)}
         />
         {completedTodos.length === 0 ? (
-          <EmptyState message="완료된 항목이 없어요" />
+          <EmptyState message="??? ??? ???" />
         ) : (
           <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
             {completedTodos.map((todo, i) => (
@@ -172,7 +172,7 @@ export default function TodoScreen() {
   const hasTodos = activeTodos.length > 0;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <Header
         filter={filter}
         setFilter={setFilter}
@@ -183,8 +183,8 @@ export default function TodoScreen() {
 
       {!hasTodos ? (
         <EmptyState
-          message="오늘 할 일을 추가해보세요"
-          actionLabel="할 일 추가하기"
+          message="?? ? ?? ??????"
+          actionLabel="? ? ????"
           onAction={() => setAddModalVisible(true)}
         />
       ) : (
@@ -229,7 +229,7 @@ export default function TodoScreen() {
   );
 }
 
-// ── 헤더 ────────────────────────────────────────────────────
+// ?? ?? ????????????????????????????????????????????????????
 function Header({
   filter,
   setFilter,
@@ -256,7 +256,7 @@ function Header({
           paddingBottom: 8,
         }}
       >
-        <AppText variant="title">투두</AppText>
+        <AppText variant="title">??</AppText>
         <Pressable onPress={onAdd} hitSlop={8}>
           <AppIcon name="Plus" size={22} />
         </Pressable>
@@ -275,7 +275,7 @@ function Header({
                     : {}
                 }
               >
-                {tab === 'active' ? `진행 중 ${activeTodos.length}` : `완료됨 ${completedTodos.length}`}
+                {tab === 'active' ? `?? ? ${activeTodos.length}` : `??? ${completedTodos.length}`}
               </AppText>
             </Pressable>
           );
@@ -286,7 +286,7 @@ function Header({
   );
 }
 
-// ── 빈 상태 ─────────────────────────────────────────────────
+// ?? ? ?? ?????????????????????????????????????????????????
 function EmptyState({
   message,
   actionLabel,

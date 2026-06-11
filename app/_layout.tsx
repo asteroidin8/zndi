@@ -2,19 +2,21 @@ import '../global.css';
 
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, useColorScheme } from 'react-native';
+import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DatabaseProvider } from '@/db/DatabaseProvider';
 import { useFastingNotification } from '@/hooks/useFastingNotification';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 function AppContent() {
-  const colorScheme = useColorScheme();
+  const c = useThemeColors();
+  const isDark = c.surface === '#0a0a0a';
   useFastingNotification();
 
   return (
     <>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="settings" options={{ presentation: 'modal' }} />

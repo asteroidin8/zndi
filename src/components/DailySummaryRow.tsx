@@ -74,7 +74,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
               paddingVertical: 12,
             }}
           >
-            <AppText variant="label">오늘의 루틴</AppText>
+            <AppText variant="body" style={{ fontWeight: '600' }}>오늘의 루틴</AppText>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <AppText variant="caption" tone="tertiary">
                 {todayRoutines.length}개
@@ -149,7 +149,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
               paddingVertical: 12,
             }}
           >
-            <AppText variant="label">오늘의 할 일</AppText>
+            <AppText variant="body" style={{ fontWeight: '600' }}>오늘의 할 일</AppText>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <AppText variant="caption" tone="tertiary">
                 {activeTodos.length}개
