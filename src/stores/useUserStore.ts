@@ -16,7 +16,7 @@ type UserStore = {
   setWeight: (kg: number) => void;
   setTargetWeight: (kg: number) => void;
   setAge: (years: number) => void;
-  setIsMale: (isMale: boolean) => void;
+  setIsMale: (isMale: boolean | null) => void;
 };
 
 export const useUserStore = create<UserStore>()(
