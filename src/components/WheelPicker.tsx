@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  KeyboardAvoidingView,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Platform,
   Pressable,
   ScrollView,
   TextInput,
@@ -11,8 +9,7 @@ import {
 } from 'react-native';
 
 import { AppText } from './AppText';
-import { Divider } from './Divider';
-import { SpringModal } from './SpringModal';
+import { SheetModal, SheetPrimaryButton } from './SheetModal';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 const ITEM_HEIGHT = 48;
@@ -126,138 +123,95 @@ export function WheelPicker({
   const centerIdx = Math.floor(VISIBLE_ITEMS / 2);
 
   return (
-    <SpringModal visible={visible} onClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <SheetModal
+      visible={visible}
+      onClose={onClose}
+      title={title}
+      footer={<SheetPrimaryButton label="확인" onPress={handleConfirm} />}
+    >
+      <View style={{ position: 'relative', height: ITEM_HEIGHT * VISIBLE_ITEMS, marginHorizontal: -4 }}>
         <View
           style={{
-            backgroundColor: c.surface,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            paddingBottom: 34,
+            position: 'absolute',
+            top: ITEM_HEIGHT * centerIdx,
+            left: 0,
+            right: 0,
+            height: ITEM_HEIGHT,
+            backgroundColor: c.surfaceSubtle,
+            borderRadius: 12,
+          }}
+          pointerEvents="none"
+        />
+
+        <ScrollView
+          ref={scrollRef}
+          showsVerticalScrollIndicator={false}
+          snapToInterval={ITEM_HEIGHT}
+          decelerationRate="fast"
+          onScroll={handleScroll}
+          scrollEventThrottle={32}
+          onMomentumScrollEnd={handleMomentumEnd}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            paddingTop: ITEM_HEIGHT * centerIdx,
+            paddingBottom: ITEM_HEIGHT * centerIdx,
           }}
         >
-          {/* 핸들 */}
-          <View
-            style={{
-              width: 36,
-              height: 4,
-              backgroundColor: c.surfaceMuted,
-              borderRadius: 2,
-              alignSelf: 'center',
-              marginTop: 10,
-              marginBottom: 14,
-            }}
-          />
-
-          <AppText variant="title" style={{ paddingHorizontal: 20, marginBottom: 12 }}>
-            {title}
-          </AppText>
-
-          <Divider />
-
-          {/* 휠 */}
-          <View style={{ position: 'relative', height: ITEM_HEIGHT * VISIBLE_ITEMS }}>
-            {/* 선택 하이라이트 */}
-            <View
-              style={{
-                position: 'absolute',
-                top: ITEM_HEIGHT * centerIdx,
-                left: 20,
-                right: 20,
-                height: ITEM_HEIGHT,
-                backgroundColor: c.surfaceSubtle,
-                borderRadius: 12,
-              }}
-              pointerEvents="none"
-            />
-
-            <ScrollView
-              ref={scrollRef}
-              showsVerticalScrollIndicator={false}
-              snapToInterval={ITEM_HEIGHT}
-              decelerationRate="fast"
-              onScroll={handleScroll}
-              scrollEventThrottle={32}
-              onMomentumScrollEnd={handleMomentumEnd}
-              contentContainerStyle={{
-                paddingTop: ITEM_HEIGHT * centerIdx,
-                paddingBottom: ITEM_HEIGHT * centerIdx,
-              }}
-            >
-              {values.map((v, i) => {
-                const isCenter = v === selected;
-                return (
-                  <Pressable
-                    key={v}
+          {values.map((v, i) => {
+            const isCenter = v === selected;
+            return (
+              <Pressable
+                key={v}
+                style={{
+                  height: ITEM_HEIGHT,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => {
+                  if (isCenter) {
+                    handleCenterTap();
+                  } else {
+                    setSelected(v);
+                    selectedRef.current = v;
+                    scrollToIndex(i, true);
+                  }
+                }}
+              >
+                {isCenter && editingText !== null ? (
+                  <TextInput
+                    ref={inputRef}
+                    value={editingText}
+                    onChangeText={handleTextChange}
+                    onBlur={commitTextEdit}
+                    onSubmitEditing={commitTextEdit}
+                    keyboardType="numeric"
+                    returnKeyType="done"
                     style={{
-                      height: ITEM_HEIGHT,
-                      justifyContent: 'center',
-                      alignItems: 'center',
+                      fontSize: 20,
+                      fontWeight: '600',
+                      color: c.ink,
+                      textAlign: 'center',
+                      minWidth: 60,
+                      borderBottomWidth: 1.5,
+                      borderBottomColor: c.ink,
+                      paddingVertical: 2,
                     }}
-                    onPress={() => {
-                      if (isCenter) {
-                        handleCenterTap();
-                      } else {
-                        setSelected(v);
-                        selectedRef.current = v;
-                        scrollToIndex(i, true);
-                      }
-                    }}
+                  />
+                ) : (
+                  <AppText
+                    variant="body"
+                    tone={isCenter ? 'primary' : 'disabled'}
+                    style={isCenter ? { fontWeight: '700', fontSize: 20 } : { fontSize: 16 }}
                   >
-                    {isCenter && editingText !== null ? (
-                      <TextInput
-                        ref={inputRef}
-                        value={editingText}
-                        onChangeText={handleTextChange}
-                        onBlur={commitTextEdit}
-                        onSubmitEditing={commitTextEdit}
-                        keyboardType="numeric"
-                        returnKeyType="done"
-                        style={{
-                          fontSize: 20,
-                          fontWeight: '600',
-                          color: c.ink,
-                          textAlign: 'center',
-                          minWidth: 60,
-                          borderBottomWidth: 1.5,
-                          borderBottomColor: c.ink,
-                          paddingVertical: 2,
-                        }}
-                      />
-                    ) : (
-                      <AppText
-                        variant="body"
-                        tone={isCenter ? 'primary' : 'disabled'}
-                        style={isCenter ? { fontWeight: '700', fontSize: 20 } : { fontSize: 16 }}
-                      >
-                        {v}
-                        {unit ? ` ${unit}` : ''}
-                      </AppText>
-                    )}
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </View>
-
-          {/* 확인 버튼 */}
-          <Pressable
-            onPress={handleConfirm}
-            style={{
-              marginHorizontal: 20,
-              marginTop: 16,
-              backgroundColor: c.ink,
-              borderRadius: 14,
-              paddingVertical: 16,
-              alignItems: 'center',
-            }}
-          >
-            <AppText variant="body" style={{ color: c.surface, fontWeight: '700' }}>
-              확인
-            </AppText>
-          </Pressable>
-        </View>
-      </KeyboardAvoidingView>
-    </SpringModal>
+                    {v}
+                    {unit ? ` ${unit}` : ''}
+                  </AppText>
+                )}
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
+    </SheetModal>
   );
 }
