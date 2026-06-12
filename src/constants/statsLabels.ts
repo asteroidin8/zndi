@@ -17,7 +17,7 @@ export const STATS_LABELS = {
   chartTitle: '최근 7일 단식 시간',
   totalRoutines: '전체 루틴',
   todayRoutines: '오늘 루틴',
-  maxStreak: '최장 스트릭',
+  maxStreak: '연속 달성',
   completionRate: '완료율',
   importantTodos: '중요한 일',
   today: '오늘',
