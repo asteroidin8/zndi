@@ -140,7 +140,7 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
               onPress={onDelete}
               style={{ paddingVertical: 12, alignItems: 'center' }}
             >
-              <AppText variant="body" style={{ color: '#EF4444' }}>
+              <AppText variant="body" style={{ color: c.danger }}>
                 삭제
               </AppText>
             </Pressable>

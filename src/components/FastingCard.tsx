@@ -3,24 +3,43 @@ import { Pressable, View } from 'react-native';
 
 import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
+import { Card } from './Card';
+import { radius } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useFastingStore } from '@/stores/useFastingStore';
 
 function formatElapsed(ms: number) {
-  const totalSec = Math.floor(ms / 1000);
+  const totalSec = Math.floor(Math.abs(ms) / 1000);
   const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function formatTime(timestamp: number) {
-  const date = new Date(timestamp);
+function formatOverElapsed(ms: number) {
+  return `+${formatElapsed(ms)}`;
+}
+
+function formatRelativeDate(ts: number): { timeLabel: string; dayLabel: string } {
+  const date = new Date(ts);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dateMidnight = new Date(date);
+  dateMidnight.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((dateMidnight.getTime() - today.getTime()) / 86_400_000);
+
   const h = date.getHours();
-  const m = date.getMinutes();
+  const min = date.getMinutes();
   const ampm = h < 12 ? '오전' : '오후';
-  const hour = h % 12 || 12;
-  return `${ampm} ${hour}:${String(m).padStart(2, '0')}`;
+  const timeLabel = `${ampm} ${h % 12 || 12}:${String(min).padStart(2, '0')}`;
+
+  let dayLabel: string;
+  if (diffDays === 0) dayLabel = '오늘';
+  else if (diffDays === 1) dayLabel = '내일';
+  else if (diffDays === 2) dayLabel = '모레';
+  else dayLabel = `${date.getMonth() + 1}/${date.getDate()}`;
+
+  return { timeLabel, dayLabel };
 }
 
 type Props = {
@@ -36,8 +55,8 @@ export function FastingCard({ onPress }: Props) {
   useEffect(() => {
     if (status === 'fasting') {
       intervalRef.current = setInterval(() => setNow(Date.now()), 1000);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -46,103 +65,84 @@ export function FastingCard({ onPress }: Props) {
 
   const elapsedMs = status === 'fasting' && startedAt ? now - startedAt : 0;
   const goalMs = goalHours * 3_600_000;
-  const isOverGoal = elapsedMs > goalMs;
+  const isOverGoal = elapsedMs >= goalMs;
   const progress = Math.min(elapsedMs / goalMs, 1);
-
-  const completionTime = startedAt ? new Date(startedAt + goalMs) : null;
-  const completionLabel = completionTime
-    ? `${formatTime(completionTime.getTime())} 완료 예정`
-    : null;
+  const completionTs = startedAt ? startedAt + goalMs : null;
+  const accent = isOverGoal ? c.booster : c.ink;
 
   if (status === 'idle') {
     return (
-      <Pressable
-        onPress={onPress}
-        style={{
-          backgroundColor: c.surfaceSubtle,
-          borderWidth: 1,
-          borderColor: c.border,
-          borderRadius: 16,
-          padding: 20,
-        }}
-      >
+      <Card pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="단식 시작하기">
         <AppText variant="caption" tone="tertiary">
           단식
         </AppText>
         <AppText variant="title" style={{ marginTop: 8 }}>
           다음 단식을 시작하세요
         </AppText>
-        <View
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12 }}
-        >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12 }}>
           <AppIcon name="PlayCircle" size={18} />
           <AppText variant="body" tone="secondary">
             단식 시작하기
           </AppText>
         </View>
-      </Pressable>
+      </Card>
     );
   }
 
+  const start = startedAt ? formatRelativeDate(startedAt) : null;
+  const end = completionTs ? formatRelativeDate(completionTs) : null;
+
   return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        backgroundColor: c.surfaceSubtle,
-        borderWidth: 1,
-        borderColor: c.borderStrong,
-        borderRadius: 16,
-        padding: 20,
-      }}
-    >
+    <Card pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="단식 화면으로 이동">
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <AppText variant="caption" tone="secondary">
-          {goalHours}시간 단식 도전 중
+          {isOverGoal ? '부스터 모드' : `${goalHours}시간 단식`}
         </AppText>
         <AppIcon name="ChevronRight" size={16} color={c.inkTertiary} />
       </View>
 
-      {/* 타이머 */}
       <AppText
         variant="display"
-        style={{ marginTop: 10, fontSize: 40, letterSpacing: -2 }}
+        style={{
+          marginTop: 10,
+          fontSize: 40,
+          letterSpacing: -2,
+          fontWeight: '700',
+          color: accent,
+          fontVariant: ['tabular-nums'],
+        }}
       >
         {formatElapsed(elapsedMs)}
       </AppText>
 
-      {/* 초과 표시 */}
-      {isOverGoal && (
-        <AppText variant="caption" tone="secondary" style={{ marginTop: 2 }}>
-          +{formatElapsed(elapsedMs - goalMs)} 초과
-        </AppText>
+      {start && end && (
+        <View style={{ marginTop: 12, gap: 8 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View>
+              <AppText variant="caption" tone="tertiary">시작</AppText>
+              <AppText variant="caption" style={{ fontWeight: '600' }}>{start.timeLabel}</AppText>
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              <AppText variant="caption" style={{ color: isOverGoal ? c.booster : c.inkTertiary }}>
+                {isOverGoal ? '부스터' : '완료'}
+              </AppText>
+              <AppText variant="caption" style={{ fontWeight: '600', color: accent }}>
+                {isOverGoal ? formatOverElapsed(elapsedMs - goalMs) : end.timeLabel}
+              </AppText>
+            </View>
+          </View>
+          <View style={{ height: 3, backgroundColor: c.surfaceMuted, borderRadius: radius.sm, overflow: 'hidden' }}>
+            <View
+              style={{
+                height: 3,
+                width: `${progress * 100}%`,
+                backgroundColor: accent,
+                borderRadius: radius.sm,
+              }}
+            />
+          </View>
+        </View>
       )}
-
-      {/* 진행 바 */}
-      <View
-        style={{
-          height: 2,
-          backgroundColor: c.surfaceMuted,
-          borderRadius: 1,
-          marginTop: 12,
-          overflow: 'hidden',
-        }}
-      >
-        <View
-          style={{
-            height: 2,
-            width: `${progress * 100}%`,
-            backgroundColor: c.ink,
-            borderRadius: 1,
-          }}
-        />
-      </View>
-
-      {/* 완료 예정 시각 */}
-      {completionLabel && (
-        <AppText variant="caption" tone="tertiary" style={{ marginTop: 8 }}>
-          {completionLabel}
-        </AppText>
-      )}
-    </Pressable>
+    </Card>
   );
 }

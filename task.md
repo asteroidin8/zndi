@@ -79,3 +79,60 @@
 |------|------|
 | 2026-06-12 | task.md 생성 |
 | 2026-06-12 | 1~4순위 UX 디테일 전체 구현 완료 (빌드·PR 대기) |
+| 2026-06-12 | UI 디테일 폴리시 (아이콘·스플래시 제외) |
+
+---
+
+## UI 디테일 (앱 아이콘·스플래시 제외)
+
+> 범위: 출시 전 시각·터치·토큰 통일  
+> 제외: 앱 아이콘, 스플래시 스크린  
+> 빌드: 사용자 승인 후에만 진행
+
+### 공통 인프라
+
+- [x] `spacing.ts` / `colors.ts` — danger·warning·booster·priority 토큰
+- [x] `Card` — 카드 스타일 + 터치 피드백
+- [x] `SectionHeader` — bar / caption 변형
+- [x] `SettingGroup` — 설정 그룹 카드
+- [x] `Skeleton` + `useAppHydrated` — persist 로딩 스켈레톤
+
+### 체감 큰 항목
+
+| # | 항목 | 상태 | 적용 파일 |
+|---|------|------|-----------|
+| 1 | 디자인 토큰 + Card/SectionHeader 공통화 | [x] | `stats.tsx`, `FastingCard.tsx` |
+| 2 | 탭바 활성 인디케이터 + 햅틱 + 터치 스케일 | [x] | `_layout.tsx`, `microFeedback.ts` |
+| 3 | 홈 FastingCard ↔ 단식 화면 스타일 통일 | [x] | `FastingCard.tsx` |
+| 4 | 버튼/카드 터치 피드백 통일 | [x] | `Card.tsx`, `_layout.tsx`, `settings.tsx` |
+| 5 | 섹션 헤더 통일 | [x] | `stats.tsx`, `settings.tsx` |
+| 6 | 탭 라벨 `투두` → `할일` | [x] | `_layout.tsx` |
+
+### 미니멀 톤
+
+| # | 항목 | 상태 | 적용 파일 |
+|---|------|------|-----------|
+| 7 | 하드코딩 색 → `colors.ts` 토큰 | [x] | `dateFormat.ts`, `TodoItem`, `todo.tsx`, modals, `fasting.tsx` |
+| 8 | Divider 간격 | [x] | `Divider.tsx` |
+| 9 | 설정 화면 그룹 카드형 | [x] | `settings.tsx`, `SettingGroup.tsx` |
+| 10 | EmptyIllustration 선 두께 통일 | [x] | `EmptyIllustration.tsx` |
+
+### v1 이후 (아이콘·스플래시 제외 진행)
+
+| # | 항목 | 상태 | 적용 파일 |
+|---|------|------|-----------|
+| 11 | 스켈레톤 로딩 | [x] | `stats.tsx`, `Skeleton.tsx`, `useAppHydrated.ts` |
+| 12 | 화면 전환 애니메이션 (PagerView) | [ ] | v1.1 후보 |
+| 13 | 차트 디테일 (오늘 강조·빈 값 `-`) | [x] | `BarChart.tsx`, `stats.tsx` |
+| 14 | 통계 화면 한글 복구 | [x] | `stats.tsx` |
+
+### 제외 (사용자 요청)
+
+- [ ] 앱 아이콘
+- [ ] 스플래시 스크린
+
+### UI 디테일 검증
+
+- [x] TypeScript 오류 없음
+- [ ] PR 생성 및 squash merge
+- [ ] 작업 보고

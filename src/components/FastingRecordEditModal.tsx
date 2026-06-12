@@ -165,7 +165,7 @@ export function FastingRecordEditModal({ visible, record, onSave, onDelete, onCl
             onPress={onDelete}
             style={{ paddingVertical: 14, alignItems: 'center' }}
           >
-            <AppText variant="body" style={{ color: '#EF4444' }}>
+            <AppText variant="body" style={{ color: c.danger }}>
               기록 삭제
             </AppText>
           </Pressable>

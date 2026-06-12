@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 type Props = {
+  /** 세로 여백 */
   spacing?: number;
 };
 

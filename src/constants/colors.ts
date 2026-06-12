@@ -9,6 +9,13 @@ export const colors = {
     inkDisabled: '#a3a3a3',
     border: '#e5e5e5',
     borderStrong: '#d4d4d4',
+    danger: '#EF4444',
+    warning: '#F59E0B',
+    warningDark: '#D97706',
+    booster: '#EF4444',
+    priorityHigh: '#EF4444',
+    priorityMid: '#F59E0B',
+    priorityLow: '#6B7280',
   },
   dark: {
     surface: '#0a0a0a',
@@ -20,7 +27,15 @@ export const colors = {
     inkDisabled: '#404040',
     border: '#1f1f1f',
     borderStrong: '#2e2e2e',
+    danger: '#F87171',
+    warning: '#FBBF24',
+    warningDark: '#F59E0B',
+    booster: '#F87171',
+    priorityHigh: '#F87171',
+    priorityMid: '#FBBF24',
+    priorityLow: '#9CA3AF',
   },
 } as const;
 
 export type ColorScheme = keyof typeof colors;
+export type ThemeColors = (typeof colors)[ColorScheme];

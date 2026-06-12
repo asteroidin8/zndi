@@ -210,7 +210,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                 {todo.dueDate &&
                   (() => {
                     const { label, urgency } = formatDueDate(todo.dueDate);
-                    const color = getDueDateColor(urgency);
+                    const color = getDueDateColor(urgency, c);
                     return (
                       <AppText
                         variant="caption"

@@ -14,6 +14,7 @@ import { Divider } from './Divider';
 import { SpringModal } from './SpringModal';
 import { type TodoPriority } from '@/stores/useTodoStore';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { getPriorityColor } from '@/utils/dateFormat';
 
 export type TodoCreatePayload = {
   title: string;
@@ -27,10 +28,10 @@ type Props = {
   onClose: () => void;
 };
 
-const PRIORITY_OPTIONS: { value: TodoPriority; label: string; color: string }[] = [
-  { value: 'high', label: '높음', color: '#EF4444' },
-  { value: 'mid', label: '보통', color: '#F59E0B' },
-  { value: 'low', label: '낮음', color: '#6B7280' },
+const PRIORITY_LABELS: { value: TodoPriority; label: string }[] = [
+  { value: 'high', label: '높음' },
+  { value: 'mid', label: '보통' },
+  { value: 'low', label: '낮음' },
 ];
 
 function todayStr() {
@@ -132,8 +133,9 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
               우선순위
             </AppText>
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 24 }}>
-              {PRIORITY_OPTIONS.map((opt) => {
+              {PRIORITY_LABELS.map((opt) => {
                 const selected = priority === opt.value;
+                const color = getPriorityColor(opt.value, c);
                 return (
                   <Pressable
                     key={opt.value}
@@ -143,8 +145,8 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
                       paddingVertical: 10,
                       borderRadius: 10,
                       borderWidth: 1.5,
-                      borderColor: selected ? opt.color : c.border,
-                      backgroundColor: selected ? opt.color + '18' : 'transparent',
+                      borderColor: selected ? color : c.border,
+                      backgroundColor: selected ? `${color}18` : 'transparent',
                       alignItems: 'center',
                       gap: 4,
                     }}
@@ -154,14 +156,14 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
                         width: 8,
                         height: 8,
                         borderRadius: 4,
-                        backgroundColor: opt.color,
+                        backgroundColor: color,
                         opacity: selected ? 1 : 0.3,
                       }}
                     />
                     <AppText
                       variant="caption"
                       style={{
-                        color: selected ? opt.color : c.inkTertiary,
+                        color: selected ? color : c.inkTertiary,
                         fontWeight: selected ? '700' : '400',
                       }}
                     >
