@@ -22,11 +22,12 @@ type SheetModalProps = {
   visible: boolean;
   onClose: () => void;
   title?: string;
+  headerRight?: React.ReactNode;
   footer?: React.ReactNode;
   children: React.ReactNode;
 };
 
-export function SheetModal({ visible, onClose, title, footer, children }: SheetModalProps) {
+export function SheetModal({ visible, onClose, title, headerRight, footer, children }: SheetModalProps) {
   const c = useThemeColors();
   const insets = useSafeAreaInsets();
   const backdropOpacity = useSharedValue(0);
@@ -77,13 +78,25 @@ export function SheetModal({ visible, onClose, title, footer, children }: SheetM
               paddingBottom: Math.max(insets.bottom, spacing.card),
             }}
           >
-            {title ? (
-              <AppText
-                variant="title"
-                style={{ paddingHorizontal: spacing.screen, marginBottom: spacing.card }}
+            {title || headerRight ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingHorizontal: spacing.screen,
+                  marginBottom: spacing.card,
+                  gap: spacing.sm,
+                }}
               >
-                {title}
-              </AppText>
+                {title ? (
+                  <AppText variant="title" style={{ flex: 1 }}>
+                    {title}
+                  </AppText>
+                ) : (
+                  <View style={{ flex: 1 }} />
+                )}
+                {headerRight}
+              </View>
             ) : null}
 
             <View style={{ paddingHorizontal: spacing.screen }}>{children}</View>
