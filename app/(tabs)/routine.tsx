@@ -96,7 +96,7 @@ export default function RoutineScreen() {
       const completed = isCompleted(item.id, todayStr);
 
       return (
-        <AnimatedListItem itemKey={item.id} index={idx}>
+        <AnimatedListItem itemKey={item.id} index={idx} animateLayout={!isActive}>
           <DragItemWrapper isActive={isActive}>
             <SwipeActions
               onDelete={() => {
@@ -210,7 +210,7 @@ export default function RoutineScreen() {
                   onDragEnd={handleTodayReorder}
                   renderItem={renderRoutineItem(toggleCompleted, true)}
                   scrollEnabled={false}
-                  activationDistance={8}
+                  activationDistance={4}
                 />
               </View>
             </>
@@ -232,7 +232,7 @@ export default function RoutineScreen() {
                   onDragEnd={handleOtherReorder}
                   renderItem={renderRoutineItem(() => {}, false)}
                   scrollEnabled={false}
-                  activationDistance={8}
+                  activationDistance={4}
                 />
               </View>
             </>

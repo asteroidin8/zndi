@@ -45,7 +45,7 @@ export function RoutineItem({ routine, isCompleted = false, onToggle, onLongPres
     <Pressable
       onPress={onPress ?? handleToggle}
       onLongPress={onLongPress}
-      delayLongPress={400}
+      delayLongPress={280}
       accessibilityRole="button"
       accessibilityLabel={`${routine.name} 루틴${isCompleted ? ', 완료됨' : ''}`}
       accessibilityHint="길게 눌러 순서 변경"

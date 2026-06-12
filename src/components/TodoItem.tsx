@@ -45,7 +45,7 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress }: Props) {
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
-      delayLongPress={400}
+      delayLongPress={280}
       accessibilityRole="button"
       accessibilityLabel={`${todo.title}${isCompleted ? ', 완료됨' : ''}`}
       accessibilityHint="길게 눌러 순서 변경"

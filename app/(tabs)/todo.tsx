@@ -118,7 +118,7 @@ export default function TodoScreen() {
     return function ({ item, drag, isActive, getIndex }: RenderItemParams<Todo>) {
       const idx = getIndex?.() ?? 0;
       return (
-        <AnimatedListItem itemKey={item.id} index={idx}>
+        <AnimatedListItem itemKey={item.id} index={idx} animateLayout={!isActive}>
           <DragItemWrapper isActive={isActive}>
             <SwipeActions
               onDelete={() => {
@@ -252,7 +252,7 @@ export default function TodoScreen() {
                     onDragEnd={({ data }) => reorderTodos(key, data)}
                     renderItem={renderDraggableItem(key)}
                     scrollEnabled={false}
-                    activationDistance={8}
+                    activationDistance={4}
                   />
                 </View>
               </View>

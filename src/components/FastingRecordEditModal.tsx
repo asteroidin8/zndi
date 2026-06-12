@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppText } from './AppText';
-import { Divider } from './Divider';
-import { SpringModal } from './SpringModal';
+import { SheetDangerButton, SheetModal, SheetPrimaryButton } from './SheetModal';
 import { type FastingRecord, type FastingResult } from '@/stores/useFastingStore';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
@@ -46,131 +45,81 @@ export function FastingRecordEditModal({ visible, record, onSave, onDelete, onCl
   if (!record) return null;
 
   return (
-    <SpringModal visible={visible} onClose={onClose}>
+    <SheetModal
+      visible={visible}
+      onClose={onClose}
+      title="단식 기록 편집"
+      footer={
+        <>
+          <SheetPrimaryButton label="저장" onPress={() => onSave({ result })} />
+          <SheetDangerButton label="기록 삭제" onPress={onDelete} />
+        </>
+      }
+    >
       <View
         style={{
-          backgroundColor: c.surface,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          paddingHorizontal: 20,
-          paddingBottom: 34,
-          maxHeight: '65%',
+          backgroundColor: c.surfaceSubtle,
+          borderRadius: 12,
+          padding: 14,
+          gap: 8,
+          marginBottom: 20,
         }}
       >
-        {/* 핸들 */}
-        <View
-          style={{
-            width: 36,
-            height: 4,
-            backgroundColor: c.surfaceMuted,
-            borderRadius: 2,
-            alignSelf: 'center',
-            marginTop: 10,
-            marginBottom: 20,
-          }}
-        />
-
-        <AppText variant="body" style={{ fontWeight: '700', marginBottom: 16 }}>
-          단식 기록 편집
-        </AppText>
-
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {/* 기록 요약 */}
-          <View
-            style={{
-              backgroundColor: c.surfaceSubtle,
-              borderRadius: 12,
-              padding: 14,
-              gap: 8,
-              marginBottom: 20,
-            }}
-          >
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <AppText variant="caption" tone="tertiary">
-                시작
-              </AppText>
-              <AppText variant="caption">{formatDatetime(record.startedAt)}</AppText>
-            </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <AppText variant="caption" tone="tertiary">
-                종료
-              </AppText>
-              <AppText variant="caption">
-                {record.endedAt ? formatDatetime(record.endedAt) : '-'}
-              </AppText>
-            </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <AppText variant="caption" tone="tertiary">
-                총 시간
-              </AppText>
-              <AppText variant="caption">
-                {formatDuration(record.startedAt, record.endedAt)}
-              </AppText>
-            </View>
-          </View>
-
-          {/* 결과 변경 */}
-          <AppText variant="caption" tone="tertiary" style={{ marginBottom: 10 }}>
-            결과
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <AppText variant="caption" tone="tertiary">
+            시작
           </AppText>
-          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 24 }}>
-            {RESULT_OPTIONS.map((opt) => {
-              const selected = result === opt.value;
-              return (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => setResult(opt.value)}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 12,
-                    borderRadius: 10,
-                    borderWidth: 1,
-                    borderColor: selected ? c.ink : c.border,
-                    backgroundColor: selected ? c.surfaceSubtle : 'transparent',
-                    alignItems: 'center',
-                  }}
-                >
-                  <AppText
-                    variant="caption"
-                    tone={selected ? 'primary' : 'tertiary'}
-                    style={selected ? { fontWeight: '700' } : {}}
-                  >
-                    {opt.label}
-                  </AppText>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {/* 저장 */}
-          <Pressable
-            onPress={() => onSave({ result })}
-            style={{
-              backgroundColor: c.ink,
-              borderRadius: 14,
-              paddingVertical: 16,
-              alignItems: 'center',
-              marginBottom: 10,
-            }}
-          >
-            <AppText variant="body" style={{ color: c.surface, fontWeight: '700' }}>
-              저장
-            </AppText>
-          </Pressable>
-
-          <Divider />
-
-          {/* 삭제 */}
-          <Pressable
-            onPress={onDelete}
-            style={{ paddingVertical: 14, alignItems: 'center' }}
-          >
-            <AppText variant="body" style={{ color: c.danger }}>
-              기록 삭제
-            </AppText>
-          </Pressable>
-        </ScrollView>
+          <AppText variant="caption">{formatDatetime(record.startedAt)}</AppText>
+        </View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <AppText variant="caption" tone="tertiary">
+            종료
+          </AppText>
+          <AppText variant="caption">
+            {record.endedAt ? formatDatetime(record.endedAt) : '-'}
+          </AppText>
+        </View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <AppText variant="caption" tone="tertiary">
+            총 시간
+          </AppText>
+          <AppText variant="caption">
+            {formatDuration(record.startedAt, record.endedAt)}
+          </AppText>
+        </View>
       </View>
-    </SpringModal>
+
+      <AppText variant="caption" tone="tertiary" style={{ marginBottom: 10 }}>
+        결과
+      </AppText>
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        {RESULT_OPTIONS.map((opt) => {
+          const selected = result === opt.value;
+          return (
+            <Pressable
+              key={opt.value}
+              onPress={() => setResult(opt.value)}
+              style={{
+                flex: 1,
+                paddingVertical: 12,
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: selected ? c.ink : c.border,
+                backgroundColor: selected ? c.surfaceSubtle : 'transparent',
+                alignItems: 'center',
+              }}
+            >
+              <AppText
+                variant="caption"
+                tone={selected ? 'primary' : 'tertiary'}
+                style={selected ? { fontWeight: '700' } : {}}
+              >
+                {opt.label}
+              </AppText>
+            </Pressable>
+          );
+        })}
+      </View>
+    </SheetModal>
   );
 }

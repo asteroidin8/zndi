@@ -12,8 +12,7 @@ import {
 } from 'react-native';
 
 import { AppText } from './AppText';
-import { SpringModal } from './SpringModal';
-import { Divider } from './Divider';
+import { SheetModal, SheetPrimaryButton } from './SheetModal';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 const ITEM_H = 44;
@@ -123,7 +122,6 @@ type Props = {
 };
 
 export function DatePickerModal({ visible, value, minimumDate, onConfirm, onClose }: Props) {
-  const c = useThemeColors();
   const now = new Date();
 
   const minYear = minimumDate ? parseInt(minimumDate.slice(0, 4)) : now.getFullYear();
@@ -179,62 +177,17 @@ export function DatePickerModal({ visible, value, minimumDate, onConfirm, onClos
   }
 
   return (
-    <SpringModal visible={visible} onClose={onClose}>
-      <View
-        style={{
-          backgroundColor: c.surface,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          paddingHorizontal: 20,
-          paddingBottom: 34,
-        }}
-      >
-        {/* 핸들 */}
-        <View
-          style={{
-            width: 36,
-            height: 4,
-            backgroundColor: c.surfaceMuted,
-            borderRadius: 2,
-            alignSelf: 'center',
-            marginTop: 10,
-            marginBottom: 16,
-          }}
-        />
-
-        <AppText variant="body" style={{ fontWeight: '700', marginBottom: 14 }}>
-          날짜 선택
-        </AppText>
-
-        {/* 3열 휠 */}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: 4,
-          }}
-        >
-          <Drum items={years} selected={year} onSelect={setYear} width={90} />
-          <Drum items={months} selected={month} onSelect={setMonth} width={70} />
-          <Drum items={days} selected={clampedDay} onSelect={setDay} width={70} />
-        </View>
-
-        <Divider spacing={12} />
-
-        <Pressable
-          onPress={handleConfirm}
-          style={{
-            backgroundColor: c.ink,
-            borderRadius: 14,
-            paddingVertical: 16,
-            alignItems: 'center',
-          }}
-        >
-          <AppText variant="body" style={{ color: c.surface, fontWeight: '700' }}>
-            확인
-          </AppText>
-        </Pressable>
+    <SheetModal
+      visible={visible}
+      onClose={onClose}
+      title="날짜 선택"
+      footer={<SheetPrimaryButton label="확인" onPress={handleConfirm} />}
+    >
+      <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 4 }}>
+        <Drum items={years} selected={year} onSelect={setYear} width={90} />
+        <Drum items={months} selected={month} onSelect={setMonth} width={70} />
+        <Drum items={days} selected={clampedDay} onSelect={setDay} width={70} />
       </View>
-    </SpringModal>
+    </SheetModal>
   );
 }

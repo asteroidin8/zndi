@@ -3,7 +3,6 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -13,17 +12,18 @@ type Props = {
   children: React.ReactNode;
 };
 
+/** 입력 없는 바텀 시트 (통계 상세 등) */
 export function SpringModal({ visible, onClose, children }: Props) {
   const backdropOpacity = useSharedValue(0);
-  const sheetTranslateY = useSharedValue(400);
+  const sheetTranslateY = useSharedValue(280);
 
   useEffect(() => {
     if (visible) {
       backdropOpacity.value = withTiming(1, { duration: 200 });
-      sheetTranslateY.value = withSpring(0, { damping: 22, stiffness: 220 });
+      sheetTranslateY.value = withTiming(0, { duration: 260 });
     } else {
-      backdropOpacity.value = withTiming(0, { duration: 180 });
-      sheetTranslateY.value = withTiming(400, { duration: 200 });
+      backdropOpacity.value = withTiming(0, { duration: 160 });
+      sheetTranslateY.value = withTiming(280, { duration: 200 });
     }
   }, [visible, backdropOpacity, sheetTranslateY]);
 

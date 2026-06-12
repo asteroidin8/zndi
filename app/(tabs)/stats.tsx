@@ -138,28 +138,18 @@ function DayDetailModal({
   const c = useThemeColors();
   return (
     <SpringModal visible onClose={onClose}>
-      <View
-        style={{
-          backgroundColor: c.surface,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          paddingHorizontal: 20,
-          paddingBottom: 34,
-          maxHeight: '60%',
-        }}
-      >
         <View
           style={{
-            width: 36,
-            height: 4,
-            backgroundColor: c.surfaceMuted,
-            borderRadius: 2,
-            alignSelf: 'center',
-            marginTop: 10,
-            marginBottom: 16,
+            backgroundColor: c.surface,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            paddingHorizontal: 20,
+            paddingTop: 16,
+            paddingBottom: 34,
+            maxHeight: '60%',
           }}
-        />
-        <AppText variant="title">{summary.date}</AppText>
+        >
+          <AppText variant="title">{summary.date}</AppText>
         <AppText variant="caption" tone="tertiary" style={{ marginBottom: 20, marginTop: 4 }}>
           {L.summaryPrefix} {formatMinutes(summary.totalMinutes)} · {summary.count}
           {L.summarySuffix}
