@@ -40,21 +40,21 @@ export default function HomeScreen() {
         contentContainerStyle={{ padding: 20, gap: 16 }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ gap: 4 }}>
-          <AppText variant="title">{getTimeGreeting()}</AppText>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flex: 1, gap: 4 }}>
+            <AppText variant="title">{getTimeGreeting()}</AppText>
             <AppText variant="caption" tone="tertiary">
               {getTodayLabel()}
             </AppText>
-            <Pressable
-              onPress={() => router.push('/settings')}
-              hitSlop={12}
-              accessibilityRole="button"
-              accessibilityLabel="설정"
-            >
-              <AppIcon name="Settings" size={20} color={c.inkTertiary} />
-            </Pressable>
           </View>
+          <Pressable
+            onPress={() => router.push('/settings')}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="설정"
+          >
+            <AppIcon name="Settings" size={20} color={c.inkTertiary} />
+          </Pressable>
         </View>
 
         {isProfileIncomplete && (
