@@ -7,19 +7,12 @@ import { formatDueDate, getDueDateColor } from '@/utils/dateFormat';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
+import { HOME_TODO_MAX, selectHomeTodos } from '@/utils/homeTodos';
 
-const MAX_ITEMS = 3;
-const PRIORITY_ORDER = { high: 0, mid: 1, low: 2 } as const;
+const MAX_ROUTINES = HOME_TODO_MAX;
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
-}
-
-function todoSortScore(todo: { dueDate: string | null; priority: 'high' | 'mid' | 'low'; order: number }) {
-  if (!todo.dueDate) return 1000 + PRIORITY_ORDER[todo.priority] * 10 + todo.order;
-  const { urgency } = formatDueDate(todo.dueDate);
-  const urgencyScore = urgency === 'overdue' ? 0 : urgency === 'today' ? 100 : urgency === 'soon' ? 200 : 300;
-  return urgencyScore + PRIORITY_ORDER[todo.priority] * 10 + todo.order;
 }
 
 type Props = {
@@ -45,9 +38,8 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
       return a.order - b.order;
     });
 
-  const activeTodos = todos
-    .filter((t) => !t.completedAt)
-    .sort((a, b) => todoSortScore(a) - todoSortScore(b));
+  const activeTodos = todos.filter((t) => !t.completedAt);
+  const homeTodos = selectHomeTodos(todos);
 
   const allRoutinesDone =
     todayRoutines.length > 0 && todayRoutines.every((r) => isCompleted(r.id, today));
@@ -100,7 +92,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
 
           <View style={{ height: 1, backgroundColor: c.border }} />
 
-          {todayRoutines.slice(0, MAX_ITEMS).map((routine, index) => {
+          {todayRoutines.slice(0, MAX_ROUTINES).map((routine, index) => {
             const done = isCompleted(routine.id, today);
             return (
               <View key={routine.id}>
@@ -135,17 +127,17 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                     {routine.name}
                   </AppText>
                 </View>
-                {index < Math.min(todayRoutines.length, MAX_ITEMS) - 1 && (
+                {index < Math.min(todayRoutines.length, MAX_ROUTINES) - 1 && (
                   <View style={{ height: 1, backgroundColor: c.border, marginLeft: 44 }} />
                 )}
               </View>
             );
           })}
 
-          {todayRoutines.length > MAX_ITEMS && (
+          {todayRoutines.length > MAX_ROUTINES && (
             <Pressable onPress={onRoutinePress} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
               <AppText variant="caption" tone="tertiary">
-                +{todayRoutines.length - MAX_ITEMS}개 더보기
+                +{todayRoutines.length - MAX_ROUTINES}개 더보기
               </AppText>
             </Pressable>
           )}
@@ -185,7 +177,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
 
           <View style={{ height: 1, backgroundColor: c.border }} />
 
-          {activeTodos.slice(0, MAX_ITEMS).map((todo, index) => (
+          {homeTodos.map((todo, index) => (
             <View key={todo.id}>
               <View
                 style={{
@@ -196,14 +188,18 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                   gap: 10,
                 }}
               >
-                <View
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: priorityColor[todo.priority],
-                  }}
-                />
+                {todo.pinnedToHome ? (
+                  <AppIcon name="Pin" size={12} color={c.inkTertiary} />
+                ) : (
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: priorityColor[todo.priority],
+                    }}
+                  />
+                )}
                 <AppText variant="body" style={{ flex: 1 }} numberOfLines={1}>
                   {todo.title}
                 </AppText>
@@ -222,16 +218,16 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                     );
                   })()}
               </View>
-              {index < Math.min(activeTodos.length, MAX_ITEMS) - 1 && (
+              {index < homeTodos.length - 1 && (
                 <View style={{ height: 1, backgroundColor: c.border, marginLeft: 34 }} />
               )}
             </View>
           ))}
 
-          {activeTodos.length > MAX_ITEMS && (
+          {activeTodos.length > homeTodos.length && (
             <Pressable onPress={onTodoPress} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
               <AppText variant="caption" tone="tertiary">
-                +{activeTodos.length - MAX_ITEMS}개 더보기
+                +{activeTodos.length - homeTodos.length}개 더보기
               </AppText>
             </Pressable>
           )}

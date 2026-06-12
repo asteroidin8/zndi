@@ -74,7 +74,7 @@ export default function TodoScreen() {
   const scrollRef = useRef<ScrollView>(null);
   useTabScrollToTop(TAB_INDEX, scrollRef);
 
-  const { todos, addTodo, updateTodo, completeTodo, uncompleteTodo, removeTodo, reorderTodos } =
+  const { todos, addTodo, updateTodo, completeTodo, uncompleteTodo, removeTodo, reorderTodos, toggleTodoHomePin } =
     useTodoStore();
   const { seenHints, markHintSeen } = useSettingsStore();
 
@@ -87,8 +87,12 @@ export default function TodoScreen() {
   const completedTodos = todos.filter((t) => !!t.completedAt);
   const showSwipeHint = !seenHints.swipeActions && todos.length > 0;
 
-  function handleAdd({ title, priority, dueDate }: TodoCreatePayload) {
+  function handleAdd({ title, priority, dueDate, pinnedToHome }: TodoCreatePayload) {
     const samePriorityCount = todos.filter((t) => t.priority === priority && !t.completedAt).length;
+    const maxPinOrder = todos.reduce(
+      (max, t) => (t.pinnedToHome ? Math.max(max, t.pinOrder) : max),
+      -1,
+    );
     addTodo({
       id: String(Date.now()),
       title,
@@ -98,11 +102,13 @@ export default function TodoScreen() {
       archivedDate: null,
       createdAt: Date.now(),
       order: samePriorityCount,
+      pinnedToHome,
+      pinOrder: pinnedToHome ? maxPinOrder + 1 : 0,
     });
     setAddModalVisible(false);
   }
 
-  function handleEditSave(updates: Pick<Todo, 'title' | 'priority' | 'dueDate'>) {
+  function handleEditSave(updates: Pick<Todo, 'title' | 'priority' | 'dueDate' | 'pinnedToHome'>) {
     if (!editTarget) return;
     updateTodo(editTarget.id, updates);
     setEditTarget(null);
@@ -133,6 +139,7 @@ export default function TodoScreen() {
                   onToggle={() => completeTodo(item.id)}
                   onLongPress={drag}
                   onPress={() => setEditTarget(item)}
+                  onToggleHomePin={() => toggleTodoHomePin(item.id)}
                 />
                 <Divider />
               </View>

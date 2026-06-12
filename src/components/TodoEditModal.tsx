@@ -3,6 +3,7 @@ import { Pressable, TextInput, View } from 'react-native';
 
 import { AppText } from './AppText';
 import { DatePickerModal } from './DatePickerModal';
+import { HomePinToggle } from './HomePinToggle';
 import { SheetDangerButton, SheetModal, SheetPrimaryButton } from './SheetModal';
 import { type Todo, type TodoPriority } from '@/stores/useTodoStore';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -11,7 +12,7 @@ import { getPriorityColor } from '@/utils/dateFormat';
 type Props = {
   visible: boolean;
   todo: Todo | null;
-  onSave: (updates: Pick<Todo, 'title' | 'priority' | 'dueDate'>) => void;
+  onSave: (updates: Pick<Todo, 'title' | 'priority' | 'dueDate' | 'pinnedToHome'>) => void;
   onDelete: () => void;
   onClose: () => void;
 };
@@ -49,6 +50,7 @@ export function TodoEditModal({ visible, todo, onSave, onDelete, onClose }: Prop
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<TodoPriority>('mid');
   const [dueDate, setDueDate] = useState<string | null>(null);
+  const [pinnedToHome, setPinnedToHome] = useState(false);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
 
   useEffect(() => {
@@ -56,13 +58,14 @@ export function TodoEditModal({ visible, todo, onSave, onDelete, onClose }: Prop
       setTitle(todo.title);
       setPriority(todo.priority);
       setDueDate(todo.dueDate);
+      setPinnedToHome(!!todo.pinnedToHome);
       setDatePickerVisible(false);
     }
   }, [todo]);
 
   function handleSave() {
     if (!title.trim()) return;
-    onSave({ title: title.trim(), priority, dueDate });
+    onSave({ title: title.trim(), priority, dueDate, pinnedToHome });
   }
 
   const today = todayStr();
@@ -209,10 +212,12 @@ export function TodoEditModal({ visible, todo, onSave, onDelete, onClose }: Prop
         </View>
 
         {dueDate && (
-          <AppText variant="caption" tone="secondary">
+          <AppText variant="caption" tone="secondary" style={{ marginBottom: 24 }}>
             {formatDueDate(dueDate)} 마감
           </AppText>
         )}
+
+        <HomePinToggle pinned={pinnedToHome} onToggle={() => setPinnedToHome((v) => !v)} />
       </SheetModal>
 
       <DatePickerModal
