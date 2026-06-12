@@ -3,6 +3,7 @@ import { Pressable, TextInput, View } from 'react-native';
 
 import { AppText } from './AppText';
 import { DatePickerModal } from './DatePickerModal';
+import { HomePinToggle } from './HomePinToggle';
 import { SheetModal, SheetPrimaryButton } from './SheetModal';
 import { type TodoPriority } from '@/stores/useTodoStore';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -12,6 +13,7 @@ export type TodoCreatePayload = {
   title: string;
   priority: TodoPriority;
   dueDate: string | null;
+  pinnedToHome: boolean;
 };
 
 type Props = {
@@ -53,17 +55,19 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<TodoPriority>('mid');
   const [dueDate, setDueDate] = useState<string | null>(null);
+  const [pinnedToHome, setPinnedToHome] = useState(false);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
 
   function reset() {
     setTitle('');
     setPriority('mid');
     setDueDate(null);
+    setPinnedToHome(false);
   }
 
   function handleSave() {
     if (!title.trim()) return;
-    onSave({ title: title.trim(), priority, dueDate });
+    onSave({ title: title.trim(), priority, dueDate, pinnedToHome });
     reset();
   }
 
@@ -194,10 +198,12 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
         </View>
 
         {dueDate && (
-          <AppText variant="caption" tone="secondary">
+          <AppText variant="caption" tone="secondary" style={{ marginBottom: 24 }}>
             {formatDueDate(dueDate)} 마감
           </AppText>
         )}
+
+        <HomePinToggle pinned={pinnedToHome} onToggle={() => setPinnedToHome((v) => !v)} />
       </SheetModal>
 
       <DatePickerModal

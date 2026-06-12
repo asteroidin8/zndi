@@ -13,6 +13,8 @@ export type Todo = {
   archivedDate: string | null; // 아카이브된 날짜 'YYYY-MM-DD'
   createdAt: number;
   order: number;
+  pinnedToHome: boolean;
+  pinOrder: number;
 };
 
 type TodoStore = {
@@ -24,6 +26,7 @@ type TodoStore = {
   uncompleteTodo: (id: string) => void;
   removeTodo: (id: string) => void;
   reorderTodos: (priority: TodoPriority, ordered: Todo[]) => void;
+  toggleTodoHomePin: (id: string) => void;
   archiveCompletedTodos: (date: string) => void;
   setLastArchiveDate: (date: string) => void;
 };
@@ -36,7 +39,25 @@ export const useTodoStore = create<TodoStore>()(
       addTodo: (todo) => set((state) => ({ todos: [...state.todos, todo] })),
       updateTodo: (id, updates) =>
         set((state) => ({
-          todos: state.todos.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+          todos: state.todos.map((t) => {
+            if (t.id !== id) return t;
+
+            const next = { ...t, ...updates };
+
+            if ('pinnedToHome' in updates) {
+              if (updates.pinnedToHome && !t.pinnedToHome) {
+                const maxPinOrder = state.todos.reduce(
+                  (max, item) => (item.pinnedToHome ? Math.max(max, item.pinOrder) : max),
+                  -1,
+                );
+                next.pinOrder = maxPinOrder + 1;
+              } else if (updates.pinnedToHome === false) {
+                next.pinOrder = 0;
+              }
+            }
+
+            return next;
+          }),
         })),
       completeTodo: (id) =>
         set((state) => ({
@@ -54,6 +75,30 @@ export const useTodoStore = create<TodoStore>()(
           const others = state.todos.filter((t) => t.priority !== priority);
           const updated = ordered.map((t, i) => ({ ...t, order: i }));
           return { todos: [...others, ...updated] };
+        }),
+      toggleTodoHomePin: (id) =>
+        set((state) => {
+          const target = state.todos.find((t) => t.id === id);
+          if (!target) return state;
+
+          if (target.pinnedToHome) {
+            return {
+              todos: state.todos.map((t) =>
+                t.id === id ? { ...t, pinnedToHome: false, pinOrder: 0 } : t,
+              ),
+            };
+          }
+
+          const maxPinOrder = state.todos.reduce(
+            (max, t) => (t.pinnedToHome ? Math.max(max, t.pinOrder) : max),
+            -1,
+          );
+
+          return {
+            todos: state.todos.map((t) =>
+              t.id === id ? { ...t, pinnedToHome: true, pinOrder: maxPinOrder + 1 } : t,
+            ),
+          };
         }),
       // 자정 아카이브: 완료된 항목에 archivedDate 기록, 미완료는 그대로 유지
       archiveCompletedTodos: (date) =>

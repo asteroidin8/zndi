@@ -18,9 +18,10 @@ type Props = {
   onToggle?: () => void;
   onLongPress?: () => void;
   onPress?: () => void;
+  onToggleHomePin?: () => void;
 };
 
-export function TodoItem({ todo, onToggle, onLongPress, onPress }: Props) {
+export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin }: Props) {
   const c = useThemeColors();
   const isCompleted = !!todo.completedAt;
   const dotColor = getPriorityColor(todo.priority, c);
@@ -101,8 +102,22 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress }: Props) {
         })()}
       </View>
 
-      {/* 우선순위 점 */}
-      {!isCompleted && (
+      {/* 홈 고정 / 우선순위 */}
+      {!isCompleted && onToggleHomePin && (
+        <Pressable
+          onPress={onToggleHomePin}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel={todo.pinnedToHome ? '홈 고정 해제' : '홈에 고정'}
+        >
+          <AppIcon
+            name={todo.pinnedToHome ? 'Pin' : 'PinOff'}
+            size={16}
+            color={todo.pinnedToHome ? c.ink : c.inkDisabled}
+          />
+        </Pressable>
+      )}
+      {!isCompleted && !onToggleHomePin && (
         <View
           style={{
             width: 8,

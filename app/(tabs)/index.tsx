@@ -7,6 +7,7 @@ import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { DailySummaryRow } from '@/components/DailySummaryRow';
 import { FastingCard } from '@/components/FastingCard';
+import { HomeDailyBoard } from '@/components/HomeDailyBoard';
 import { useTabNavigation, useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { getTimeGreeting } from '@/utils/dateFormat';
@@ -92,6 +93,8 @@ export default function HomeScreen() {
           onRoutinePress={() => navigateTo(1)}
           onTodoPress={() => navigateTo(3)}
         />
+
+        <HomeDailyBoard />
       </ScrollView>
     </SafeAreaView>
   );
