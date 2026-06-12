@@ -68,8 +68,8 @@
 
 - [x] TypeScript / ESLint 오류 없음
 - [x] `todo.tsx` 한글 깨짐 없음
-- [ ] PR 생성 및 squash merge
-- [ ] 작업 보고
+- [x] PR 생성 및 squash merge ([#36](https://github.com/asteroidin8/routiner/pull/36))
+- [x] 작업 보고
 
 ---
 
