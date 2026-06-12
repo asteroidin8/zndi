@@ -134,5 +134,5 @@
 ### UI 디테일 검증
 
 - [x] TypeScript 오류 없음
-- [ ] PR 생성 및 squash merge
-- [ ] 작업 보고
+- [x] PR 생성 및 squash merge ([#37](https://github.com/asteroidin8/routiner/pull/37))
+- [x] 작업 보고
