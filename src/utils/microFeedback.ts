@@ -19,3 +19,7 @@ export function feedbackSuccess() {
 export function feedbackBooster() {
   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
 }
+
+export function feedbackTabSwitch() {
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+}

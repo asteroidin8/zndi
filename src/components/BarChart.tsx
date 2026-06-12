@@ -5,15 +5,15 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 export type BarChartItem = {
   label: string;
   value: number;
+  /** 오늘 여부 (라벨 강조) */
+  isToday?: boolean;
 };
 
 type Props = {
   data: BarChartItem[];
   width: number;
   height?: number;
-  /** 값의 단위 (표시용) */
   unit?: string;
-  /** 최대값 (없으면 data 최대값 사용) */
   maxValue?: number;
 };
 
@@ -35,48 +35,30 @@ export function BarChart({ data, width, height = 140, unit = '', maxValue }: Pro
         const barH = max === 0 ? 0 : Math.max((item.value / max) * chartH, item.value > 0 ? BAR_RADIUS * 2 : 0);
         const x = i * (barW + gap);
         const y = chartH - barH;
+        const isToday = item.isToday ?? i === data.length - 1;
 
         return (
-          <G key={item.label}>
-            {/* 배경 바 */}
-            <Rect
-              x={x}
-              y={0}
-              width={barW}
-              height={chartH}
-              rx={BAR_RADIUS}
-              fill={c.surfaceMuted}
-            />
-            {/* 값 바 */}
+          <G key={`${item.label}-${i}`}>
+            <Rect x={x} y={0} width={barW} height={chartH} rx={BAR_RADIUS} fill={c.surfaceMuted} />
             {barH > 0 && (
-              <Rect
-                x={x}
-                y={y}
-                width={barW}
-                height={barH}
-                rx={BAR_RADIUS}
-                fill={c.ink}
-              />
+              <Rect x={x} y={y} width={barW} height={barH} rx={BAR_RADIUS} fill={isToday ? c.ink : c.inkTertiary} />
             )}
-            {/* 값 라벨 (상단) */}
-            {item.value > 0 && (
-              <SvgText
-                x={x + barW / 2}
-                y={y - 3}
-                textAnchor="middle"
-                fontSize={9}
-                fill={c.inkSecondary}
-              >
-                {item.value}{unit}
+            {item.value > 0 ? (
+              <SvgText x={x + barW / 2} y={y - 3} textAnchor="middle" fontSize={9} fill={c.inkSecondary}>
+                {item.value}
+                {unit}
+              </SvgText>
+            ) : (
+              <SvgText x={x + barW / 2} y={chartH / 2} textAnchor="middle" fontSize={8} fill={c.inkDisabled}>
+                -
               </SvgText>
             )}
-            {/* 축 라벨 (하단) */}
             <SvgText
               x={x + barW / 2}
               y={height - 2}
               textAnchor="middle"
               fontSize={10}
-              fill={c.inkTertiary}
+              fill={isToday ? c.ink : c.inkTertiary}
             >
               {item.label}
             </SvgText>

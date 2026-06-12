@@ -5,11 +5,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { BarChart, type BarChartItem } from '@/components/BarChart';
+import { Card } from '@/components/Card';
 import { Divider } from '@/components/Divider';
 import { EmptyIllustration } from '@/components/EmptyIllustration';
 import { FastingRecordEditModal } from '@/components/FastingRecordEditModal';
+import { SectionHeader } from '@/components/SectionHeader';
+import { StatsSummarySkeleton } from '@/components/Skeleton';
 import { SpringModal } from '@/components/SpringModal';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
+import { useAppHydrated } from '@/hooks/useAppHydrated';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { type FastingRecord, useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
@@ -101,7 +105,7 @@ function MonthGrid({
                 tone={isToday ? 'primary' : hasFasting ? 'secondary' : 'disabled'}
                 style={isToday ? { fontWeight: '700', fontSize: 11 } : { fontSize: 11 }}
               >
-                {new Date(date + 'T00:00:00').getDate()}
+                {new Date(`${date}T00:00:00`).getDate()}
               </AppText>
               {routineTotal > 0 && (
                 <View
@@ -199,43 +203,21 @@ function DayDetailModal({
 }
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
-  const c = useThemeColors();
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: c.surfaceSubtle,
-        borderRadius: 14,
-        padding: 14,
-        gap: 6,
-        minHeight: 72,
-        justifyContent: 'space-between',
-      }}
-    >
+    <Card style={{ flex: 1, minHeight: 72, justifyContent: 'space-between', gap: 6 }}>
       <AppText variant="caption" tone="tertiary">
         {label}
       </AppText>
       <AppText variant="title" style={{ fontSize: 20, fontWeight: '700' }}>
         {value}
       </AppText>
-    </View>
-  );
-}
-
-function SectionHeader({ title }: { title: string }) {
-  const c = useThemeColors();
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-      <View style={{ width: 3, height: 14, backgroundColor: c.ink, borderRadius: 2 }} />
-      <AppText variant="body" style={{ fontWeight: '700' }}>
-        {title}
-      </AppText>
-    </View>
+    </Card>
   );
 }
 
 export default function StatsScreen() {
   const c = useThemeColors();
+  const hydrated = useAppHydrated();
   const scrollRef = useRef<ScrollView>(null);
   useTabScrollToTop(TAB_INDEX, scrollRef);
 
@@ -281,6 +263,7 @@ export default function StatsScreen() {
   const completedHighPriority = todos.filter((t) => t.priority === 'high' && !!t.completedAt).length;
   const completionRate = todos.length > 0 ? Math.round((completedTodos / todos.length) * 100) : 0;
 
+  const todayDateStr = todayStr();
   const last7Days: BarChartItem[] = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
@@ -294,7 +277,11 @@ export default function StatsScreen() {
         0,
       ),
     );
-    return { label: WEEKDAY_SHORT[d.getDay()], value: totalHours };
+    return {
+      label: WEEKDAY_SHORT[d.getDay()],
+      value: totalHours,
+      isToday: ds === todayDateStr,
+    };
   });
   const hasChartData = last7Days.some((d) => d.value > 0);
   const isDataEmpty = records.length === 0 && routines.length === 0 && todos.length === 0;
@@ -341,14 +328,18 @@ export default function StatsScreen() {
 
         <View style={{ gap: 12 }}>
           <SectionHeader title="??" />
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <SummaryCard label="?? ??" value={`${records.length}?`} />
-            <SummaryCard label="??" value={`${completedFasts}?`} />
-            <SummaryCard label="?? ??" value={formatMinutes(avgFastMinutes)} />
-          </View>
+          {!hydrated ? (
+            <StatsSummarySkeleton />
+          ) : (
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <SummaryCard label="?? ??" value={`${records.length}?`} />
+              <SummaryCard label="??" value={`${completedFasts}?`} />
+              <SummaryCard label="?? ??" value={formatMinutes(avgFastMinutes)} />
+            </View>
+          )}
         </View>
 
-        {hasChartData && (
+        {hydrated && hasChartData && (
           <View style={{ gap: 8 }}>
             <AppText variant="caption" tone="tertiary">
               ?? 7? ?? ??
@@ -359,22 +350,30 @@ export default function StatsScreen() {
 
         <View style={{ gap: 12 }}>
           <SectionHeader title="??" />
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <SummaryCard label="?? ??" value={`${routines.length}?`} />
-            <SummaryCard label="?? ??" value={`${todayRoutines.length}?`} />
-            <SummaryCard label="?? ???" value={maxStreak > 0 ? `${maxStreak}?` : '-'} />
-          </View>
+          {!hydrated ? (
+            <StatsSummarySkeleton />
+          ) : (
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <SummaryCard label="?? ??" value={`${routines.length}?`} />
+              <SummaryCard label="?? ??" value={`${todayRoutines.length}?`} />
+              <SummaryCard label="?? ???" value={maxStreak > 0 ? `${maxStreak}?` : '-'} />
+            </View>
+          )}
         </View>
 
         <View style={{ gap: 12 }}>
           <SectionHeader title="??" />
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <SummaryCard label="???" value={`${completionRate}%`} />
-            <SummaryCard
-              label="??? ?"
-              value={totalHighPriority > 0 ? `${completedHighPriority}/${totalHighPriority}` : '-'}
-            />
-          </View>
+          {!hydrated ? (
+            <StatsSummarySkeleton />
+          ) : (
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <SummaryCard label="???" value={`${completionRate}%`} />
+              <SummaryCard
+                label="??? ?"
+                value={totalHighPriority > 0 ? `${completedHighPriority}/${totalHighPriority}` : '-'}
+              />
+            </View>
+          )}
         </View>
 
         <Divider />
@@ -421,14 +420,14 @@ export default function StatsScreen() {
             summaries={summaries}
             onSelect={setSelected}
             getRoutineCompletedCount={(date) => {
-              const dayOfWeek = new Date(date + 'T00:00:00').getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+              const dayOfWeek = new Date(`${date}T00:00:00`).getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
               const dayRoutines = routines.filter((r) => r.repeatDays.includes(dayOfWeek));
               if (dayRoutines.length === 0) return 0;
               const completedIds = new Set(getCompletedIds(date));
               return dayRoutines.filter((r) => completedIds.has(r.id)).length;
             }}
             getRoutineTotalCount={(date) => {
-              const dayOfWeek = new Date(date + 'T00:00:00').getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+              const dayOfWeek = new Date(`${date}T00:00:00`).getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
               return routines.filter((r) => r.repeatDays.includes(dayOfWeek)).length;
             }}
           />

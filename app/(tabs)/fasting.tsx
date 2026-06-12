@@ -213,7 +213,7 @@ export default function FastingScreen() {
             letterSpacing: -3,
             lineHeight: 70,
             fontWeight: '700',
-            color: isOverGoal && status === 'fasting' ? '#EF4444' : c.ink,
+            color: isOverGoal && status === 'fasting' ? c.booster : c.ink,
             opacity: status === 'idle' ? 0.15 : 1,
           }}
         >
@@ -238,12 +238,12 @@ export default function FastingScreen() {
                 </View>
 
                 <View style={{ alignItems: 'flex-end', gap: 2 }}>
-                  <AppText variant="caption" style={{ color: isOverGoal ? '#EF4444' : c.inkTertiary }}>
+                  <AppText variant="caption" style={{ color: isOverGoal ? c.booster : c.inkTertiary }}>
                     {isOverGoal ? '부스터' : '완료'}
                   </AppText>
                   <AppText
                     variant="body"
-                    style={{ fontWeight: '700', letterSpacing: -0.5, color: isOverGoal ? '#EF4444' : c.ink }}
+                    style={{ fontWeight: '700', letterSpacing: -0.5, color: isOverGoal ? c.booster : c.ink }}
                   >
                     {isOverGoal ? formatOverElapsed(elapsedMs - goalMs) : end.timeLabel}
                   </AppText>
@@ -259,7 +259,7 @@ export default function FastingScreen() {
                   style={{
                     height: 3,
                     width: `${progress * 100}%`,
-                    backgroundColor: isOverGoal ? '#EF4444' : c.ink,
+                    backgroundColor: isOverGoal ? c.booster : c.ink,
                     borderRadius: 2,
                   }}
                 />

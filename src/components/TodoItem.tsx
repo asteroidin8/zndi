@@ -1,5 +1,5 @@
 import { Pressable, View } from 'react-native';
-import { formatDueDate, getDueDateColor } from '@/utils/dateFormat';
+import { formatDueDate, getDueDateColor, getPriorityColor } from '@/utils/dateFormat';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -13,12 +13,6 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { feedbackComplete, feedbackUncomplete } from '@/utils/microFeedback';
 import type { Todo } from '@/stores/useTodoStore';
 
-const PRIORITY_COLORS: Record<string, string> = {
-  high: '#EF4444',
-  mid: '#F59E0B',
-  low: '#6B7280',
-};
-
 type Props = {
   todo: Todo;
   onToggle?: () => void;
@@ -29,7 +23,7 @@ type Props = {
 export function TodoItem({ todo, onToggle, onLongPress, onPress }: Props) {
   const c = useThemeColors();
   const isCompleted = !!todo.completedAt;
-  const dotColor = PRIORITY_COLORS[todo.priority] ?? c.inkTertiary;
+  const dotColor = getPriorityColor(todo.priority, c);
   const scale = useSharedValue(1);
 
   const checkboxStyle = useAnimatedStyle(() => ({
@@ -94,7 +88,7 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress }: Props) {
         </AppText>
         {todo.dueDate && !isCompleted && (() => {
           const { label, urgency } = formatDueDate(todo.dueDate);
-          const color = getDueDateColor(urgency);
+          const color = getDueDateColor(urgency, c);
           return (
             <AppText
               variant="caption"

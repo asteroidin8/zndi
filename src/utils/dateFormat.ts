@@ -1,3 +1,5 @@
+import type { ThemeColors } from '@/constants/colors';
+
 export type DueUrgency = 'normal' | 'soon' | 'today' | 'overdue';
 
 export function formatDueDate(dueDate: string): {
@@ -24,10 +26,10 @@ export function formatDueDate(dueDate: string): {
   return { label: `D+${Math.abs(diffDays)}`, isOverdue: true, urgency: 'overdue' };
 }
 
-export function getDueDateColor(urgency: DueUrgency): string | undefined {
-  if (urgency === 'overdue') return '#EF4444';
-  if (urgency === 'today') return '#F59E0B';
-  if (urgency === 'soon') return '#D97706';
+export function getDueDateColor(urgency: DueUrgency, c: ThemeColors): string | undefined {
+  if (urgency === 'overdue') return c.danger;
+  if (urgency === 'today') return c.warning;
+  if (urgency === 'soon') return c.warningDark;
   return undefined;
 }
 
@@ -36,4 +38,11 @@ export function getTimeGreeting(): string {
   if (hour < 12) return '좋은 아침이에요';
   if (hour < 18) return '좋은 오후예요';
   return '좋은 저녁이에요';
+}
+
+export function getPriorityColor(
+  priority: 'high' | 'mid' | 'low',
+  c: ThemeColors,
+): string {
+  return { high: c.priorityHigh, mid: c.priorityMid, low: c.priorityLow }[priority];
 }

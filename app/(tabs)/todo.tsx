@@ -17,6 +17,7 @@ import { type TodoCreatePayload, TodoModal } from '@/components/TodoModal';
 import { UndoSnackbar } from '@/components/UndoSnackbar';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { getPriorityColor } from '@/utils/dateFormat';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { type Todo, type TodoPriority, useTodoStore } from '@/stores/useTodoStore';
 
@@ -31,18 +32,14 @@ const PRIORITY_SECTIONS: { key: TodoPriority; label: string }[] = [
 ];
 
 function PriorityBadge({ priority }: { priority: TodoPriority }) {
-  const colors: Record<TodoPriority, string> = {
-    high: '#EF4444',
-    mid: '#F59E0B',
-    low: '#6B7280',
-  };
+  const c = useThemeColors();
   return (
     <View
       style={{
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: colors[priority],
+        backgroundColor: getPriorityColor(priority, c),
         marginRight: 6,
       }}
     />
@@ -51,11 +48,6 @@ function PriorityBadge({ priority }: { priority: TodoPriority }) {
 
 function SectionHeader({ label, priority, count }: { label: string; priority: TodoPriority; count: number }) {
   const c = useThemeColors();
-  const colors: Record<TodoPriority, string> = {
-    high: '#EF4444',
-    mid: '#F59E0B',
-    low: '#6B7280',
-  };
   return (
     <View
       style={{
@@ -67,7 +59,7 @@ function SectionHeader({ label, priority, count }: { label: string; priority: To
       }}
     >
       <PriorityBadge priority={priority} />
-      <AppText variant="caption" style={{ color: colors[priority], fontWeight: '700', flex: 1 }}>
+      <AppText variant="caption" style={{ color: getPriorityColor(priority, c), fontWeight: '700', flex: 1 }}>
         {label}
       </AppText>
       <AppText variant="caption" tone="disabled">

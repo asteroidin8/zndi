@@ -6,7 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { Divider } from '@/components/Divider';
+import { SectionHeader } from '@/components/SectionHeader';
+import { SettingGroup } from '@/components/SettingGroup';
 import { WheelPicker } from '@/components/WheelPicker';
+import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
@@ -26,18 +29,6 @@ const THEME_OPTIONS: { mode: ThemeMode; label: string }[] = [
   { mode: 'dark', label: '다크' },
 ];
 
-function SectionHeader({ label }: { label: string }) {
-  return (
-    <AppText
-      variant="caption"
-      tone="tertiary"
-      style={{ paddingTop: 24, paddingBottom: 8, paddingHorizontal: 20 }}
-    >
-      {label}
-    </AppText>
-  );
-}
-
 function SettingRow({
   label,
   value,
@@ -54,15 +45,16 @@ function SettingRow({
   return (
     <Pressable
       onPress={onPress}
-      style={{
+      style={({ pressed }) => ({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 14,
-      }}
+        paddingHorizontal: spacing.card,
+        paddingVertical: spacing.item,
+        opacity: pressed && onPress ? 0.7 : 1,
+      })}
     >
-      <AppText variant="body" tone={danger ? 'tertiary' : 'primary'} style={danger ? { color: '#EF4444' } : {}}>
+      <AppText variant="body" tone={danger ? 'tertiary' : 'primary'} style={danger ? { color: c.danger } : {}}>
         {label}
       </AppText>
       {value !== undefined && (
@@ -96,7 +88,7 @@ function ToggleRow({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
+        paddingHorizontal: spacing.card,
         paddingVertical: 12,
       }}
     >
@@ -198,12 +190,11 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
-      {/* 헤더 */}
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 20,
+          paddingHorizontal: spacing.screen,
           paddingVertical: 14,
           gap: 12,
         }}
@@ -217,130 +208,135 @@ export default function SettingsScreen() {
       <Divider />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* 신체 정보 */}
-        <SectionHeader label="신체 정보" />
-        <SettingRow
-          label="키"
-          value={profile.heightCm ? `${profile.heightCm} cm` : '미설정'}
-          onPress={() => setPickerType('height')}
-        />
-        <Divider />
-        <SettingRow
-          label="체중"
-          value={profile.weightKg ? `${profile.weightKg} kg` : '미설정'}
-          onPress={() => setPickerType('weight')}
-        />
-        <Divider />
-        <SettingRow
-          label="목표 체중"
-          value={profile.targetWeightKg ? `${profile.targetWeightKg} kg` : '미설정'}
-          onPress={() => setPickerType('targetWeight')}
-        />
-        <Divider />
-        <SettingRow
-          label="나이"
-          value={profile.ageYears ? `${profile.ageYears}세` : '미설정'}
-          onPress={() => setPickerType('age')}
-        />
-        <Divider />
-        <Pressable
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingHorizontal: 20,
-            paddingVertical: 14,
-          }}
-          onPress={() => {}}
-        >
-          <AppText variant="body">성별</AppText>
-          <View style={{ flexDirection: 'row', gap: 6 }}>
-            {([{ label: '남성', value: true }, { label: '여성', value: false }] as const).map(({ label, value }) => (
+        <SectionHeader title="신체 정보" variant="caption" />
+        <SettingGroup>
+          <SettingRow
+            label="키"
+            value={profile.heightCm ? `${profile.heightCm} cm` : '미설정'}
+            onPress={() => setPickerType('height')}
+          />
+          <Divider />
+          <SettingRow
+            label="체중"
+            value={profile.weightKg ? `${profile.weightKg} kg` : '미설정'}
+            onPress={() => setPickerType('weight')}
+          />
+          <Divider />
+          <SettingRow
+            label="목표 체중"
+            value={profile.targetWeightKg ? `${profile.targetWeightKg} kg` : '미설정'}
+            onPress={() => setPickerType('targetWeight')}
+          />
+          <Divider />
+          <SettingRow
+            label="나이"
+            value={profile.ageYears ? `${profile.ageYears}세` : '미설정'}
+            onPress={() => setPickerType('age')}
+          />
+          <Divider />
+          <Pressable
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: spacing.card,
+              paddingVertical: spacing.item,
+            }}
+          >
+            <AppText variant="body">성별</AppText>
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              {([{ label: '남성', value: true }, { label: '여성', value: false }] as const).map(({ label, value }) => (
+                <Pressable
+                  key={label}
+                  onPress={() => setIsMale(value)}
+                  style={({ pressed }) => ({
+                    paddingHorizontal: 14,
+                    paddingVertical: 6,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: profile.isMale === value ? c.ink : c.border,
+                    backgroundColor: profile.isMale === value ? c.surfaceSubtle : 'transparent',
+                    opacity: pressed ? 0.85 : 1,
+                  })}
+                >
+                  <AppText
+                    variant="caption"
+                    tone={profile.isMale === value ? 'primary' : 'tertiary'}
+                    style={profile.isMale === value ? { fontWeight: '700' } : {}}
+                  >
+                    {label}
+                  </AppText>
+                </Pressable>
+              ))}
+            </View>
+          </Pressable>
+        </SettingGroup>
+
+        <SectionHeader title="화면" variant="caption" />
+        <SettingGroup>
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: spacing.sm,
+              paddingHorizontal: spacing.card,
+              paddingVertical: 12,
+            }}
+          >
+            {THEME_OPTIONS.map((opt) => (
               <Pressable
-                key={label}
-                onPress={() => setIsMale(value)}
-                style={{
-                  paddingHorizontal: 14,
-                  paddingVertical: 6,
-                  borderRadius: 8,
+                key={opt.mode}
+                onPress={() => setThemeMode(opt.mode)}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 10,
+                  borderRadius: 10,
                   borderWidth: 1,
-                  borderColor: profile.isMale === value ? c.ink : c.border,
-                  backgroundColor: profile.isMale === value ? c.surfaceSubtle : 'transparent',
-                }}
+                  borderColor: themeMode === opt.mode ? c.ink : c.border,
+                  backgroundColor: themeMode === opt.mode ? c.surfaceSubtle : 'transparent',
+                  alignItems: 'center',
+                  opacity: pressed ? 0.85 : 1,
+                })}
               >
-                <AppText variant="caption" tone={profile.isMale === value ? 'primary' : 'tertiary'} style={profile.isMale === value ? { fontWeight: '700' } : {}}>
-                  {label}
+                <AppText
+                  variant="caption"
+                  tone={themeMode === opt.mode ? 'primary' : 'tertiary'}
+                  style={themeMode === opt.mode ? { fontWeight: '700' } : {}}
+                >
+                  {opt.label}
                 </AppText>
               </Pressable>
             ))}
           </View>
-        </Pressable>
+        </SettingGroup>
 
-        {/* 화면 */}
-        <SectionHeader label="화면" />
-        <View
-          style={{
-            flexDirection: 'row',
-            gap: 8,
-            paddingHorizontal: 20,
-            paddingVertical: 12,
-          }}
-        >
-          {THEME_OPTIONS.map((opt) => (
-            <Pressable
-              key={opt.mode}
-              onPress={() => setThemeMode(opt.mode)}
-              style={{
-                flex: 1,
-                paddingVertical: 10,
-                borderRadius: 10,
-                borderWidth: 1,
-                borderColor: themeMode === opt.mode ? c.ink : c.border,
-                backgroundColor: themeMode === opt.mode ? c.surfaceSubtle : 'transparent',
-                alignItems: 'center',
-              }}
-            >
-              <AppText
-                variant="caption"
-                tone={themeMode === opt.mode ? 'primary' : 'tertiary'}
-                style={themeMode === opt.mode ? { fontWeight: '700' } : {}}
-              >
-                {opt.label}
-              </AppText>
-            </Pressable>
-          ))}
-        </View>
+        <SectionHeader title="알림" variant="caption" />
+        <SettingGroup>
+          <ToggleRow
+            label="단식 알림바"
+            description="단식 중 알림 바에 진행 상황을 표시해요"
+            value={foregroundServiceEnabled}
+            onToggle={toggleForegroundService}
+          />
+          <Divider />
+          <ToggleRow
+            label="루틴 리마인더"
+            description="루틴에 설정된 시간에 알림을 보내드려요"
+            value={routineNotificationsEnabled}
+            onToggle={() => setRoutineNotifications(!routineNotificationsEnabled)}
+          />
+          <Divider />
+          <ToggleRow
+            label="할일 마감 알림"
+            description="마감일 당일 오전 9시에 알려드려요"
+            value={todoNotificationsEnabled}
+            onToggle={() => setTodoNotifications(!todoNotificationsEnabled)}
+          />
+        </SettingGroup>
 
-        {/* 알림 */}
-        <SectionHeader label="알림" />
-        <ToggleRow
-          label="단식 알림바"
-          description="단식 중 알림 바에 진행 상황을 표시해요"
-          value={foregroundServiceEnabled}
-          onToggle={toggleForegroundService}
-        />
-        <Divider />
-        <ToggleRow
-          label="루틴 리마인더"
-          description="루틴에 설정된 시간에 알림을 보내드려요"
-          value={routineNotificationsEnabled}
-          onToggle={() => setRoutineNotifications(!routineNotificationsEnabled)}
-        />
-        <Divider />
-        <ToggleRow
-          label="할일 마감 알림"
-          description="마감일 당일 오전 9시에 알려드려요"
-          value={todoNotificationsEnabled}
-          onToggle={() => setTodoNotifications(!todoNotificationsEnabled)}
-        />
-
-        {/* 데이터 */}
-        <SectionHeader label="데이터" />
-        <SettingRow
-          label="전체 데이터 초기화"
-          onPress={handleDataReset}
-          danger
-        />
+        <SectionHeader title="데이터" variant="caption" />
+        <SettingGroup>
+          <SettingRow label="전체 데이터 초기화" onPress={handleDataReset} danger />
+        </SettingGroup>
 
         <View style={{ height: 40 }} />
       </ScrollView>
