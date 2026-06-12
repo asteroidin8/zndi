@@ -3,7 +3,7 @@ import { Pressable, TextInput, View } from 'react-native';
 
 import { AppText } from './AppText';
 import { DatePickerModal } from './DatePickerModal';
-import { HomePinToggle } from './HomePinToggle';
+import { HomePinHeaderButton } from './HomePinHeaderButton';
 import { SheetModal, SheetPrimaryButton } from './SheetModal';
 import { type TodoPriority } from '@/stores/useTodoStore';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -85,6 +85,9 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
         visible={visible}
         onClose={handleClose}
         title="할 일 추가"
+        headerRight={
+          <HomePinHeaderButton pinned={pinnedToHome} onPress={() => setPinnedToHome((v) => !v)} />
+        }
         footer={<SheetPrimaryButton label="추가" onPress={handleSave} disabled={!canSave} />}
       >
         <TextInput
@@ -198,12 +201,10 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
         </View>
 
         {dueDate && (
-          <AppText variant="caption" tone="secondary" style={{ marginBottom: 24 }}>
+          <AppText variant="caption" tone="secondary">
             {formatDueDate(dueDate)} 마감
           </AppText>
         )}
-
-        <HomePinToggle pinned={pinnedToHome} onToggle={() => setPinnedToHome((v) => !v)} />
       </SheetModal>
 
       <DatePickerModal

@@ -9,21 +9,19 @@ import {
   getActiveTodoCount,
   getRoutineProgressForDate,
   getRoutineStreakDays,
-  getTodaySummaryMessage,
-  getTodosCompletedTodayCount,
   getWeekDayDots,
   toDateStr,
   type DayDotStatus,
 } from '@/utils/homeDailyBoard';
 
-function dotColor(status: DayDotStatus, c: ReturnType<typeof useThemeColors>, isToday: boolean) {
+function dotColor(status: DayDotStatus, c: ReturnType<typeof useThemeColors>) {
   switch (status) {
     case 'full':
       return c.ink;
     case 'partial':
       return c.inkTertiary;
     case 'empty':
-      return isToday ? c.borderStrong : c.surfaceMuted;
+      return c.borderStrong;
     case 'none':
       return c.border;
   }
@@ -45,120 +43,55 @@ export function HomeDailyBoard() {
   );
 
   const activeTodos = getActiveTodoCount(todos);
-  const todosCompletedToday = getTodosCompletedTodayCount(todos);
   const weekDots = getWeekDayDots(routines, isCompleted);
   const streakDays = getRoutineStreakDays(routines, isCompleted);
 
-  const summary = getTodaySummaryMessage({
-    routineCompleted,
-    routineTotal,
-    activeTodos,
-    todosCompletedToday,
-  });
-
-  const routineLine =
-    routineTotal > 0 ? `루틴 ${routineCompleted}/${routineTotal}` : '오늘 루틴 없음';
-  const todoLine =
-    activeTodos > 0
-      ? `할 일 ${activeTodos}개 남음${todosCompletedToday > 0 ? ` · 오늘 ${todosCompletedToday}개 완료` : ''}`
-      : todosCompletedToday > 0
-        ? `할 일 오늘 ${todosCompletedToday}개 완료`
-        : '할 일 없음';
+  const parts: string[] = [];
+  if (routineTotal > 0) parts.push(`루틴 ${routineCompleted}/${routineTotal}`);
+  if (activeTodos > 0) parts.push(`할 일 ${activeTodos}`);
+  const summaryLine = parts.length > 0 ? parts.join(' · ') : '오늘 일정 없음';
 
   return (
     <View
       style={{
         backgroundColor: c.surfaceSubtle,
-        borderRadius: 16,
+        borderRadius: 14,
         borderWidth: 1,
         borderColor: c.border,
-        padding: 18,
-        gap: 14,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        gap: 10,
       }}
     >
-      <View style={{ gap: 4 }}>
-        <AppText variant="body" style={{ fontWeight: '700' }}>
-          오늘의 보드
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+        <AppText variant="caption" tone="tertiary" style={{ flex: 1 }}>
+          {summaryLine}
         </AppText>
-        <AppText variant="caption" tone="secondary">
-          {summary}
-        </AppText>
+        {streakDays > 0 && (
+          <AppText variant="caption" tone="secondary" style={{ fontWeight: '600' }}>
+            {streakDays}일 연속
+          </AppText>
+        )}
       </View>
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-        <View
-          style={{
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 10,
-            backgroundColor: c.surface,
-            borderWidth: 1,
-            borderColor: c.border,
-          }}
-        >
-          <AppText variant="caption" tone="tertiary">
-            {routineLine}
-          </AppText>
-        </View>
-        <View
-          style={{
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 10,
-            backgroundColor: c.surface,
-            borderWidth: 1,
-            borderColor: c.border,
-          }}
-        >
-          <AppText variant="caption" tone="tertiary">
-            {todoLine}
-          </AppText>
-        </View>
-      </View>
-
-      <View style={{ gap: 8 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <AppText variant="caption" tone="tertiary">
-            최근 7일
-          </AppText>
-          {streakDays > 0 && (
-            <AppText variant="caption" tone="secondary" style={{ fontWeight: '600' }}>
-              루틴 {streakDays}일 연속
-            </AppText>
-          )}
-        </View>
-
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          {weekDots.map((dot) => {
-            const isToday = dot.dateStr === todayStr;
-            return (
-              <View key={dot.dateStr} style={{ alignItems: 'center', gap: 6, flex: 1 }}>
-                <View
-                  style={{
-                    width: isToday ? 14 : 12,
-                    height: isToday ? 14 : 12,
-                    borderRadius: 7,
-                    backgroundColor:
-                      dot.status === 'full' || dot.status === 'partial'
-                        ? dotColor(dot.status, c, isToday)
-                        : dot.status === 'none'
-                          ? 'transparent'
-                          : 'transparent',
-                    borderWidth: dot.status === 'none' || dot.status === 'empty' ? 1.5 : 0,
-                    borderColor: dotColor(dot.status, c, isToday),
-                  }}
-                />
-                <AppText
-                  variant="caption"
-                  tone={isToday ? 'primary' : 'disabled'}
-                  style={isToday ? { fontWeight: '700' } : {}}
-                >
-                  {dot.weekdayLabel}
-                </AppText>
-              </View>
-            );
-          })}
-        </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        {weekDots.map((dot) => {
+          const isToday = dot.dateStr === todayStr;
+          const filled = dot.status === 'full' || dot.status === 'partial';
+          return (
+            <View
+              key={dot.dateStr}
+              style={{
+                width: isToday ? 12 : 10,
+                height: isToday ? 12 : 10,
+                borderRadius: 6,
+                backgroundColor: filled ? dotColor(dot.status, c) : 'transparent',
+                borderWidth: filled ? 0 : 1.5,
+                borderColor: dotColor(dot.status, c),
+              }}
+            />
+          );
+        })}
       </View>
     </View>
   );

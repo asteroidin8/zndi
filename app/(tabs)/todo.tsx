@@ -124,7 +124,7 @@ export default function TodoScreen() {
     return function ({ item, drag, isActive, getIndex }: RenderItemParams<Todo>) {
       const idx = getIndex?.() ?? 0;
       return (
-        <AnimatedListItem itemKey={item.id} index={idx} animateLayout={!isActive}>
+        <AnimatedListItem itemKey={item.id} index={idx} animateLayout={false}>
           <DragItemWrapper isActive={isActive}>
             <SwipeActions
               onDelete={() => {

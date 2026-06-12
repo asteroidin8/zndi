@@ -96,7 +96,7 @@ export default function RoutineScreen() {
       const completed = isCompleted(item.id, todayStr);
 
       return (
-        <AnimatedListItem itemKey={item.id} index={idx} animateLayout={!isActive}>
+        <AnimatedListItem itemKey={item.id} index={idx} animateLayout={false}>
           <DragItemWrapper isActive={isActive}>
             <SwipeActions
               onDelete={() => {
