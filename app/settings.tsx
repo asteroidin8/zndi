@@ -248,7 +248,7 @@ export default function SettingsScreen() {
               {([{ label: '남성', value: true }, { label: '여성', value: false }] as const).map(({ label, value }) => (
                 <Pressable
                   key={label}
-                  onPress={() => setIsMale(value)}
+                  onPress={() => setIsMale(profile.isMale === value ? null : value)}
                   style={({ pressed }) => ({
                     paddingHorizontal: 14,
                     paddingVertical: 6,

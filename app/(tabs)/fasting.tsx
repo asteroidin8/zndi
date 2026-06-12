@@ -124,12 +124,12 @@ export default function FastingScreen() {
   const completedCount = completedRecords.length;
 
   const calories =
-    profile.weightKg && profile.heightCm
+    profile.weightKg && profile.heightCm && profile.isMale !== null
       ? estimateCaloriesBurned({
           weightKg: profile.weightKg,
           heightCm: profile.heightCm,
           ageYears: profile.ageYears ?? 30,
-          isMale: profile.isMale ?? true,
+          isMale: profile.isMale,
           elapsedMs,
         })
       : null;
