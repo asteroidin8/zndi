@@ -18,7 +18,11 @@ export function SectionHeader({ title, variant = 'bar' }: Props) {
       <AppText
         variant="caption"
         tone="tertiary"
-        style={{ paddingTop: spacing.section, paddingBottom: spacing.sm, paddingHorizontal: spacing.screen }}
+        style={{
+          paddingTop: spacing.card,
+          paddingBottom: spacing.sm,
+          paddingHorizontal: spacing.screen,
+        }}
       >
         {title}
       </AppText>

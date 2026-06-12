@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TabBarIcon } from '@/components/TabBarIcon';
 import { AppText } from '@/components/AppText';
@@ -29,6 +29,7 @@ const TODO_INDEX = 3;
 
 export default function TabLayout() {
   const c = useThemeColors();
+  const insets = useSafeAreaInsets();
   const pagerRef = useRef<PagerView>(null);
   const [activeTab, setActiveTab] = useState<TabIndex>(HOME_INDEX);
   const [scrollTick, setScrollTick] = useState<Record<number, number>>({});
@@ -53,7 +54,7 @@ export default function TabLayout() {
 
   return (
     <TabNavigationContext.Provider value={{ navigateTo, scrollTick, scrollToTop }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['bottom']}>
+      <View style={{ flex: 1, backgroundColor: c.surface }}>
         <PagerView
           ref={pagerRef}
           style={{ flex: 1 }}
@@ -81,10 +82,11 @@ export default function TabLayout() {
         <View
           style={{
             flexDirection: 'row',
-            height: 56,
             borderTopWidth: 1,
             borderTopColor: c.border,
             backgroundColor: c.surface,
+            paddingBottom: Math.max(insets.bottom, 6),
+            paddingTop: 4,
           }}
         >
           {TABS.map((tab, i) => {
@@ -97,37 +99,27 @@ export default function TabLayout() {
                 accessibilityRole="tab"
                 accessibilityState={{ selected: isActive }}
                 accessibilityLabel={`${tab.title} 탭`}
-                style={({ pressed }) => ({
+                style={{
                   flex: 1,
-                  justifyContent: 'center',
                   alignItems: 'center',
-                  gap: 2,
-                  transform: [{ scale: pressed ? 0.94 : 1 }],
-                })}
+                  justifyContent: 'center',
+                  paddingVertical: 6,
+                  borderTopWidth: 2,
+                  borderTopColor: isActive ? c.ink : 'transparent',
+                }}
               >
-                <View style={{ position: 'relative', alignItems: 'center' }}>
+                <View style={{ position: 'relative', marginBottom: 2 }}>
                   <TabBarIcon
                     name={tab.icon}
-                    size={isHome ? 26 : 22}
+                    size={isHome ? 24 : 22}
                     color={isActive ? (c.ink as string) : (c.inkDisabled as string)}
                   />
-                  {isActive && (
-                    <View
-                      style={{
-                        width: 4,
-                        height: 4,
-                        borderRadius: 2,
-                        backgroundColor: c.ink,
-                        marginTop: 3,
-                      }}
-                    />
-                  )}
                   {i === TODO_INDEX && activeTodoCount > 0 && (
                     <View
                       style={{
                         position: 'absolute',
-                        top: -3,
-                        right: -8,
+                        top: -4,
+                        right: -7,
                         backgroundColor: c.ink,
                         borderRadius: 8,
                         minWidth: 14,
@@ -147,6 +139,7 @@ export default function TabLayout() {
                   variant="caption"
                   style={{
                     fontSize: 10,
+                    lineHeight: 12,
                     fontWeight: isActive ? '700' : '400',
                     color: isActive ? c.ink : c.inkDisabled,
                   }}
@@ -157,7 +150,7 @@ export default function TabLayout() {
             );
           })}
         </View>
-      </SafeAreaView>
+      </View>
     </TabNavigationContext.Provider>
   );
 }

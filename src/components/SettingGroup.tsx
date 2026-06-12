@@ -18,6 +18,7 @@ export function SettingGroup({ children }: Props) {
         borderWidth: 1,
         borderColor: c.border,
         overflow: 'hidden',
+        marginBottom: spacing.sm,
       }}
     >
       {children}

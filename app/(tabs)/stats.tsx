@@ -12,6 +12,7 @@ import { FastingRecordEditModal } from '@/components/FastingRecordEditModal';
 import { SectionHeader } from '@/components/SectionHeader';
 import { StatsSummarySkeleton } from '@/components/Skeleton';
 import { SpringModal } from '@/components/SpringModal';
+import { DAY_LABELS, STATS_LABELS, WEEKDAY_SHORT } from '@/constants/statsLabels';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useAppHydrated } from '@/hooks/useAppHydrated';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -27,10 +28,9 @@ import {
 } from '@/utils/statsHelper';
 
 const TAB_INDEX = 4 as const;
+const L = STATS_LABELS;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CELL_SIZE = Math.floor((SCREEN_WIDTH - 40 - 6 * 6) / 7);
-const DAY_LABELS = ['?', '?', '?', '?', '?', '?', '?'];
-const WEEKDAY_SHORT = ['?', '?', '?', '?', '?', '?', '?'];
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -161,7 +161,8 @@ function DayDetailModal({
         />
         <AppText variant="title">{summary.date}</AppText>
         <AppText variant="caption" tone="tertiary" style={{ marginBottom: 20, marginTop: 4 }}>
-          ? {formatMinutes(summary.totalMinutes)} · {summary.count}?
+          {L.summaryPrefix} {formatMinutes(summary.totalMinutes)} · {summary.count}
+          {L.summarySuffix}
         </AppText>
         <ScrollView showsVerticalScrollIndicator={false}>
           {summary.records.map((r, i) => (
@@ -184,7 +185,7 @@ function DayDetailModal({
                   </AppText>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <AppText variant="caption" tone={r.result === 'completed' ? 'secondary' : 'tertiary'}>
-                      {r.result === 'completed' ? '??' : '?? ??'}
+                      {r.result === 'completed' ? L.resultCompleted : L.resultAbandoned}
                     </AppText>
                     <AppIcon name="ChevronRight" size={14} color={c.inkDisabled} />
                   </View>
@@ -312,29 +313,31 @@ export default function StatsScreen() {
         contentContainerStyle={{ padding: 20, gap: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <AppText variant="title">??</AppText>
+        <AppText variant="title">{L.title}</AppText>
 
         {isDataEmpty && (
           <View style={{ alignItems: 'center', gap: 12, paddingVertical: 24 }}>
             <EmptyIllustration variant="stats" />
             <AppText variant="body" tone="tertiary" style={{ textAlign: 'center', lineHeight: 22 }}>
-              ??? ???{'\n'}??? ??? ? ? ???
+              {L.emptyBodyLine1}
+              {'\n'}
+              {L.emptyBodyLine2}
             </AppText>
             <AppText variant="caption" tone="disabled" style={{ textAlign: 'center' }}>
-              ??? ????? ??·??? ??????
+              {L.emptyCaption}
             </AppText>
           </View>
         )}
 
         <View style={{ gap: 12 }}>
-          <SectionHeader title="??" />
+          <SectionHeader title={L.sectionFasting} />
           {!hydrated ? (
             <StatsSummarySkeleton />
           ) : (
             <View style={{ flexDirection: 'row', gap: 10 }}>
-              <SummaryCard label="?? ??" value={`${records.length}?`} />
-              <SummaryCard label="??" value={`${completedFasts}?`} />
-              <SummaryCard label="?? ??" value={formatMinutes(avgFastMinutes)} />
+              <SummaryCard label={L.totalRecords} value={`${records.length}${L.timesUnit}`} />
+              <SummaryCard label={L.completed} value={`${completedFasts}${L.timesUnit}`} />
+              <SummaryCard label={L.avgDuration} value={formatMinutes(avgFastMinutes)} />
             </View>
           )}
         </View>
@@ -342,34 +345,37 @@ export default function StatsScreen() {
         {hydrated && hasChartData && (
           <View style={{ gap: 8 }}>
             <AppText variant="caption" tone="tertiary">
-              ?? 7? ?? ??
+              {L.chartTitle}
             </AppText>
             <BarChart data={last7Days} width={SCREEN_WIDTH - 40} height={130} unit="h" />
           </View>
         )}
 
         <View style={{ gap: 12 }}>
-          <SectionHeader title="??" />
+          <SectionHeader title={L.sectionRoutine} />
           {!hydrated ? (
             <StatsSummarySkeleton />
           ) : (
             <View style={{ flexDirection: 'row', gap: 10 }}>
-              <SummaryCard label="?? ??" value={`${routines.length}?`} />
-              <SummaryCard label="?? ??" value={`${todayRoutines.length}?`} />
-              <SummaryCard label="?? ???" value={maxStreak > 0 ? `${maxStreak}?` : '-'} />
+              <SummaryCard label={L.totalRoutines} value={`${routines.length}${L.countUnit}`} />
+              <SummaryCard label={L.todayRoutines} value={`${todayRoutines.length}${L.countUnit}`} />
+              <SummaryCard
+                label={L.maxStreak}
+                value={maxStreak > 0 ? `${maxStreak}${L.dayUnit}` : '-'}
+              />
             </View>
           )}
         </View>
 
         <View style={{ gap: 12 }}>
-          <SectionHeader title="??" />
+          <SectionHeader title={L.sectionTodo} />
           {!hydrated ? (
             <StatsSummarySkeleton />
           ) : (
             <View style={{ flexDirection: 'row', gap: 10 }}>
-              <SummaryCard label="???" value={`${completionRate}%`} />
+              <SummaryCard label={L.completionRate} value={`${completionRate}%`} />
               <SummaryCard
-                label="??? ?"
+                label={L.importantTodos}
                 value={totalHighPriority > 0 ? `${completedHighPriority}/${totalHighPriority}` : '-'}
               />
             </View>
@@ -386,7 +392,9 @@ export default function StatsScreen() {
               <AppIcon name="ChevronLeft" size={18} color={c.inkSecondary} />
             </Pressable>
             <AppText variant="body" style={{ fontWeight: '700', minWidth: 90, textAlign: 'center' }}>
-              {viewYear}? {viewMonth + 1}?
+              {viewYear}
+              {L.yearSuffix} {viewMonth + 1}
+              {L.monthSuffix}
             </AppText>
             <Pressable
               onPress={nextMonth}
@@ -408,7 +416,7 @@ export default function StatsScreen() {
                 }}
               >
                 <AppText variant="caption" tone="tertiary">
-                  ??
+                  {L.today}
                 </AppText>
               </Pressable>
             )}
@@ -434,7 +442,7 @@ export default function StatsScreen() {
 
           {records.length === 0 && !isDataEmpty && (
             <AppText variant="caption" tone="disabled" style={{ textAlign: 'center' }}>
-              ?? ??? ???
+              {L.noFastingThisMonth}
             </AppText>
           )}
         </View>
@@ -460,10 +468,10 @@ export default function StatsScreen() {
         }}
         onDelete={() => {
           if (!editingRecord) return;
-          Alert.alert('?? ??', '? ??? ??????', [
-            { text: '??', style: 'cancel' },
+          Alert.alert(L.deleteAlertTitle, L.deleteAlertMessage, [
+            { text: L.cancel, style: 'cancel' },
             {
-              text: '??',
+              text: L.delete,
               style: 'destructive',
               onPress: () => {
                 removeRecord(editingRecord.id);
