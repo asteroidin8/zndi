@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 
 import { AppText } from './AppText';
 import { SheetDangerButton, SheetModal, SheetPrimaryButton } from './SheetModal';
+import { TimePickerModal } from './TimePickerModal';
+import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import type { Routine, Weekday } from '@/stores/useRoutineStore';
 
@@ -21,6 +23,15 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
   const c = useThemeColors();
   const [name, setName] = useState(initial?.name ?? '');
   const [days, setDays] = useState<Weekday[]>(initial?.repeatDays ?? [1, 2, 3, 4, 5]);
+  const [reminderTime, setReminderTime] = useState<string | null>(initial?.reminderTime ?? null);
+  const [timePickerVisible, setTimePickerVisible] = useState(false);
+
+  useEffect(() => {
+    if (!visible) return;
+    setName(initial?.name ?? '');
+    setDays(initial?.repeatDays ?? [1, 2, 3, 4, 5]);
+    setReminderTime(initial?.reminderTime ?? null);
+  }, [visible, initial]);
 
   function toggleDay(day: Weekday) {
     setDays((prev) =>
@@ -30,69 +41,105 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
 
   function handleSave() {
     if (!name.trim()) return;
-    onSave({ name: name.trim(), repeatDays: days, reminderTime: null });
+    onSave({ name: name.trim(), repeatDays: days, reminderTime });
     setName('');
     setDays([1, 2, 3, 4, 5]);
+    setReminderTime(null);
   }
 
   const canSave = !!name.trim();
 
   return (
-    <SheetModal
-      visible={visible}
-      onClose={onClose}
-      title={initial?.id ? '루틴 편집' : '루틴 추가'}
-      footer={
-        <>
-          <SheetPrimaryButton label="저장" onPress={handleSave} disabled={!canSave} />
-          {onDelete ? <SheetDangerButton label="삭제" onPress={onDelete} /> : null}
-        </>
-      }
-    >
-      <TextInput
-        value={name}
-        onChangeText={setName}
-        placeholder="되고 싶은 내 모습을 입력해보세요"
-        placeholderTextColor={c.inkDisabled}
-        autoFocus
-        style={{
-          fontSize: 16,
-          color: c.ink,
-          borderBottomWidth: 1,
-          borderBottomColor: c.border,
-          paddingVertical: 8,
-          marginBottom: 24,
-        }}
-      />
+    <>
+      <SheetModal
+        visible={visible}
+        onClose={onClose}
+        title={initial?.id ? '루틴 편집' : '루틴 추가'}
+        footer={
+          <>
+            <SheetPrimaryButton label="저장" onPress={handleSave} disabled={!canSave} />
+            {onDelete ? <SheetDangerButton label="삭제" onPress={onDelete} /> : null}
+          </>
+        }
+      >
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          placeholder="되고 싶은 내 모습을 입력해보세요"
+          placeholderTextColor={c.inkDisabled}
+          autoFocus
+          style={{
+            fontSize: 16,
+            color: c.ink,
+            borderBottomWidth: 1,
+            borderBottomColor: c.border,
+            paddingVertical: spacing.sm,
+            marginBottom: spacing.section,
+          }}
+        />
 
-      <AppText variant="caption" tone="tertiary" style={{ marginBottom: 10 }}>
-        반복 요일
-      </AppText>
-      <View style={{ flexDirection: 'row', gap: 6 }}>
-        {ALL_DAYS.map((day) => (
-          <Pressable
-            key={day}
-            onPress={() => toggleDay(day)}
-            style={{
-              flex: 1,
-              paddingVertical: 8,
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: days.includes(day) ? c.ink : c.border,
-              backgroundColor: days.includes(day) ? c.surfaceSubtle : 'transparent',
-              alignItems: 'center',
-            }}
-          >
-            <AppText
-              variant="caption"
-              tone={days.includes(day) ? 'primary' : 'tertiary'}
-              style={days.includes(day) ? { fontWeight: '700' } : {}}
+        <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
+          반복 요일
+        </AppText>
+        <View style={{ flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.section }}>
+          {ALL_DAYS.map((day) => (
+            <Pressable
+              key={day}
+              onPress={() => toggleDay(day)}
+              style={{
+                flex: 1,
+                paddingVertical: spacing.sm,
+                borderRadius: spacing.sm,
+                borderWidth: 1,
+                borderColor: days.includes(day) ? c.ink : c.border,
+                backgroundColor: days.includes(day) ? c.surfaceSubtle : 'transparent',
+                alignItems: 'center',
+              }}
             >
-              {DAY_LABELS[day]}
-            </AppText>
-          </Pressable>
-        ))}
-      </View>
-    </SheetModal>
+              <AppText
+                variant="caption"
+                tone={days.includes(day) ? 'primary' : 'tertiary'}
+                style={days.includes(day) ? { fontWeight: '700' } : {}}
+              >
+                {DAY_LABELS[day]}
+              </AppText>
+            </Pressable>
+          ))}
+        </View>
+
+        <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
+          알림
+        </AppText>
+        <Pressable
+          onPress={() => setTimePickerVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel={reminderTime ? `알림 시간 ${reminderTime}` : '알림 없음'}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingVertical: spacing.sm,
+            borderBottomWidth: 1,
+            borderBottomColor: c.border,
+          }}
+        >
+          <AppText variant="body">알림 시간</AppText>
+          <AppText variant="body" tone={reminderTime ? 'secondary' : 'tertiary'}>
+            {reminderTime ?? '없음'}
+          </AppText>
+        </Pressable>
+      </SheetModal>
+
+      <TimePickerModal
+        visible={timePickerVisible}
+        selectedTime={reminderTime}
+        title="루틴 알림 시간"
+        onConfirm={(time) => {
+          setReminderTime(time);
+          setTimePickerVisible(false);
+        }}
+        onClose={() => setTimePickerVisible(false)}
+      />
+    </>
   );
 }
