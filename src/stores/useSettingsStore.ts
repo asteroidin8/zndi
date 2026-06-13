@@ -11,11 +11,13 @@ type SettingsStore = {
   themeMode: ThemeMode;
   routineNotificationsEnabled: boolean;
   todoNotificationsEnabled: boolean;
+  onboardingCompleted: boolean;
   seenHints: Partial<Record<HintKey, boolean>>;
   toggleForegroundService: () => void;
   setThemeMode: (mode: ThemeMode) => void;
   setRoutineNotifications: (enabled: boolean) => void;
   setTodoNotifications: (enabled: boolean) => void;
+  setOnboardingCompleted: (completed: boolean) => void;
   markHintSeen: (key: HintKey) => void;
 };
 
@@ -26,12 +28,14 @@ export const useSettingsStore = create<SettingsStore>()(
       themeMode: 'system',
       routineNotificationsEnabled: false,
       todoNotificationsEnabled: false,
+      onboardingCompleted: false,
       seenHints: {},
       toggleForegroundService: () =>
         set((s) => ({ foregroundServiceEnabled: !s.foregroundServiceEnabled })),
       setThemeMode: (mode) => set({ themeMode: mode }),
       setRoutineNotifications: (enabled) => set({ routineNotificationsEnabled: enabled }),
       setTodoNotifications: (enabled) => set({ todoNotificationsEnabled: enabled }),
+      setOnboardingCompleted: (completed) => set({ onboardingCompleted: completed }),
       markHintSeen: (key) =>
         set((s) => ({ seenHints: { ...s.seenHints, [key]: true } })),
     }),
