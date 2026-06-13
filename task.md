@@ -9,13 +9,13 @@
 
 | # | 작업 | 상태 | 비고 |
 |---|------|------|------|
-| 1 | 아이콘·스플래시·스토어 에셋 | [ ] | `assets/`, `app.json` |
-| 2 | 개인정보처리방침 + 설정 링크 | [ ] | 신체 정보·로컬 저장·알림·삭제 |
-| 3 | iOS bundleIdentifier, 알림 plugin·권한 문구 | [ ] | `app.json` |
-| 4 | 루틴 리마인더 — 시간 picker 또는 토글 제거 | [ ] | `RoutineModal` |
-| 5 | 알림 버그 (cancelAll, 할일 잔존 알림) | [ ] | notification hooks |
-| 6 | 데이터 초기화 완전화 | [ ] | 모든 store·hints·알림 설정 |
-| 7 | stats 시간 표시 `?` 버그 | [ ] | `stats.tsx` |
+| 1 | 아이콘·스플래시·스토어 에셋 | [~] | `assets/README.md` — PNG 파일 추가 필요 |
+| 2 | 개인정보처리방침 + 설정 링크 | [x] | `app/privacy.tsx`, 설정 앱 정보 |
+| 3 | iOS bundleIdentifier, 알림 plugin·권한 문구 | [x] | `app.json` |
+| 4 | 루틴 리마인더 — 시간 picker 또는 토글 제거 | [x] | `TimePickerModal`, `RoutineModal` |
+| 5 | 알림 버그 (cancelAll, 할일 잔존 알림) | [x] | `src/utils/notifications.ts` |
+| 6 | 데이터 초기화 완전화 | [x] | `settings.tsx` |
+| 7 | stats 시간 표시 `?` 버그 | [x] | `stats.tsx` |
 
 **완료 기준:** EAS production 빌드 성공 + P0 QA 통과
 
@@ -62,4 +62,4 @@
 
 | 일시 | 작업 |
 |------|------|
-| 2026-06-12 | task.md 출시 계획으로 재작성, P0 착수 |
+| 2026-06-13 | P0 #2~7 머지 (#52–#57), app.json 스토어 설정 |

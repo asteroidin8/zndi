@@ -8,11 +8,21 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "routiner",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.asteroidin8.routiner",
+      "infoPlist": {
+        "NSUserNotificationsUsageDescription": "단식 진행, 루틴·할 일 알림을 보내기 위해 알림 권한이 필요합니다."
+      }
     },
     "android": {
       "package": "com.asteroidin8.routiner",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -30,7 +40,14 @@
     },
     "plugins": [
       "expo-sqlite",
-      "expo-router"
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#0a0a0a"
+        }
+      ]
     ],
     "extra": {
       "router": {},
