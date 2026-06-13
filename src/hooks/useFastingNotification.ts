@@ -4,19 +4,10 @@ import { Platform } from 'react-native';
 
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { NOTIFICATION_ID } from '@/utils/notifications';
 
-const NOTIFICATION_ID = 'fasting-progress';
 const FASTING_CHANNEL_ID = 'fasting';
 const UPDATE_INTERVAL_MS = 60_000;
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: false,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-    shouldShowList: false,
-  }),
-});
 
 function formatElapsed(ms: number) {
   const totalSec = Math.floor(ms / 1000);
@@ -65,7 +56,7 @@ async function ensureFastingChannel() {
 
 async function showFastingNotification(elapsed: number, goalHours: number) {
   await Notifications.scheduleNotificationAsync({
-    identifier: NOTIFICATION_ID,
+    identifier: NOTIFICATION_ID.fasting,
     content: buildNotificationContent(elapsed, goalHours),
     trigger: getImmediateTrigger(),
   });
@@ -79,13 +70,13 @@ export function useFastingNotification() {
   useEffect(() => {
     if (!foregroundServiceEnabled) {
       lastSnapshotRef.current = null;
-      Notifications.dismissNotificationAsync(NOTIFICATION_ID).catch(() => {});
+      Notifications.dismissNotificationAsync(NOTIFICATION_ID.fasting).catch(() => {});
       return;
     }
 
     if (status !== 'fasting' || !startedAt) {
       lastSnapshotRef.current = null;
-      Notifications.dismissNotificationAsync(NOTIFICATION_ID).catch(() => {});
+      Notifications.dismissNotificationAsync(NOTIFICATION_ID.fasting).catch(() => {});
       return;
     }
 

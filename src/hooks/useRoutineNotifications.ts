@@ -3,33 +3,23 @@ import { useEffect } from 'react';
 
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
-
-const ROUTINE_NOTIFICATION_CHANNEL = 'routine-reminders';
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-    shouldShowList: true,
-  }),
-});
+import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
 
 export function useRoutineNotifications() {
   const { routines } = useRoutineStore();
   const { routineNotificationsEnabled } = useSettingsStore();
 
   useEffect(() => {
-    if (!routineNotificationsEnabled) {
-      Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
-      return;
-    }
+    async function sync() {
+      if (!routineNotificationsEnabled) {
+        await cancelNotificationsByPrefix(NOTIFICATION_ID.routinePrefix);
+        return;
+      }
 
-    async function scheduleAll() {
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== 'granted') return;
 
-      await Notifications.cancelAllScheduledNotificationsAsync();
+      await cancelNotificationsByPrefix(NOTIFICATION_ID.routinePrefix);
 
       for (const routine of routines) {
         if (!routine.reminderTime) continue;
@@ -40,10 +30,9 @@ export function useRoutineNotifications() {
         if (isNaN(hour) || isNaN(minute)) continue;
 
         for (const weekday of routine.repeatDays) {
-          // expo-notifications weekday: 1=일, 2=월, ..., 7=토
           const expoWeekday = weekday + 1;
           await Notifications.scheduleNotificationAsync({
-            identifier: `routine-${routine.id}-${weekday}`,
+            identifier: `${NOTIFICATION_ID.routinePrefix}${routine.id}-${weekday}`,
             content: {
               title: '루틴 알림',
               body: routine.name,
@@ -60,6 +49,6 @@ export function useRoutineNotifications() {
       }
     }
 
-    scheduleAll();
+    sync();
   }, [routines, routineNotificationsEnabled]);
 }
