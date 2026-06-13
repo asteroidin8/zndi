@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
+import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 
 function getTodayStr() {
@@ -21,12 +22,14 @@ function getMsUntilMidnight() {
  */
 export function useMidnightArchive() {
   const { lastArchiveDate, archiveCompletedTodos } = useTodoStore();
+  const clearOldCompletions = useRoutineCompletionStore((s) => s.clearOldCompletions);
 
   function checkAndArchive() {
     const today = getTodayStr();
     if (lastArchiveDate !== today) {
       archiveCompletedTodos(today);
     }
+    clearOldCompletions();
   }
 
   useEffect(() => {

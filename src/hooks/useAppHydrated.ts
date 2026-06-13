@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useFastingStore } from '@/stores/useFastingStore';
+import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useTodoStore } from '@/stores/useTodoStore';
@@ -11,7 +12,14 @@ export function useAppHydrated() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const stores = [useFastingStore, useRoutineStore, useTodoStore, useUserStore, useSettingsStore];
+    const stores = [
+      useFastingStore,
+      useRoutineStore,
+      useTodoStore,
+      useUserStore,
+      useSettingsStore,
+      useRoutineCompletionStore,
+    ];
     const unsubscribers = stores.map((store) =>
       store.persist.onFinishHydration(() => {
         if (stores.every((s) => s.persist.hasHydrated())) {
