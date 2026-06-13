@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { AppText } from './AppText';
+import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
@@ -58,9 +59,9 @@ export function HomeDailyBoard() {
         borderRadius: 14,
         borderWidth: 1,
         borderColor: c.border,
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-        gap: 10,
+        paddingHorizontal: spacing.item,
+        paddingVertical: spacing.card,
+        gap: 12,
       }}
     >
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
@@ -74,22 +75,31 @@ export function HomeDailyBoard() {
         )}
       </View>
 
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         {weekDots.map((dot) => {
           const isToday = dot.dateStr === todayStr;
           const filled = dot.status === 'full' || dot.status === 'partial';
+          const dotSize = isToday ? 12 : 10;
           return (
-            <View
-              key={dot.dateStr}
-              style={{
-                width: isToday ? 12 : 10,
-                height: isToday ? 12 : 10,
-                borderRadius: 6,
-                backgroundColor: filled ? dotColor(dot.status, c) : 'transparent',
-                borderWidth: filled ? 0 : 1.5,
-                borderColor: dotColor(dot.status, c),
-              }}
-            />
+            <View key={dot.dateStr} style={{ flex: 1, alignItems: 'center', gap: 6 }}>
+              <View
+                style={{
+                  width: dotSize,
+                  height: dotSize,
+                  borderRadius: dotSize / 2,
+                  backgroundColor: filled ? dotColor(dot.status, c) : 'transparent',
+                  borderWidth: filled ? 0 : 1.5,
+                  borderColor: dotColor(dot.status, c),
+                }}
+              />
+              <AppText
+                variant="caption"
+                tone={isToday ? 'secondary' : 'tertiary'}
+                style={{ fontWeight: isToday ? '600' : '400' }}
+              >
+                {dot.weekdayLabel}
+              </AppText>
+            </View>
           );
         })}
       </View>
