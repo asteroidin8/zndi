@@ -5,6 +5,9 @@ import { spacing } from '@/constants/spacing';
 /** iOS Settings 기준 단일 row 높이 */
 export const SETTING_ROW_HEIGHT = spacing.section * 2;
 
+/** 세그먼트·버튼 — row 높이 안에 맞춤 */
+export const SETTING_CONTROL_HEIGHT = spacing.section + spacing.sm;
+
 /** navigation·choice·destructive·theme 등 1줄 row */
 export function settingCompactRowStyle(): ViewStyle {
   return {
@@ -16,7 +19,7 @@ export function settingCompactRowStyle(): ViewStyle {
   };
 }
 
-/** 알림 등 제목+설명 row — 알림 섹션을 기준 높이로 사용 */
+/** 알림 등 제목+설명 row */
 export function settingRowStyle(): ViewStyle {
   return {
     flexDirection: 'row',
@@ -28,7 +31,14 @@ export function settingRowStyle(): ViewStyle {
   };
 }
 
-/** label 오른쪽 — value·chevron·segment */
+/** row 왼쪽 label */
+export function settingRowLabelStyle(): ViewStyle {
+  return {
+    flexShrink: 0,
+  };
+}
+
+/** row 오른쪽 — value·chevron·segment 버튼 그룹 */
 export function settingRowTrailingStyle(): ViewStyle {
   return {
     flexDirection: 'row',
@@ -36,6 +46,17 @@ export function settingRowTrailingStyle(): ViewStyle {
     justifyContent: 'flex-end',
     flexShrink: 1,
     minWidth: 0,
+    gap: spacing.sm,
+  };
+}
+
+/** full-width segment·버튼 row (테마 카드) */
+export function settingSegmentRowStyle(): ViewStyle {
+  return {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: SETTING_ROW_HEIGHT,
+    paddingHorizontal: spacing.card,
     gap: spacing.sm,
   };
 }

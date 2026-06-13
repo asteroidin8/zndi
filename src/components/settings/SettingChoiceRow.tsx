@@ -2,7 +2,11 @@ import { View } from 'react-native';
 
 import { AppText } from '../AppText';
 import { SettingSegmentTrack, type SegmentOption } from './SettingSegmentTrack';
-import { settingCompactRowStyle } from './settingStyles';
+import {
+  settingCompactRowStyle,
+  settingRowLabelStyle,
+  settingRowTrailingStyle,
+} from './settingStyles';
 
 type Props<T extends string | boolean> = {
   label: string;
@@ -21,16 +25,18 @@ export function SettingChoiceRow<T extends string | boolean>({
 }: Props<T>) {
   return (
     <View style={settingCompactRowStyle()} accessibilityLabel={label}>
-      <AppText variant="body" numberOfLines={1}>
+      <AppText variant="body" style={settingRowLabelStyle()} numberOfLines={1}>
         {label}
       </AppText>
-      <SettingSegmentTrack
-        layout="inline"
-        options={options}
-        value={value}
-        onChange={onChange}
-        allowDeselect={allowDeselect}
-      />
+      <View style={settingRowTrailingStyle()}>
+        <SettingSegmentTrack
+          layout="inline"
+          options={options}
+          value={value}
+          onChange={onChange}
+          allowDeselect={allowDeselect}
+        />
+      </View>
     </View>
   );
 }

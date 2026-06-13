@@ -19,6 +19,7 @@ export function SettingDestructiveRow({ label, onPress }: Props) {
       accessibilityLabel={label}
       style={({ pressed }) => ({
         ...settingCompactRowStyle(),
+        justifyContent: 'center',
         opacity: pressed ? 0.7 : 1,
       })}
     >

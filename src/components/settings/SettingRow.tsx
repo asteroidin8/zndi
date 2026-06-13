@@ -3,7 +3,11 @@ import { Pressable, View } from 'react-native';
 
 import { AppIcon } from '../AppIcon';
 import { AppText } from '../AppText';
-import { settingCompactRowStyle, settingRowTrailingStyle } from './settingStyles';
+import {
+  settingCompactRowStyle,
+  settingRowLabelStyle,
+  settingRowTrailingStyle,
+} from './settingStyles';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 type Props = {
@@ -29,39 +33,37 @@ export function SettingRow({
   const interactive = Boolean(onPress);
   const rowStyle = settingCompactRowStyle();
 
-  const labelNode = (
-    <AppText
-      variant="body"
-      tone={danger ? 'tertiary' : 'primary'}
-      style={danger ? { color: c.danger } : undefined}
-      numberOfLines={1}
-    >
-      {label}
-    </AppText>
-  );
-
-  const trailingNode = trailing ?? (
-    value !== undefined && (
-      <View style={settingRowTrailingStyle()}>
-        <AppText
-          variant="body"
-          tone={unset ? 'tertiary' : 'secondary'}
-          numberOfLines={1}
-        >
-          {value}
-        </AppText>
-        {showChevron && interactive && (
-          <AppIcon name="ChevronRight" size={16} color={c.inkTertiary} />
-        )}
-      </View>
-    )
+  const content = (
+    <>
+      <AppText
+        variant="body"
+        tone={danger ? 'tertiary' : 'primary'}
+        style={[settingRowLabelStyle(), danger ? { color: c.danger } : undefined]}
+        numberOfLines={1}
+      >
+        {label}
+      </AppText>
+      {trailing ?? (
+        (value !== undefined || (interactive && showChevron)) && (
+          <View style={settingRowTrailingStyle()}>
+            {value !== undefined && (
+              <AppText variant="body" tone={unset ? 'tertiary' : 'secondary'} numberOfLines={1}>
+                {value}
+              </AppText>
+            )}
+            {showChevron && interactive && (
+              <AppIcon name="ChevronRight" size={16} color={c.inkTertiary} />
+            )}
+          </View>
+        )
+      )}
+    </>
   );
 
   if (!interactive) {
     return (
       <View style={rowStyle} accessibilityLabel={label}>
-        {labelNode}
-        {trailingNode}
+        {content}
       </View>
     );
   }
@@ -76,8 +78,7 @@ export function SettingRow({
         backgroundColor: pressed ? c.surfaceMuted : 'transparent',
       })}
     >
-      {labelNode}
-      {trailingNode}
+      {content}
     </Pressable>
   );
 }

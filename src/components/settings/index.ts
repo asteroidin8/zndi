@@ -8,8 +8,11 @@ export { SettingSegmentTrack, type SegmentOption } from './SettingSegmentTrack';
 export { SettingToggleRow } from './SettingToggleRow';
 export { SettingsList } from './SettingsList';
 export {
+  SETTING_CONTROL_HEIGHT,
   SETTING_ROW_HEIGHT,
   settingCompactRowStyle,
+  settingRowLabelStyle,
   settingRowStyle,
   settingRowTrailingStyle,
+  settingSegmentRowStyle,
 } from './settingStyles';
