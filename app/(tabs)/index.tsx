@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { InfoBanner } from '@/components/InfoBanner';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { DailySummaryRow } from '@/components/DailySummaryRow';
@@ -14,6 +15,7 @@ import { useTabNavigation, useTabScrollToTop } from '@/contexts/TabNavigationCon
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { getTimeGreeting } from '@/utils/dateFormat';
 import { useUserStore } from '@/stores/useUserStore';
+import { isProfileIncomplete } from '@/utils/profile';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const TAB_INDEX = 2 as const;
@@ -34,7 +36,7 @@ export default function HomeScreen() {
 
   const { navigateTo } = useTabNavigation();
   const { profile } = useUserStore();
-  const isProfileIncomplete = !profile.heightCm || !profile.weightKg;
+  const isProfileBannerVisible = isProfileIncomplete(profile);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
@@ -60,33 +62,13 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        {isProfileIncomplete && (
-          <Pressable
+        {isProfileBannerVisible && (
+          <InfoBanner
+            title="프로필을 설정하면 칼로리 계산이 가능해요"
+            description="키, 몸무게 입력하기 →"
             onPress={() => router.push('/settings')}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-              backgroundColor: c.surfaceSubtle,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: c.border,
-              paddingHorizontal: 14,
-              paddingVertical: 12,
-            }}
-            accessibilityRole="button"
             accessibilityLabel="프로필 설정하기"
-          >
-            <AppIcon name="UserCircle" size={18} color={c.inkTertiary} />
-            <View style={{ flex: 1 }}>
-              <AppText variant="caption" tone="secondary" style={{ fontWeight: '600' }}>
-                프로필을 설정하면 칼로리 계산이 가능해요
-              </AppText>
-              <AppText variant="caption" tone="tertiary">
-                키, 몸무게 입력하기 →
-              </AppText>
-            </View>
-          </Pressable>
+          />
         )}
 
         <FastingCard onPress={() => navigateTo(0)} />

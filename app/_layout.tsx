@@ -33,6 +33,7 @@ function AppContent() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="privacy" options={{ presentation: 'modal' }} />
       </Stack>
     </>
   );

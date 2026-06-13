@@ -1,11 +1,13 @@
 import { router } from 'expo-router';
+import Constants from 'expo-constants';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Notifications from 'expo-notifications';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
-import { Card } from '@/components/Card';
+import { InfoBanner } from '@/components/InfoBanner';
 import {
   DecimalWheelPicker,
   SettingChoiceRow,
@@ -20,11 +22,14 @@ import { WheelPicker } from '@/components/WheelPicker';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useFastingStore } from '@/stores/useFastingStore';
+import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { type ThemeMode, useSettingsStore } from '@/stores/useSettingsStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { formatMetric } from '@/utils/formatMetric';
+import { isProfileIncomplete } from '@/utils/profile';
+import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
 
 const AGE_VALUES = Array.from({ length: 83 }, (_, i) => i + 10);
 
@@ -57,8 +62,7 @@ export default function SettingsScreen() {
   } = useSettingsStore();
   const [pickerType, setPickerType] = useState<PickerType>(null);
 
-  const isProfileIncomplete =
-    profile.heightCm == null || profile.weightKg == null || profile.ageYears == null || profile.isMale == null;
+  const isProfileBannerVisible = isProfileIncomplete(profile);
 
   function getDecimalPickerProps() {
     switch (pickerType) {
@@ -112,10 +116,15 @@ export default function SettingsScreen() {
               useTodoStore.persist.clearStorage(),
               useUserStore.persist.clearStorage(),
               useSettingsStore.persist.clearStorage(),
+              useRoutineCompletionStore.persist.clearStorage(),
             ]);
+            await cancelNotificationsByPrefix(NOTIFICATION_ID.routinePrefix);
+            await cancelNotificationsByPrefix(NOTIFICATION_ID.todoPrefix);
+            await Notifications.dismissNotificationAsync(NOTIFICATION_ID.fasting).catch(() => {});
             useFastingStore.setState({ status: 'idle', startedAt: null, records: [], goalHours: 16 });
             useRoutineStore.setState({ routines: [] });
             useTodoStore.setState({ todos: [], lastArchiveDate: null });
+            useRoutineCompletionStore.setState({ completions: {} });
             useUserStore.setState({
               profile: {
                 heightCm: null,
@@ -125,7 +134,13 @@ export default function SettingsScreen() {
                 isMale: null,
               },
             });
-            useSettingsStore.setState({ foregroundServiceEnabled: true, themeMode: 'system' });
+            useSettingsStore.setState({
+              foregroundServiceEnabled: true,
+              themeMode: 'system',
+              routineNotificationsEnabled: false,
+              todoNotificationsEnabled: false,
+              seenHints: {},
+            });
           },
         },
       ],
@@ -171,25 +186,11 @@ export default function SettingsScreen() {
           paddingBottom: spacing.section * 2,
         }}
       >
-        {isProfileIncomplete && (
-          <Card
-            style={{
-              borderLeftWidth: 3,
-              borderLeftColor: c.inkTertiary,
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm }}>
-              <AppIcon name="UserCircle" size={18} color={c.inkTertiary} />
-              <View style={{ flex: 1, gap: spacing.xs }}>
-                <AppText variant="caption" tone="secondary" style={{ fontWeight: '600' }}>
-                  프로필을 완성해 주세요
-                </AppText>
-                <AppText variant="caption" tone="tertiary" style={{ lineHeight: 17 }}>
-                  키·체중·나이·성별을 입력하면 단식 칼로리 계산이 가능해요.
-                </AppText>
-              </View>
-            </View>
-          </Card>
+        {isProfileBannerVisible && (
+          <InfoBanner
+            title="프로필을 완성해 주세요"
+            description="키·체중·나이·성별을 입력하면 단식 칼로리 계산이 가능해요."
+          />
         )}
 
         <SettingSection title="신체 정보">
@@ -272,6 +273,15 @@ export default function SettingsScreen() {
           footer="단식·루틴·할 일 기록과 프로필, 앱 설정이 모두 삭제됩니다."
         >
           <SettingDestructiveRow label="전체 데이터 초기화" onPress={handleDataReset} />
+        </SettingSection>
+
+        <SettingSection title="앱 정보">
+          <SettingRow label="개인정보처리방침" onPress={() => router.push('/privacy')} />
+          <SettingRow
+            label="버전"
+            value={Constants.expoConfig?.version ?? '1.0.0'}
+            showChevron={false}
+          />
         </SettingSection>
       </ScrollView>
 
