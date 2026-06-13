@@ -1,15 +1,15 @@
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { AppIcon } from './AppIcon';
-import { AppText } from './AppText';
+import { AppIcon } from '../AppIcon';
+import { AppText } from '../AppText';
+import { settingRowStyle } from './settingStyles';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 type Props = {
   label: string;
   value?: string;
-  /** 값이 비어 있을 때 (미설정 등) */
   unset?: boolean;
   trailing?: ReactNode;
   onPress?: () => void;
@@ -28,16 +28,7 @@ export function SettingRow({
 }: Props) {
   const c = useThemeColors();
   const interactive = Boolean(onPress);
-
-  const rowStyle = {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'space-between' as const,
-    gap: 12,
-    minHeight: 48,
-    paddingHorizontal: spacing.card,
-    paddingVertical: spacing.item,
-  };
+  const rowStyle = settingRowStyle();
 
   const labelNode = (
     <AppText
@@ -51,7 +42,7 @@ export function SettingRow({
 
   const trailingNode = trailing ?? (
     value !== undefined && (
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1 }}>
         <AppText
           variant="body"
           tone={unset ? 'tertiary' : 'secondary'}

@@ -94,7 +94,7 @@
 - [x] `spacing.ts` / `colors.ts` — danger·warning·booster·priority 토큰
 - [x] `Card` — 카드 스타일 + 터치 피드백
 - [x] `SectionHeader` — bar / caption 변형
-- [x] `SettingGroup` — 설정 그룹 카드
+- [x] `SettingSection` + `Card` — 설정 섹션·카드
 - [x] `Skeleton` + `useAppHydrated` — persist 로딩 스켈레톤
 
 ### 체감 큰 항목
@@ -114,7 +114,7 @@
 |---|------|------|-----------|
 | 7 | 하드코딩 색 → `colors.ts` 토큰 | [x] | `dateFormat.ts`, `TodoItem`, `todo.tsx`, modals, `fasting.tsx` |
 | 8 | Divider 간격 | [x] | `Divider.tsx` |
-| 9 | 설정 화면 그룹 카드형 | [x] | `settings.tsx`, `SettingGroup.tsx` |
+| 9 | 설정 화면 그룹 카드형 | [x] | `settings.tsx`, `SettingSection.tsx`, `src/components/settings/` |
 | 10 | EmptyIllustration 선 두께 통일 | [x] | `EmptyIllustration.tsx` |
 
 ### v1 이후 (아이콘·스플래시 제외 진행)

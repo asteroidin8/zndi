@@ -1,6 +1,7 @@
 import { Switch, View } from 'react-native';
 
-import { AppText } from './AppText';
+import { AppText } from '../AppText';
+import { settingRowStyle } from './settingStyles';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
@@ -16,22 +17,15 @@ export function SettingToggleRow({ label, description, value, onToggle }: Props)
 
   return (
     <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spacing.card,
-        paddingVertical: spacing.item,
-        gap: 12,
-      }}
-      accessibilityRole="switch"
-      accessibilityState={{ checked: value }}
-      accessibilityLabel={description ? `${label}, ${description}` : label}
+      style={[
+        settingRowStyle(),
+        description ? { minHeight: undefined, alignItems: 'center' } : null,
+      ]}
     >
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, justifyContent: 'center' }}>
         <AppText variant="body">{label}</AppText>
         {description && (
-          <AppText variant="caption" tone="tertiary" style={{ marginTop: 3, lineHeight: 17 }}>
+          <AppText variant="caption" tone="tertiary" style={{ marginTop: spacing.xs, lineHeight: 17 }}>
             {description}
           </AppText>
         )}
@@ -41,6 +35,7 @@ export function SettingToggleRow({ label, description, value, onToggle }: Props)
         onValueChange={onToggle}
         trackColor={{ false: c.surfaceMuted, true: c.ink }}
         thumbColor={c.surface}
+        accessibilityLabel={description ? `${label}, ${description}` : label}
       />
     </View>
   );

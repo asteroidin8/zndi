@@ -8,8 +8,8 @@ import {
   View,
 } from 'react-native';
 
-import { AppText } from './AppText';
-import { SheetModal, SheetPrimaryButton } from './SheetModal';
+import { AppText } from '../AppText';
+import { SheetModal, SheetPrimaryButton } from '../SheetModal';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 const ITEM_HEIGHT = 48;

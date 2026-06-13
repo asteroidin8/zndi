@@ -1,7 +1,7 @@
 import { Pressable } from 'react-native';
 
-import { AppText } from './AppText';
-import { spacing } from '@/constants/spacing';
+import { AppText } from '../AppText';
+import { settingRowStyle } from './settingStyles';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 type Props = {
@@ -9,7 +9,6 @@ type Props = {
   onPress: () => void;
 };
 
-/** 데이터 등 — 카드 없이 destructive 행 */
 export function SettingDestructiveRow({ label, onPress }: Props) {
   const c = useThemeColors();
 
@@ -19,9 +18,7 @@ export function SettingDestructiveRow({ label, onPress }: Props) {
       accessibilityRole="button"
       accessibilityLabel={label}
       style={({ pressed }) => ({
-        minHeight: 48,
-        justifyContent: 'center',
-        paddingHorizontal: spacing.screen,
+        ...settingRowStyle(),
         opacity: pressed ? 0.7 : 1,
       })}
     >

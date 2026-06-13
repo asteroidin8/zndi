@@ -5,17 +5,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
-import { DecimalWheelPicker } from '@/components/DecimalWheelPicker';
+import { Card } from '@/components/Card';
+import {
+  DecimalWheelPicker,
+  SettingChoiceRow,
+  SettingDestructiveRow,
+  SettingInsetDivider,
+  SettingRow,
+  SettingSection,
+  SettingSegmentTrack,
+  SettingToggleRow,
+} from '@/components/settings';
 import { Divider } from '@/components/Divider';
-import { SettingButtonGroup } from '@/components/SettingButtonGroup';
-import { SettingChoiceRow } from '@/components/SettingChoiceRow';
-import { SettingDestructiveRow } from '@/components/SettingDestructiveRow';
-import { SettingInsetDivider } from '@/components/SettingInsetDivider';
-import { SettingRow } from '@/components/SettingRow';
-import { SettingSection } from '@/components/SettingSection';
-import { SettingToggleRow } from '@/components/SettingToggleRow';
 import { WheelPicker } from '@/components/WheelPicker';
-import { radius, spacing } from '@/constants/spacing';
+import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
@@ -143,7 +146,7 @@ export default function SettingsScreen() {
           alignItems: 'center',
           paddingHorizontal: spacing.screen,
           paddingVertical: spacing.item,
-          gap: 12,
+          gap: spacing.item,
         }}
       >
         <Pressable
@@ -164,42 +167,33 @@ export default function SettingsScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: spacing.sm,
+          padding: spacing.screen,
+          gap: spacing.section,
           paddingBottom: spacing.section * 2,
-          backgroundColor: c.surfaceSubtle,
         }}
       >
         {isProfileIncomplete && (
-          <View
+          <Card
             style={{
-              marginHorizontal: spacing.screen,
-              marginBottom: spacing.card,
-              flexDirection: 'row',
-              alignItems: 'flex-start',
-              gap: 10,
-              backgroundColor: c.surfaceSubtle,
-              borderRadius: radius.lg,
-              borderWidth: 1,
-              borderColor: c.border,
               borderLeftWidth: 3,
               borderLeftColor: c.inkTertiary,
-              paddingHorizontal: spacing.item,
-              paddingVertical: spacing.card,
             }}
           >
-            <AppIcon name="UserCircle" size={18} color={c.inkTertiary} />
-            <View style={{ flex: 1, gap: 2 }}>
-              <AppText variant="caption" tone="secondary" style={{ fontWeight: '600' }}>
-                프로필을 완성해 주세요
-              </AppText>
-              <AppText variant="caption" tone="tertiary" style={{ lineHeight: 17 }}>
-                키·체중·나이·성별을 입력하면 단식 칼로리 계산이 가능해요.
-              </AppText>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm }}>
+              <AppIcon name="UserCircle" size={18} color={c.inkTertiary} />
+              <View style={{ flex: 1, gap: spacing.xs }}>
+                <AppText variant="caption" tone="secondary" style={{ fontWeight: '600' }}>
+                  프로필을 완성해 주세요
+                </AppText>
+                <AppText variant="caption" tone="tertiary" style={{ lineHeight: 17 }}>
+                  키·체중·나이·성별을 입력하면 단식 칼로리 계산이 가능해요.
+                </AppText>
+              </View>
             </View>
-          </View>
+          </Card>
         )}
 
-        <SettingSection title="신체 정보" spacingTop={isProfileIncomplete ? spacing.sm : spacing.card}>
+        <SettingSection title="신체 정보">
           <SettingRow
             label="키"
             value={formatMetric(profile.heightCm, 'cm')}
@@ -227,6 +221,7 @@ export default function SettingsScreen() {
             unset={profile.ageYears == null}
             onPress={() => setPickerType('age')}
           />
+          <SettingInsetDivider />
           <SettingChoiceRow
             label="성별"
             allowDeselect
@@ -240,17 +235,20 @@ export default function SettingsScreen() {
         </SettingSection>
 
         <SettingSection title="테마">
-          <SettingButtonGroup
-            value={themeMode}
-            onChange={(mode) => {
-              if (mode) setThemeMode(mode);
-            }}
-            options={THEME_OPTIONS.map((opt) => ({
-              value: opt.mode,
-              label: opt.label,
-              icon: opt.icon,
-            }))}
-          />
+          <View style={{ padding: spacing.card }}>
+            <SettingSegmentTrack
+              layout="full"
+              value={themeMode}
+              onChange={(mode) => {
+                if (mode) setThemeMode(mode);
+              }}
+              options={THEME_OPTIONS.map((opt) => ({
+                value: opt.mode,
+                label: opt.label,
+                icon: opt.icon,
+              }))}
+            />
+          </View>
         </SettingSection>
 
         <SettingSection title="알림">

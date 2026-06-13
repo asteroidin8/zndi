@@ -1,7 +1,8 @@
 import { Pressable, View } from 'react-native';
 
-import { AppIcon } from './AppIcon';
-import { AppText } from './AppText';
+import { AppIcon } from '../AppIcon';
+import { AppText } from '../AppText';
+import { SETTING_ROW_HEIGHT } from './settingStyles';
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
@@ -18,7 +19,7 @@ type Props<T extends string | boolean> = {
   value: T | null;
   onChange: (value: T | null) => void;
   allowDeselect?: boolean;
-  /** full: 카드 전체 너비 세그먼트 (테마) */
+  /** inline: row 내부 / full: 카드 전체 너비 */
   layout?: 'inline' | 'full';
 };
 
@@ -30,19 +31,22 @@ export function SettingSegmentTrack<T extends string | boolean>({
   layout = 'full',
 }: Props<T>) {
   const c = useThemeColors();
-  const stackedIcon = layout === 'full' && options.some((o) => o.icon);
+  const isInline = layout === 'inline';
+  const stackedIcon = !isInline && options.some((o) => o.icon);
+  const buttonMinHeight = isInline ? spacing.section : SETTING_ROW_HEIGHT - spacing.sm;
 
   return (
     <View
       style={{
         flexDirection: 'row',
-        flex: layout === 'inline' ? 1 : undefined,
+        flex: isInline ? 1 : undefined,
+        flexShrink: isInline ? 1 : undefined,
         backgroundColor: c.surfaceMuted,
         borderRadius: radius.md,
         borderWidth: 1,
         borderColor: c.borderStrong,
-        padding: 4,
-        gap: 4,
+        padding: spacing.xs,
+        gap: spacing.xs,
       }}
     >
       {options.map((opt) => {
@@ -59,25 +63,24 @@ export function SettingSegmentTrack<T extends string | boolean>({
             accessibilityLabel={opt.label}
             style={({ pressed }) => ({
               flex: 1,
-              minHeight: layout === 'full' ? 44 : 40,
+              minHeight: buttonMinHeight,
               flexDirection: stackedIcon ? 'column' : 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: stackedIcon ? 4 : 5,
-              paddingHorizontal: spacing.sm,
-              paddingVertical: 8,
+              gap: stackedIcon ? spacing.xs : 0,
+              paddingHorizontal: isInline ? spacing.sm : spacing.sm,
+              paddingVertical: spacing.xs,
               borderRadius: radius.sm,
               backgroundColor: selected ? c.ink : c.surface,
               borderWidth: selected ? 0 : 1,
               borderColor: c.borderStrong,
               opacity: pressed ? 0.88 : 1,
-              transform: [{ scale: pressed ? 0.98 : 1 }],
             })}
           >
             {opt.icon && (
               <AppIcon
                 name={opt.icon}
-                size={layout === 'full' ? 16 : 14}
+                size={isInline ? 14 : 16}
                 color={selected ? c.surface : c.inkTertiary}
               />
             )}
