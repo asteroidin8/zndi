@@ -103,6 +103,9 @@ export function HoldToConfirmButton({ label, subLabel, onConfirm, duration = 160
     <Pressable
       onPressIn={handlePressInWithHaptics}
       onPressOut={handlePressOutWithCleanup}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={subLabel}
       style={[styles.button, { borderColor: c.borderStrong, backgroundColor: c.surface }]}
     >
       {/* 게이지 fill */}

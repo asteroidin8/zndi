@@ -78,7 +78,7 @@ export function SwipeActions({
       renderRightActions={onComplete ? renderRightComplete : undefined}
       onSwipeableOpen={handleOpen}
     >
-      {children}
+      <View accessibilityHint="왼쪽 스와이프로 삭제, 오른쪽 스와이프로 완료">{children}</View>
     </Swipeable>
   );
 }
