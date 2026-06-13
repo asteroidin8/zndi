@@ -17,6 +17,7 @@ import {
   estimateCaloriesBurned,
   getFastingMessage,
 } from '@/constants/fastingMessages';
+import { spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { feedbackBooster, feedbackSuccess } from '@/utils/microFeedback';
@@ -141,19 +142,19 @@ export default function FastingScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <ScrollView ref={scrollRef} scrollEnabled={false} contentContainerStyle={{ flexGrow: 1 }}>
       {/* ── 헤더 ── */}
-      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
+      <View style={{ paddingHorizontal: spacing.screen, paddingTop: 16, paddingBottom: 8 }}>
         <AppText variant="title">단식</AppText>
       </View>
 
       {/* ── 누적 통계 카드 ── */}
-      <View style={{ paddingHorizontal: 20, marginBottom: 4 }}>
+      <View style={{ paddingHorizontal: spacing.screen, marginBottom: spacing.xs }}>
         <View
           style={{
             flexDirection: 'row',
             backgroundColor: c.surfaceSubtle,
             borderRadius: 16,
             paddingVertical: 14,
-            paddingHorizontal: 20,
+            paddingHorizontal: spacing.screen,
             alignItems: 'center',
             justifyContent: 'space-around',
           }}
@@ -286,7 +287,7 @@ export default function FastingScreen() {
       </View>
 
       {/* ── 하단 ── */}
-      <View style={{ paddingHorizontal: 20, paddingBottom: 16, gap: 14 }}>
+      <View style={{ paddingHorizontal: spacing.screen, paddingBottom: 16, gap: spacing.item }}>
         <Divider />
 
         {/* 목표 설정 (idle 시만) */}

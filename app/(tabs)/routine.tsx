@@ -12,6 +12,7 @@ import { RoutineItem } from '@/components/RoutineItem';
 import { RoutineModal } from '@/components/RoutineModal';
 import { SwipeActions } from '@/components/SwipeActions';
 import { UndoSnackbar } from '@/components/UndoSnackbar';
+import { spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useSettingsStore } from '@/stores/useSettingsStore';
@@ -137,7 +138,7 @@ export default function RoutineScreen() {
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingHorizontal: 20,
+          paddingHorizontal: spacing.screen,
           paddingTop: 16,
           paddingBottom: 8,
         }}
@@ -166,9 +167,9 @@ export default function RoutineScreen() {
           {allTodayComplete && (
             <View
               style={{
-                marginHorizontal: 20,
+                marginHorizontal: spacing.screen,
                 marginTop: 8,
-                marginBottom: 4,
+                marginBottom: spacing.xs,
                 paddingHorizontal: 14,
                 paddingVertical: 12,
                 borderRadius: 12,
@@ -191,11 +192,11 @@ export default function RoutineScreen() {
               <AppText
                 variant="caption"
                 tone="tertiary"
-                style={{ marginTop: 16, marginBottom: 4, paddingHorizontal: 20 }}
+                style={{ marginTop: spacing.card, marginBottom: spacing.xs, paddingHorizontal: spacing.screen }}
               >
                 오늘 · {WEEKDAYS_KO[today]}요일
               </AppText>
-              <View style={{ paddingHorizontal: 20 }}>
+              <View style={{ paddingHorizontal: spacing.screen }}>
                 <DraggableFlatList
                   data={todayRoutines}
                   keyExtractor={(r) => r.id}
@@ -213,11 +214,11 @@ export default function RoutineScreen() {
               <AppText
                 variant="caption"
                 tone="disabled"
-                style={{ marginTop: 24, marginBottom: 4, paddingHorizontal: 20 }}
+                style={{ marginTop: spacing.section, marginBottom: spacing.xs, paddingHorizontal: spacing.screen }}
               >
                 그 외
               </AppText>
-              <View style={{ paddingHorizontal: 20 }}>
+              <View style={{ paddingHorizontal: spacing.screen }}>
                 <DraggableFlatList
                   data={otherRoutines}
                   keyExtractor={(r) => r.id}

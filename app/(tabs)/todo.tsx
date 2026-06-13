@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,6 +14,7 @@ import { TodoEditModal } from '@/components/TodoEditModal';
 import { TodoItem } from '@/components/TodoItem';
 import { type TodoCreatePayload, TodoModal } from '@/components/TodoModal';
 import { UndoSnackbar } from '@/components/UndoSnackbar';
+import { spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { getPriorityColor } from '@/utils/dateFormat';
@@ -54,7 +55,7 @@ function SectionHeader({ label, priority, count }: { label: string; priority: To
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 10,
-        paddingHorizontal: 20,
+        paddingHorizontal: spacing.screen,
         backgroundColor: c.surface,
       }}
     >
@@ -187,9 +188,13 @@ export default function TodoScreen() {
         {completedTodos.length === 0 ? (
           <EmptyState message="아직 완료한 일이 없어요" variant="todo" />
         ) : (
-          <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
-            {completedTodos.map((todo, i) => (
-              <AnimatedListItem key={todo.id} itemKey={todo.id} index={i}>
+          <FlatList
+            data={completedTodos}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item: todo, index: i }) => (
+              <AnimatedListItem itemKey={todo.id} index={i}>
                 <SwipeActions
                   onDelete={() => {
                     setUndoTarget(todo);
@@ -198,7 +203,7 @@ export default function TodoScreen() {
                   onComplete={() => uncompleteTodo(todo.id)}
                   completeLabel="되돌리기"
                 >
-                  <View style={{ paddingHorizontal: 20 }}>
+                  <View style={{ paddingHorizontal: spacing.screen }}>
                     <TodoItem
                       todo={todo}
                       onToggle={() => uncompleteTodo(todo.id)}
@@ -208,8 +213,8 @@ export default function TodoScreen() {
                   </View>
                 </SwipeActions>
               </AnimatedListItem>
-            ))}
-          </ScrollView>
+            )}
+          />
         )}
         {showFab && (
           <FloatingAddButton
@@ -254,7 +259,7 @@ export default function TodoScreen() {
             return (
               <View key={key}>
                 <SectionHeader label={label} priority={key} count={items.length} />
-                <View style={{ paddingHorizontal: 20 }}>
+                <View style={{ paddingHorizontal: spacing.screen }}>
                   <DraggableFlatList
                     data={items}
                     keyExtractor={(item) => item.id}
@@ -303,14 +308,14 @@ function Header({
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingHorizontal: 20,
+          paddingHorizontal: spacing.screen,
           paddingTop: 16,
           paddingBottom: 8,
         }}
       >
         <AppText variant="title">할일</AppText>
       </View>
-      <View style={{ flexDirection: 'row', paddingHorizontal: 20, gap: 16, marginBottom: 4 }}>
+      <View style={{ flexDirection: 'row', paddingHorizontal: spacing.screen, gap: spacing.card, marginBottom: spacing.xs }}>
         {(['active', 'completed'] as TabFilter[]).map((tab) => {
           const isActive = filter === tab;
           return (

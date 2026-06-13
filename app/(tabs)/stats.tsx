@@ -13,6 +13,7 @@ import { SectionHeader } from '@/components/SectionHeader';
 import { StatsSummarySkeleton } from '@/components/Skeleton';
 import { SpringModal } from '@/components/SpringModal';
 import { DAY_LABELS, STATS_LABELS, WEEKDAY_SHORT } from '@/constants/statsLabels';
+import { spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useAppHydrated } from '@/hooks/useAppHydrated';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -20,12 +21,14 @@ import { type FastingRecord, useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
+import { useUserStore } from '@/stores/useUserStore';
 import {
   type DailyFastingSummary,
   formatHHMM,
   formatMinutes,
   groupFastingByDay,
 } from '@/utils/statsHelper';
+import { formatMetric } from '@/utils/formatMetric';
 
 const TAB_INDEX = 4 as const;
 const L = STATS_LABELS;
@@ -67,7 +70,7 @@ function MonthGrid({
 
   return (
     <View style={{ alignItems: 'center' }}>
-      <View style={{ flexDirection: 'row', gap: 6, marginBottom: 4 }}>
+      <View style={{ flexDirection: 'row', gap: 6, marginBottom: spacing.xs }}>
         {DAY_LABELS.map((d) => (
           <View key={d} style={{ width: CELL_SIZE, alignItems: 'center' }}>
             <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>
@@ -143,7 +146,7 @@ function DayDetailModal({
             backgroundColor: c.surface,
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            paddingHorizontal: 20,
+            paddingHorizontal: spacing.screen,
             paddingTop: 16,
             paddingBottom: 34,
             maxHeight: '60%',
@@ -151,7 +154,7 @@ function DayDetailModal({
         >
           <AppText variant="title">{summary.date}</AppText>
         <AppText variant="caption" tone="tertiary" style={{ marginBottom: 20, marginTop: 4 }}>
-          {L.summaryPrefix} {formatMinutes(summary.totalMinutes)} ∑ {summary.count}
+          {L.summaryPrefix} {formatMinutes(summary.totalMinutes)} ù {summary.count}
           {L.summarySuffix}
         </AppText>
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -181,7 +184,7 @@ function DayDetailModal({
                   </View>
                 </View>
                 <AppText variant="caption" tone="tertiary">
-                  {formatHHMM(r.startedAt)} ñ {formatHHMM(r.endedAt)}
+                  {formatHHMM(r.startedAt)} ù {formatHHMM(r.endedAt)}
                 </AppText>
               </Pressable>
               {i < summary.records.length - 1 && <Divider />}
@@ -216,6 +219,7 @@ export default function StatsScreen() {
   const { routines } = useRoutineStore();
   const { todos } = useTodoStore();
   const { getCompletedIds, getStreak } = useRoutineCompletionStore();
+  const { profile } = useUserStore();
 
   const now = new Date();
   const [viewYear, setViewYear] = useState(now.getFullYear());
@@ -301,7 +305,7 @@ export default function StatsScreen() {
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={[
-          { padding: 20, gap: 24 },
+          { padding: spacing.screen, gap: spacing.section },
           isDataEmpty && { flexGrow: 1 },
         ]}
         showsVerticalScrollIndicator={false}
@@ -331,6 +335,24 @@ export default function StatsScreen() {
                 </View>
               )}
             </View>
+
+            {profile.weightKg != null && profile.targetWeightKg != null && (
+              <View style={{ gap: spacing.sm }}>
+                <SectionHeader title="?? ??" />
+                <Card>
+                  <AppText variant="body" style={{ fontWeight: '600' }}>
+                    {formatMetric(profile.weightKg, 'kg')} ? {formatMetric(profile.targetWeightKg, 'kg')}
+                  </AppText>
+                  <AppText variant="caption" tone="tertiary" style={{ marginTop: spacing.xs }}>
+                    {profile.weightKg > profile.targetWeightKg
+                      ? `${(profile.weightKg - profile.targetWeightKg).toFixed(1)}kg ?? ??`
+                      : profile.weightKg < profile.targetWeightKg
+                        ? `${(profile.targetWeightKg - profile.weightKg).toFixed(1)}kg ?? ??`
+                        : '?? ??? ?????'}
+                  </AppText>
+                </Card>
+              </View>
+            )}
 
             {hydrated && hasChartData && (
               <View style={{ gap: 8 }}>
