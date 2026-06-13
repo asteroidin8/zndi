@@ -3,17 +3,23 @@ import { useEffect } from 'react';
 
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useTodoStore } from '@/stores/useTodoStore';
+import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
 
 export function useTodoNotifications() {
   const { todos } = useTodoStore();
   const { todoNotificationsEnabled } = useSettingsStore();
 
   useEffect(() => {
-    if (!todoNotificationsEnabled) return;
+    async function sync() {
+      if (!todoNotificationsEnabled) {
+        await cancelNotificationsByPrefix(NOTIFICATION_ID.todoPrefix);
+        return;
+      }
 
-    async function schedule() {
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== 'granted') return;
+
+      await cancelNotificationsByPrefix(NOTIFICATION_ID.todoPrefix);
 
       const activeTodos = todos.filter((t) => !t.completedAt && t.dueDate);
 
@@ -24,7 +30,7 @@ export function useTodoNotifications() {
         if (trigger <= new Date()) continue;
 
         await Notifications.scheduleNotificationAsync({
-          identifier: `todo-due-${todo.id}`,
+          identifier: `${NOTIFICATION_ID.todoPrefix}${todo.id}`,
           content: {
             title: '오늘 마감인 할일이 있어요',
             body: todo.title,
@@ -38,6 +44,6 @@ export function useTodoNotifications() {
       }
     }
 
-    schedule();
+    sync();
   }, [todos, todoNotificationsEnabled]);
 }
