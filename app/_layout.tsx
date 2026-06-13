@@ -6,7 +6,6 @@ import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { DatabaseProvider } from '@/db/DatabaseProvider';
 import { useFastingNotification } from '@/hooks/useFastingNotification';
 import { useMidnightArchive } from '@/hooks/useMidnightArchive';
 import { useRoutineNotifications } from '@/hooks/useRoutineNotifications';
@@ -39,15 +38,12 @@ function AppContent() {
   );
 }
 
-// GestureHandlerRootView가 구 빌드에서 undefined일 수 있으므로 안전하게 폴백
 const SafeGestureRoot = GestureHandlerRootView ?? View;
 
 export default function RootLayout() {
   return (
     <SafeGestureRoot style={{ flex: 1 }}>
-      <DatabaseProvider>
-        <AppContent />
-      </DatabaseProvider>
+      <AppContent />
     </SafeGestureRoot>
   );
 }
