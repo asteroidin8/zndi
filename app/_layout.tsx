@@ -6,11 +6,13 @@ import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { useFastingNotification } from '@/hooks/useFastingNotification';
 import { useMidnightArchive } from '@/hooks/useMidnightArchive';
 import { useRoutineNotifications } from '@/hooks/useRoutineNotifications';
 import { useTodoNotifications } from '@/hooks/useTodoNotifications';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { initSentry } from '@/utils/sentry';
 import { setupNotificationHandler } from '@/utils/notifications';
 
 function AppContent() {
@@ -18,6 +20,7 @@ function AppContent() {
   const isDark = c.surface === '#0a0a0a';
 
   useEffect(() => {
+    initSentry();
     setupNotificationHandler();
   }, []);
 
@@ -45,7 +48,9 @@ const SafeGestureRoot = GestureHandlerRootView ?? View;
 export default function RootLayout() {
   return (
     <SafeGestureRoot style={{ flex: 1 }}>
-      <AppContent />
+      <AppErrorBoundary>
+        <AppContent />
+      </AppErrorBoundary>
     </SafeGestureRoot>
   );
 }
