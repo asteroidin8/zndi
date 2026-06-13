@@ -19,9 +19,17 @@ type Props<T extends string | boolean> = {
   value: T | null;
   onChange: (value: T | null) => void;
   allowDeselect?: boolean;
-  /** inline: row 내부 / full: 카드 전체 너비 */
+  /** inline: row trailing / full: 카드 단일 row */
   layout?: 'inline' | 'full';
 };
+
+const INLINE_SHELL_PADDING = spacing.xs;
+const FULL_SHELL_PADDING_Y = spacing.xs;
+
+function segmentButtonHeight(isInline: boolean) {
+  const shellY = isInline ? INLINE_SHELL_PADDING * 2 : FULL_SHELL_PADDING_Y * 2;
+  return SETTING_ROW_HEIGHT - shellY;
+}
 
 export function SettingSegmentTrack<T extends string | boolean>({
   options,
@@ -32,22 +40,32 @@ export function SettingSegmentTrack<T extends string | boolean>({
 }: Props<T>) {
   const c = useThemeColors();
   const isInline = layout === 'inline';
-  const stackedIcon = !isInline && options.some((o) => o.icon);
-  const buttonMinHeight = isInline ? spacing.section : SETTING_ROW_HEIGHT - spacing.sm;
+  const buttonHeight = segmentButtonHeight(isInline);
 
   return (
     <View
-      style={{
-        flexDirection: 'row',
-        flex: isInline ? 1 : undefined,
-        flexShrink: isInline ? 1 : undefined,
-        backgroundColor: c.surfaceMuted,
-        borderRadius: radius.md,
-        borderWidth: 1,
-        borderColor: c.borderStrong,
-        padding: spacing.xs,
-        gap: spacing.xs,
-      }}
+      style={
+        isInline
+          ? {
+              flexDirection: 'row',
+              flexShrink: 0,
+              alignItems: 'center',
+              gap: spacing.xs,
+              padding: INLINE_SHELL_PADDING,
+              backgroundColor: c.surfaceMuted,
+              borderRadius: radius.md,
+              borderWidth: 1,
+              borderColor: c.borderStrong,
+            }
+          : {
+              flexDirection: 'row',
+              alignItems: 'center',
+              height: SETTING_ROW_HEIGHT,
+              paddingHorizontal: spacing.card,
+              paddingVertical: FULL_SHELL_PADDING_Y,
+              gap: spacing.xs,
+            }
+      }
     >
       {options.map((opt) => {
         const selected = value === opt.value;
@@ -62,14 +80,14 @@ export function SettingSegmentTrack<T extends string | boolean>({
             accessibilityState={{ selected }}
             accessibilityLabel={opt.label}
             style={({ pressed }) => ({
-              flex: 1,
-              minHeight: buttonMinHeight,
-              flexDirection: stackedIcon ? 'column' : 'row',
+              flex: isInline ? undefined : 1,
+              flexShrink: isInline ? 0 : undefined,
+              height: buttonHeight,
+              flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: stackedIcon ? spacing.xs : 0,
-              paddingHorizontal: isInline ? spacing.sm : spacing.sm,
-              paddingVertical: spacing.xs,
+              gap: spacing.xs,
+              paddingHorizontal: spacing.sm,
               borderRadius: radius.sm,
               backgroundColor: selected ? c.ink : c.surface,
               borderWidth: selected ? 0 : 1,
@@ -80,7 +98,7 @@ export function SettingSegmentTrack<T extends string | boolean>({
             {opt.icon && (
               <AppIcon
                 name={opt.icon}
-                size={isInline ? 14 : 16}
+                size={14}
                 color={selected ? c.surface : c.inkTertiary}
               />
             )}

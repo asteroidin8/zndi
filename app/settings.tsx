@@ -10,7 +10,6 @@ import {
   DecimalWheelPicker,
   SettingChoiceRow,
   SettingDestructiveRow,
-  SettingInsetDivider,
   SettingRow,
   SettingSection,
   SettingSegmentTrack,
@@ -200,28 +199,24 @@ export default function SettingsScreen() {
             unset={profile.heightCm == null}
             onPress={() => setPickerType('height')}
           />
-          <SettingInsetDivider />
           <SettingRow
             label="체중"
             value={formatMetric(profile.weightKg, 'kg')}
             unset={profile.weightKg == null}
             onPress={() => setPickerType('weight')}
           />
-          <SettingInsetDivider />
           <SettingRow
             label="목표 체중"
             value={formatMetric(profile.targetWeightKg, 'kg')}
             unset={profile.targetWeightKg == null}
             onPress={() => setPickerType('targetWeight')}
           />
-          <SettingInsetDivider />
           <SettingRow
             label="나이"
             value={profile.ageYears != null ? `${profile.ageYears}세` : '미설정'}
             unset={profile.ageYears == null}
             onPress={() => setPickerType('age')}
           />
-          <SettingInsetDivider />
           <SettingChoiceRow
             label="성별"
             allowDeselect
@@ -235,20 +230,18 @@ export default function SettingsScreen() {
         </SettingSection>
 
         <SettingSection title="테마">
-          <View style={{ padding: spacing.card }}>
-            <SettingSegmentTrack
-              layout="full"
-              value={themeMode}
-              onChange={(mode) => {
-                if (mode) setThemeMode(mode);
-              }}
-              options={THEME_OPTIONS.map((opt) => ({
-                value: opt.mode,
-                label: opt.label,
-                icon: opt.icon,
-              }))}
-            />
-          </View>
+          <SettingSegmentTrack
+            layout="full"
+            value={themeMode}
+            onChange={(mode) => {
+              if (mode) setThemeMode(mode);
+            }}
+            options={THEME_OPTIONS.map((opt) => ({
+              value: opt.mode,
+              label: opt.label,
+              icon: opt.icon,
+            }))}
+          />
         </SettingSection>
 
         <SettingSection title="알림">
@@ -260,14 +253,12 @@ export default function SettingsScreen() {
               if (enabled !== foregroundServiceEnabled) toggleForegroundService();
             }}
           />
-          <SettingInsetDivider />
           <SettingToggleRow
             label="루틴 리마인더"
             description="루틴에 설정된 시간에 알림을 보내드려요"
             value={routineNotificationsEnabled}
             onToggle={setRoutineNotifications}
           />
-          <SettingInsetDivider />
           <SettingToggleRow
             label="할일 마감 알림"
             description="마감일 당일 오전 9시에 알려드려요"
@@ -278,7 +269,6 @@ export default function SettingsScreen() {
 
         <SettingSection
           title="데이터"
-          bare
           footer="단식·루틴·할 일 기록과 프로필, 앱 설정이 모두 삭제됩니다."
         >
           <SettingDestructiveRow label="전체 데이터 초기화" onPress={handleDataReset} />

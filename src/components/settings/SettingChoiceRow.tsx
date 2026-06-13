@@ -2,7 +2,7 @@ import { View } from 'react-native';
 
 import { AppText } from '../AppText';
 import { SettingSegmentTrack, type SegmentOption } from './SettingSegmentTrack';
-import { settingRowStyle } from './settingStyles';
+import { settingCompactRowStyle } from './settingStyles';
 
 type Props<T extends string | boolean> = {
   label: string;
@@ -12,7 +12,6 @@ type Props<T extends string | boolean> = {
   allowDeselect?: boolean;
 };
 
-/** 리스트 row — 라벨 + 세그먼트 (신체 정보·성별) */
 export function SettingChoiceRow<T extends string | boolean>({
   label,
   options,
@@ -21,8 +20,8 @@ export function SettingChoiceRow<T extends string | boolean>({
   allowDeselect = false,
 }: Props<T>) {
   return (
-    <View style={settingRowStyle()} accessibilityLabel={label}>
-      <AppText variant="body" style={{ flexShrink: 0 }}>
+    <View style={settingCompactRowStyle()} accessibilityLabel={label}>
+      <AppText variant="body" numberOfLines={1}>
         {label}
       </AppText>
       <SettingSegmentTrack

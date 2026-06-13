@@ -3,8 +3,7 @@ import { Pressable, View } from 'react-native';
 
 import { AppIcon } from '../AppIcon';
 import { AppText } from '../AppText';
-import { settingRowStyle } from './settingStyles';
-import { spacing } from '@/constants/spacing';
+import { settingCompactRowStyle, settingRowTrailingStyle } from './settingStyles';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 type Props = {
@@ -28,13 +27,14 @@ export function SettingRow({
 }: Props) {
   const c = useThemeColors();
   const interactive = Boolean(onPress);
-  const rowStyle = settingRowStyle();
+  const rowStyle = settingCompactRowStyle();
 
   const labelNode = (
     <AppText
       variant="body"
       tone={danger ? 'tertiary' : 'primary'}
-      style={[danger ? { color: c.danger } : {}, { flexShrink: 0 }]}
+      style={danger ? { color: c.danger } : undefined}
+      numberOfLines={1}
     >
       {label}
     </AppText>
@@ -42,11 +42,10 @@ export function SettingRow({
 
   const trailingNode = trailing ?? (
     value !== undefined && (
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1 }}>
+      <View style={settingRowTrailingStyle()}>
         <AppText
           variant="body"
           tone={unset ? 'tertiary' : 'secondary'}
-          style={{ textAlign: 'right' }}
           numberOfLines={1}
         >
           {value}

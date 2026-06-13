@@ -16,16 +16,11 @@ export function SettingToggleRow({ label, description, value, onToggle }: Props)
   const c = useThemeColors();
 
   return (
-    <View
-      style={[
-        settingRowStyle(),
-        description ? { minHeight: undefined, alignItems: 'center' } : null,
-      ]}
-    >
-      <View style={{ flex: 1, justifyContent: 'center' }}>
+    <View style={settingRowStyle()}>
+      <View style={{ flex: 1, gap: spacing.xs, justifyContent: 'center', minWidth: 0 }}>
         <AppText variant="body">{label}</AppText>
         {description && (
-          <AppText variant="caption" tone="tertiary" style={{ marginTop: spacing.xs, lineHeight: 17 }}>
+          <AppText variant="caption" tone="tertiary" style={{ lineHeight: 17 }}>
             {description}
           </AppText>
         )}

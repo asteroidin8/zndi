@@ -1,7 +1,7 @@
 import { Pressable } from 'react-native';
 
 import { AppText } from '../AppText';
-import { settingRowStyle } from './settingStyles';
+import { settingCompactRowStyle } from './settingStyles';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 type Props = {
@@ -18,11 +18,11 @@ export function SettingDestructiveRow({ label, onPress }: Props) {
       accessibilityRole="button"
       accessibilityLabel={label}
       style={({ pressed }) => ({
-        ...settingRowStyle(),
+        ...settingCompactRowStyle(),
         opacity: pressed ? 0.7 : 1,
       })}
     >
-      <AppText variant="body" style={{ color: c.danger, fontWeight: '500' }}>
+      <AppText variant="body" style={{ color: c.danger, fontWeight: '500' }} numberOfLines={1}>
         {label}
       </AppText>
     </Pressable>

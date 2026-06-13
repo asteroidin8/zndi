@@ -6,4 +6,10 @@ export { SettingRow } from './SettingRow';
 export { SettingSection } from './SettingSection';
 export { SettingSegmentTrack, type SegmentOption } from './SettingSegmentTrack';
 export { SettingToggleRow } from './SettingToggleRow';
-export { SETTING_ROW_HEIGHT, settingRowStyle } from './settingStyles';
+export { SettingsList } from './SettingsList';
+export {
+  SETTING_ROW_HEIGHT,
+  settingCompactRowStyle,
+  settingRowStyle,
+  settingRowTrailingStyle,
+} from './settingStyles';
