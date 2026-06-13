@@ -181,7 +181,7 @@ function DayDetailModal({
                   </View>
                 </View>
                 <AppText variant="caption" tone="tertiary">
-                  {formatHHMM(r.startedAt)} ? {formatHHMM(r.endedAt)}
+                  {formatHHMM(r.startedAt)} – {formatHHMM(r.endedAt)}
                 </AppText>
               </Pressable>
               {i < summary.records.length - 1 && <Divider />}
