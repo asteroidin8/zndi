@@ -72,15 +72,18 @@ export function FastingCard({ onPress }: Props) {
 
   if (status === 'idle') {
     return (
-      <Card pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="단식 시작하기">
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <View style={{ gap: 4, flex: 1 }}>
-            <AppText variant="caption" tone="tertiary">
+      <Card pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="단식, 도전하기">
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <View style={{ flex: 1, gap: 10 }}>
+            <AppText variant="caption" tone="secondary">
               단식
             </AppText>
-            <AppText variant="title">{goalHours}시간 · 시작하기</AppText>
+            <AppText variant="title">도전하기</AppText>
+            <AppText variant="caption" tone="tertiary">
+              시작 전
+            </AppText>
           </View>
-          <AppIcon name="ChevronRight" size={18} color={c.inkTertiary} />
+          <AppIcon name="ChevronRight" size={16} color={c.inkTertiary} />
         </View>
       </Card>
     );
