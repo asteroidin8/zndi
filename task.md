@@ -1,75 +1,60 @@
-# UX 디테일 작업 체크리스트 (1~4순위)
+# Routiner 출시 작업 계획
 
-> 범위: 출시 전 UX 완성도 개선 (5순위 앱 아이콘·개인정보처리방침 제외)  
-> 스와이프: **루틴·투두 모두 왼쪽=삭제, 오른쪽=완료**  
-> 빌드: 사용자 승인 후에만 진행
-
----
-
-## 공통 인프라
-
-- [x] `SwipeActions` — 왼쪽 삭제 / 오른쪽 완료
-- [x] `AnimatedListItem` — 리스트 입장·퇴장 애니메이션
-- [x] `DragItemWrapper` — 드래그 정렬 시각 피드백
-- [x] `SpringModal` — 모달 스프링 애니메이션
-- [x] `EmptyIllustration` — 빈 상태 미니멀 SVG
-- [x] `Coachmark` + `useSettingsStore.seenHints` — 1회 힌트
-- [x] `microFeedback` — 완료/삭제/성공 햅틱 통일
-- [x] `TabNavigationContext.scrollToTop` — 탭 재탭 맨 위
-- [x] `dateFormat` — 마감 긴급도 + 시간대 인사
+> 기준: 토스 UI/UX — 설정 기능 = 실제 동작, 신뢰·법적·브랜드 요건 충족  
+> 목표: 스토어 출시 가능 상태
 
 ---
 
-## 1순위 — 움직임의 기본
+## Phase 0 — 출시 블로커 (1~2주)
 
-| # | 항목 | 상태 | 적용 파일 |
-|---|------|------|-----------|
-| 1 | 루틴·투두 리스트 입장/퇴장 애니메이션 | [x] | `routine.tsx`, `todo.tsx` |
-| 2 | 완료/삭제 마이크로 피드백 통일 | [x] | `RoutineItem`, `TodoItem`, `SwipeActions`, `microFeedback` |
-| 3 | Undo 후 복귀 애니메이션 | [x] | `AnimatedListItem` (재추가 시 entering) |
-| 4 | 드래그 정렬 시각 피드백 | [x] | `routine.tsx`, `todo.tsx` |
-| 5 | 모달/바텀시트 스프링 | [x] | `RoutineModal`, `TodoModal`, `TodoEditModal`, `WheelPicker`, `DatePickerModal`, `FastingRecordEditModal`, `stats` DayDetailModal |
+| # | 작업 | 상태 | 비고 |
+|---|------|------|------|
+| 1 | 아이콘·스플래시·스토어 에셋 | [ ] | `assets/`, `app.json` |
+| 2 | 개인정보처리방침 + 설정 링크 | [ ] | 신체 정보·로컬 저장·알림·삭제 |
+| 3 | iOS bundleIdentifier, 알림 plugin·권한 문구 | [ ] | `app.json` |
+| 4 | 루틴 리마인더 — 시간 picker 또는 토글 제거 | [ ] | `RoutineModal` |
+| 5 | 알림 버그 (cancelAll, 할일 잔존 알림) | [ ] | notification hooks |
+| 6 | 데이터 초기화 완전화 | [ ] | 모든 store·hints·알림 설정 |
+| 7 | stats 시간 표시 `?` 버그 | [ ] | `stats.tsx` |
 
----
-
-## 2순위 — 실사용 디테일
-
-| # | 항목 | 상태 | 적용 파일 |
-|---|------|------|-----------|
-| 6 | 투두 마감 임박/지연 표시 | [x] | `dateFormat.ts`, `TodoItem`, `DailySummaryRow` |
-| 7 | 오늘 루틴 전부 완료 상태 | [x] | `routine.tsx`, `DailySummaryRow` |
-| 8 | 목표 달성(부스터) 진입 피드백 | [x] | `fasting.tsx` |
-| 9 | 탭 재탭 → 맨 위 스크롤 | [x] | `_layout.tsx`, 각 탭 ScrollView |
-| 10 | 홈 미리보기 정렬 개선 | [x] | `DailySummaryRow.tsx` |
+**완료 기준:** EAS production 빌드 성공 + P0 QA 통과
 
 ---
 
-## 3순위 — 톤·온보딩
+## Phase 1 — 출시 직전/동시 (1주)
 
-| # | 항목 | 상태 | 적용 파일 |
-|---|------|------|-----------|
-| 11 | 빈 상태 미니멀 일러스트 | [x] | `routine.tsx`, `todo.tsx`, `fasting.tsx`, `stats.tsx` |
-| 12 | 시간대별 홈 인사 | [x] | `index.tsx` |
-| 13 | 통계 빈 상태 안내 | [x] | `stats.tsx` |
-| 14 | 첫 사용 힌트 1회 | [x] | `routine.tsx`, `todo.tsx`, `Coachmark` |
-
----
-
-## 4순위 — 고급 UX
-
-| # | 항목 | 상태 | 적용 파일 |
-|---|------|------|-----------|
-| 15 | 스와이프 방향 분리 (왼=삭제, 오른=완료) | [x] | `SwipeActions`, `routine.tsx`, `todo.tsx` |
-| 16 | 접근성 (라벨·터치 영역) | [x] | `RoutineItem`, `TodoItem`, `_layout.tsx`, `SwipeActions`, `SpringModal` |
+| # | 작업 | 상태 |
+|---|------|------|
+| 8 | 설정 하단 — 버전·문의·약관 | [ ] |
+| 9 | 알림 권한 거부 시 인앱 안내 | [ ] |
+| 10 | 홈·설정 프로필 배너 조건 통일 | [ ] |
+| 11 | 탭 4화면 spacing/typography 토큰 통일 | [ ] |
+| 12 | Sentry 등 크래시 리포팅 | [ ] |
+| 13 | SQLite 미사용 레이어 정리 | [ ] |
 
 ---
 
-## 검증
+## Phase 2 — 출시 후 1~2개월
 
-- [x] TypeScript / ESLint 오류 없음
-- [x] `todo.tsx` 한글 깨짐 없음
-- [x] PR 생성 및 squash merge ([#36](https://github.com/asteroidin8/routiner/pull/36))
-- [x] 작업 보고
+| # | 작업 | 상태 |
+|---|------|------|
+| 14 | 온보딩 2~3스텝 | [ ] |
+| 15 | 목표 체중 활용 또는 입력 제거 | [ ] |
+| 16 | 핵심 플로우 E2E + CI | [ ] |
+| 17 | 긴 리스트 가상화·성능 | [ ] |
+| 18 | 접근성 전수 점검 | [ ] |
+
+---
+
+## PR 단위
+
+1. `chore:` 스토어 에셋 + `app.json`
+2. `feat:` 개인정보·설정 footer
+3. `fix:` 알림 + 데이터 초기화
+4. `feat:` 루틴 리마인더 시간 UI
+5. `fix:` stats 버그 + 프로필 배너
+6. `refactor:` spacing 토큰 + SQLite 정리
+7. `chore:` Sentry + CI
 
 ---
 
@@ -77,62 +62,4 @@
 
 | 일시 | 작업 |
 |------|------|
-| 2026-06-12 | task.md 생성 |
-| 2026-06-12 | 1~4순위 UX 디테일 전체 구현 완료 (빌드·PR 대기) |
-| 2026-06-12 | UI 디테일 폴리시 (아이콘·스플래시 제외) |
-
----
-
-## UI 디테일 (앱 아이콘·스플래시 제외)
-
-> 범위: 출시 전 시각·터치·토큰 통일  
-> 제외: 앱 아이콘, 스플래시 스크린  
-> 빌드: 사용자 승인 후에만 진행
-
-### 공통 인프라
-
-- [x] `spacing.ts` / `colors.ts` — danger·warning·booster·priority 토큰
-- [x] `Card` — 카드 스타일 + 터치 피드백
-- [x] `SectionHeader` — bar / caption 변형
-- [x] `SettingSection` + `Card` — 설정 섹션·카드
-- [x] `Skeleton` + `useAppHydrated` — persist 로딩 스켈레톤
-
-### 체감 큰 항목
-
-| # | 항목 | 상태 | 적용 파일 |
-|---|------|------|-----------|
-| 1 | 디자인 토큰 + Card/SectionHeader 공통화 | [x] | `stats.tsx`, `FastingCard.tsx` |
-| 2 | 탭바 활성 인디케이터 + 햅틱 + 터치 스케일 | [x] | `_layout.tsx`, `microFeedback.ts` |
-| 3 | 홈 FastingCard ↔ 단식 화면 스타일 통일 | [x] | `FastingCard.tsx` |
-| 4 | 버튼/카드 터치 피드백 통일 | [x] | `Card.tsx`, `_layout.tsx`, `settings.tsx` |
-| 5 | 섹션 헤더 통일 | [x] | `stats.tsx`, `settings.tsx` |
-| 6 | 탭 라벨 `투두` → `할일` | [x] | `_layout.tsx` |
-
-### 미니멀 톤
-
-| # | 항목 | 상태 | 적용 파일 |
-|---|------|------|-----------|
-| 7 | 하드코딩 색 → `colors.ts` 토큰 | [x] | `dateFormat.ts`, `TodoItem`, `todo.tsx`, modals, `fasting.tsx` |
-| 8 | Divider 간격 | [x] | `Divider.tsx` |
-| 9 | 설정 화면 그룹 카드형 | [x] | `settings.tsx`, `SettingSection.tsx`, `src/components/settings/` |
-| 10 | EmptyIllustration 선 두께 통일 | [x] | `EmptyIllustration.tsx` |
-
-### v1 이후 (아이콘·스플래시 제외 진행)
-
-| # | 항목 | 상태 | 적용 파일 |
-|---|------|------|-----------|
-| 11 | 스켈레톤 로딩 | [x] | `stats.tsx`, `Skeleton.tsx`, `useAppHydrated.ts` |
-| 12 | 화면 전환 애니메이션 (PagerView) | [ ] | v1.1 후보 |
-| 13 | 차트 디테일 (오늘 강조·빈 값 `-`) | [x] | `BarChart.tsx`, `stats.tsx` |
-| 14 | 통계 화면 한글 복구 | [x] | `stats.tsx` |
-
-### 제외 (사용자 요청)
-
-- [ ] 앱 아이콘
-- [ ] 스플래시 스크린
-
-### UI 디테일 검증
-
-- [x] TypeScript 오류 없음
-- [x] PR 생성 및 squash merge ([#37](https://github.com/asteroidin8/routiner/pull/37))
-- [x] 작업 보고
+| 2026-06-12 | task.md 출시 계획으로 재작성, P0 착수 |
