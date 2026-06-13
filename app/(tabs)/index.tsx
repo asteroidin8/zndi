@@ -8,6 +8,8 @@ import { AppText } from '@/components/AppText';
 import { DailySummaryRow } from '@/components/DailySummaryRow';
 import { FastingCard } from '@/components/FastingCard';
 import { HomeDailyBoard } from '@/components/HomeDailyBoard';
+import { SectionHeader } from '@/components/SectionHeader';
+import { spacing } from '@/constants/spacing';
 import { useTabNavigation, useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { getTimeGreeting } from '@/utils/dateFormat';
@@ -38,7 +40,7 @@ export default function HomeScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={{ padding: 20, gap: 16 }}
+        contentContainerStyle={{ padding: spacing.screen, gap: spacing.section }}
         showsVerticalScrollIndicator={false}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -94,7 +96,10 @@ export default function HomeScreen() {
           onTodoPress={() => navigateTo(3)}
         />
 
-        <HomeDailyBoard />
+        <View style={{ gap: 12 }}>
+          <SectionHeader title="이번 주" />
+          <HomeDailyBoard />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
