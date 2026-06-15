@@ -17,7 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.asteroidin8.routiner",
       "infoPlist": {
-        "NSUserNotificationsUsageDescription": "단식 진행, 루틴·할 일 알림을 보내기 위해 알림 권한이 필요합니다."
+        "NSUserNotificationsUsageDescription": "단식 진행, 루틴·할 일 알림을 보내기 위해 알림 권한이 필요합니다.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
