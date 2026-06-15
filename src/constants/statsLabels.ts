@@ -11,6 +11,8 @@ export const STATS_LABELS = {
   sectionFasting: '단식',
   sectionRoutine: '루틴',
   sectionTodo: '할일',
+  sectionGrass: '월간 잔디',
+  grassCalendarHint: '완료한 루틴·할일이 많을수록 진해져요',
   totalRecords: '전체 기록',
   completed: '완료',
   avgDuration: '평균 시간',

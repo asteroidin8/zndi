@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { BarChart, type BarChartItem } from '@/components/BarChart';
-import { ContributionGrid } from '@/components/ContributionGrid';
 import { StatsBentoStats } from '@/components/stats/StatsBentoStats';
 import { Card } from '@/components/Card';
 import { Divider } from '@/components/Divider';
@@ -31,6 +30,11 @@ import {
   groupFastingByDay,
 } from '@/utils/statsHelper';
 import { formatMetric } from '@/utils/formatMetric';
+import {
+  buildMonthGrassMap,
+  grassCellColors,
+  type DailyGrassActivity,
+} from '@/utils/calendarGrass';
 
 const TAB_INDEX = 4 as const;
 const L = STATS_LABELS;
@@ -49,16 +53,14 @@ function MonthGrid({
   year,
   month,
   summaries,
+  grassMap,
   onSelect,
-  getRoutineCompletedCount,
-  getRoutineTotalCount,
 }: {
   year: number;
   month: number;
   summaries: DailyFastingSummary[];
+  grassMap: Map<string, DailyGrassActivity>;
   onSelect: (s: DailyFastingSummary) => void;
-  getRoutineCompletedCount: (date: string) => number;
-  getRoutineTotalCount: (date: string) => number;
 }) {
   const c = useThemeColors();
   const dateMap = new Map(summaries.map((s) => [s.date, s]));
@@ -87,42 +89,70 @@ function MonthGrid({
           const summary = dateMap.get(date);
           const isToday = date === today;
           const hasFasting = !!summary;
-          const routineTotal = getRoutineTotalCount(date);
-          const routineRate = routineTotal > 0 ? getRoutineCompletedCount(date) / routineTotal : 0;
+          const grass = grassMap.get(date);
+          const level = grass?.level ?? 0;
+          const colors = grassCellColors(level, c, isToday, hasFasting);
+          const a11yParts = [
+            `${new Date(`${date}T00:00:00`).getDate()}일`,
+            grass && grass.routineTotal > 0
+              ? `루틴 ${grass.routineCompleted}/${grass.routineTotal}`
+              : null,
+            grass && grass.todosCompleted > 0 ? `할일 ${grass.todosCompleted}개 완료` : null,
+            hasFasting ? '단식 기록 있음' : null,
+          ]
+            .filter(Boolean)
+            .join(', ');
+
           return (
             <Pressable
               key={date}
               onPress={() => summary && onSelect(summary)}
+              accessibilityRole="button"
+              accessibilityLabel={a11yParts}
               style={{
                 width: CELL_SIZE,
                 height: CELL_SIZE,
                 borderRadius: CELL_SIZE / 4,
-                borderWidth: 1,
-                borderColor: isToday ? c.ink : hasFasting ? c.borderStrong : c.border,
-                backgroundColor: hasFasting ? c.surfaceSubtle : 'transparent',
+                borderWidth: isToday ? 1.5 : 1,
+                borderColor: colors.borderColor,
+                overflow: 'hidden',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 2,
+                ...(colors.glow
+                  ? {
+                      shadowColor: c.primary,
+                      shadowOpacity: 0.45,
+                      shadowRadius: 4,
+                      shadowOffset: { width: 0, height: 0 },
+                      elevation: 3,
+                    }
+                  : {}),
               }}
             >
-              <AppText
-                variant="caption"
-                tone={isToday ? 'primary' : hasFasting ? 'secondary' : 'disabled'}
-                style={isToday ? { fontWeight: '700', fontSize: 11 } : { fontSize: 11 }}
-              >
-                {new Date(`${date}T00:00:00`).getDate()}
-              </AppText>
-              {routineTotal > 0 && (
+              {colors.fill !== 'transparent' && (
                 <View
                   style={{
-                    width: 4,
-                    height: 4,
-                    borderRadius: 2,
-                    backgroundColor:
-                      routineRate >= 1 ? c.primary : routineRate > 0 ? c.accent : c.surfaceMuted,
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: colors.fill,
+                    opacity: colors.fillOpacity,
                   }}
                 />
               )}
+              <AppText
+                variant="caption"
+                tone={isToday ? 'primary' : level > 0 ? 'secondary' : hasFasting ? 'secondary' : 'disabled'}
+                style={{
+                  fontSize: 11,
+                  fontWeight: isToday ? '700' : level >= 3 ? '600' : '400',
+                  zIndex: 1,
+                }}
+              >
+                {new Date(`${date}T00:00:00`).getDate()}
+              </AppText>
             </Pressable>
           );
         })}
@@ -220,7 +250,7 @@ export default function StatsScreen() {
   const { records, removeRecord, updateRecord } = useFastingStore();
   const { routines } = useRoutineStore();
   const { todos } = useTodoStore();
-  const { getCompletedIds, getStreak } = useRoutineCompletionStore();
+  const { getStreak, isCompleted } = useRoutineCompletionStore();
   const { profile } = useUserStore();
 
   const now = new Date();
@@ -302,6 +332,8 @@ export default function StatsScreen() {
   }
   const isCurrentMonth = viewYear === now.getFullYear() && viewMonth === now.getMonth();
 
+  const grassMap = buildMonthGrassMap(viewYear, viewMonth, routines, isCompleted, todos);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <ScrollView
@@ -314,7 +346,6 @@ export default function StatsScreen() {
       >
         <AppText variant="title">{L.title}</AppText>
 
-        <ContributionGrid />
         <StatsBentoStats />
 
         {isDataEmpty ? (
@@ -403,6 +434,11 @@ export default function StatsScreen() {
             <Divider />
 
             <View style={{ gap: 12 }}>
+              <SectionHeader title={L.sectionGrass} />
+              <AppText variant="caption" tone="tertiary">
+                {L.grassCalendarHint}
+              </AppText>
+
               <View
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
               >
@@ -444,18 +480,8 @@ export default function StatsScreen() {
                 year={viewYear}
                 month={viewMonth}
                 summaries={summaries}
+                grassMap={grassMap}
                 onSelect={setSelected}
-                getRoutineCompletedCount={(date) => {
-                  const dayOfWeek = new Date(`${date}T00:00:00`).getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
-                  const dayRoutines = routines.filter((r) => r.repeatDays.includes(dayOfWeek));
-                  if (dayRoutines.length === 0) return 0;
-                  const completedIds = new Set(getCompletedIds(date));
-                  return dayRoutines.filter((r) => completedIds.has(r.id)).length;
-                }}
-                getRoutineTotalCount={(date) => {
-                  const dayOfWeek = new Date(`${date}T00:00:00`).getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
-                  return routines.filter((r) => r.repeatDays.includes(dayOfWeek)).length;
-                }}
               />
 
               {records.length === 0 && (
