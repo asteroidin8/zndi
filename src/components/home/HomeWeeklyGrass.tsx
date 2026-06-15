@@ -60,8 +60,20 @@ export function HomeWeeklyGrass() {
             const colors = cellColor(dot.status, c);
             const size = isToday ? 16 : 14;
             const partial = dot.status === 'partial';
+            const statusA11y =
+              dot.status === 'full'
+                ? '전체 완료'
+                : dot.status === 'partial'
+                  ? '일부 완료'
+                  : dot.status === 'empty'
+                    ? '미완료'
+                    : '기록 없음';
             return (
-              <View key={dot.dateStr} style={{ flex: 1, alignItems: 'center', gap: 6 }}>
+              <View
+                key={dot.dateStr}
+                style={{ flex: 1, alignItems: 'center', gap: 6 }}
+                accessibilityLabel={`${dot.weekdayLabel} ${statusA11y}`}
+              >
                 <View
                   style={{
                     width: size,

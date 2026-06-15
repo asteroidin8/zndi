@@ -99,6 +99,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                     paddingVertical: 11,
                     gap: 10,
                   }}
+                  accessibilityLabel={`${routine.name}${done ? ', 완료' : ', 미완료'}`}
                 >
                   <View
                     style={{
