@@ -11,7 +11,9 @@
 | Primary | `#22C55E` | 메인 포인트(완료·CTA·토글 ON) |
 | Accent | `#4ADE80` | 보조 강조·아웃라인 |
 | Surface Container | `#1E1E1E` | 카드·설정 리스트 |
+| Surface Card | `#252525` | elevated 카드 |
 | Surface Container High | `#2A2A2A` | 뮤트 surface |
+| Neon Glow | `#86EFAC` | glow 보조 |
 | Text | `#F1F5F9` | 본문 |
 
 ## Expo/RN 파일 매핑
@@ -20,7 +22,8 @@
 |------|------|
 | 테마 토큰 | `src/constants/colors.ts` + `src/hooks/useThemeColors.ts` |
 | Primary | `colors.dark.primary` |
-| surfaceContainer | `colors.dark.surfaceSubtle` |
+| surfaceCard | `colors.dark.surfaceCard` |
+| glow 유틸 | `src/constants/themeEffects.ts` |
 | 설정 카드 | `src/components/Card.tsx` + `SettingSection` |
 | 설정 화면 | `app/settings.tsx` + `src/components/settings/*` |
 | 클라우드 동기화 | `SettingAccountSection` |
@@ -30,7 +33,7 @@
 1. **테마:** `useThemeColors()`만 사용 — `#121212` 등 하드코딩 금지
 2. **다크 기본:** `useSettingsStore.themeMode` 기본값 `dark`
 3. **잔디 성취감:** 루틴·할일 완료 체크, 통계 월간 그리드 → `primary` (#22C55E)
-4. **설정 카드:** `Card` + `radius.xl`(20dp급) + `surfaceSubtle` 배경
+4. **설정 카드:** `Card variant="elevated"` + `radius.xl`(20) + neon 섹션 헤더
 
 ## 클라우드 UX (설정)
 
