@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 
-import { spacing } from '@/constants/spacing';
+import { SETTING_ROW_INSET } from './settingStyles';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 export function SettingInsetDivider() {
@@ -11,7 +11,7 @@ export function SettingInsetDivider() {
       style={{
         height: 1,
         backgroundColor: c.borderNeutral,
-        marginLeft: spacing.card,
+        marginLeft: SETTING_ROW_INSET,
       }}
     />
   );

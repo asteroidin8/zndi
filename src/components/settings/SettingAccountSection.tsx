@@ -7,6 +7,7 @@ import { SettingDestructiveRow } from './SettingDestructiveRow';
 import { SettingRow } from './SettingRow';
 import { SettingSection } from './SettingSection';
 import { SettingsList } from './SettingsList';
+import { SETTING_ROW_INSET } from './settingStyles';
 import { spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -31,7 +32,7 @@ export function SettingAccountSection() {
     return (
       <SettingSection title="계정">
         <SettingsList>
-          <View style={{ padding: spacing.card }}>
+          <View style={{ padding: SETTING_ROW_INSET }}>
             <AppText variant="caption" tone="tertiary" style={{ fontSize: 13 }}>
               Supabase 환경 변수가 없어요. .env에 URL과 anon key를 설정해 주세요.
             </AppText>
@@ -45,7 +46,7 @@ export function SettingAccountSection() {
     return (
       <SettingSection title="계정">
         <SettingsList>
-          <View style={{ padding: spacing.card, alignItems: 'center' }}>
+          <View style={{ padding: SETTING_ROW_INSET, alignItems: 'center' }}>
             <ActivityIndicator color={c.ink} />
           </View>
         </SettingsList>
@@ -138,7 +139,7 @@ export function SettingAccountSection() {
     <SettingSection title="계정">
       <SettingsList>
         {!user && (
-          <View style={{ padding: spacing.card, gap: spacing.sm }}>
+          <View style={{ paddingVertical: SETTING_ROW_INSET, paddingHorizontal: SETTING_ROW_INSET, gap: spacing.sm }}>
             <Pressable
               onPress={handleGoogle}
               disabled={busy}

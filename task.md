@@ -38,7 +38,17 @@ UI [x] zndi visual pass (#102–#104)
 | UI-3 | `CompletionCheckbox` · Routine/Todo · Swipe neon | [x] #104 |
 | UI-4 | Empty illustration accent | [x] #104 |
 
-**제외:** Tailwind/global.css 이중 테마 · SettingCard 신규 · 클라oud sync 토글
+**제외:** Tailwind/global.css 이중 테마 · SettingCard 신규 · 클라oud sync 토글 · 행 leading 아이콘 (v2)
+
+---
+
+## Phase Settings v1
+
+| # | 작업 | 상태 |
+|---|------|------|
+| S-1 | neutral border · spacing · neon 제거 | [x] #106 |
+| S-2 | 4섹션 · profile/notifications/theme | [x] #108 |
+| S-3 | 헤더·여백·danger 라벨 | [x] |
 
 ---
 
@@ -83,6 +93,7 @@ UI [x] zndi visual pass (#102–#104)
 
 | 일시 | 작업 |
 |------|------|
+| 2026-06-16 | Settings v1 구조 (#106 #108) · design guide |
 | 2026-06-16 | Phase UI visual pass (#102–#104) |
 | 2026-06-16 | sentry-setup 제거 · .env.example 제거 (#100) |
 | 2026-06-16 | a11y (#98) · stats (#97) · TopBar (#96) · 할일 (#95) |
