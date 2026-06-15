@@ -1,14 +1,7 @@
 import { Pressable, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withSpring,
-} from 'react-native-reanimated';
 
-import { AppIcon } from './AppIcon';
+import { CompletionCheckbox } from './CompletionCheckbox';
 import { AppText } from './AppText';
-import { useThemeColors } from '@/hooks/useThemeColors';
 import { feedbackComplete, feedbackUncomplete } from '@/utils/microFeedback';
 import type { Routine } from '@/stores/useRoutineStore';
 
@@ -23,19 +16,7 @@ type Props = {
 };
 
 export function RoutineItem({ routine, isCompleted = false, onToggle, onLongPress, onPress }: Props) {
-  const c = useThemeColors();
-  const scale = useSharedValue(1);
-
-  const checkboxStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   function handleToggle() {
-    scale.value = withSequence(
-      withSpring(0.75, { duration: 80 }),
-      withSpring(1.15, { duration: 100 }),
-      withSpring(1, { duration: 120 }),
-    );
     if (isCompleted) feedbackUncomplete();
     else feedbackComplete();
     onToggle?.();
@@ -55,35 +36,16 @@ export function RoutineItem({ routine, isCompleted = false, onToggle, onLongPres
         paddingVertical: 14,
         gap: 14,
         minHeight: 48,
+        opacity: isCompleted ? 0.72 : 1,
       }}
     >
-      <Pressable
-        onPress={handleToggle}
-        hitSlop={12}
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: isCompleted }}
-        accessibilityLabel={`${routine.name} 완료 토글`}
-      >
-        <Animated.View
-          style={[
-            {
-              width: 24,
-              height: 24,
-              borderRadius: 6,
-              borderWidth: 1.5,
-              borderColor: isCompleted ? c.primary : c.borderStrong,
-              backgroundColor: isCompleted ? c.primary : 'transparent',
-              alignItems: 'center',
-              justifyContent: 'center',
-            },
-            checkboxStyle,
-          ]}
-        >
-          {isCompleted && <AppIcon name="Check" size={13} color={c.onPrimary} strokeWidth={2.5} />}
-        </Animated.View>
-      </Pressable>
+      <CompletionCheckbox
+        checked={isCompleted}
+        onToggle={handleToggle}
+        label={`${routine.name} 완료 토글`}
+        iconSize={13}
+      />
 
-      {/* 내용 */}
       <View style={{ flex: 1, gap: 2 }}>
         <AppText
           variant="body"

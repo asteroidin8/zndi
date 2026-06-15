@@ -1,11 +1,6 @@
 import { Pressable, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withSpring,
-} from 'react-native-reanimated';
 
+import { CompletionCheckbox } from './CompletionCheckbox';
 import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
 import { TodoPriorityBadge } from './TodoPriorityBadge';
@@ -25,18 +20,8 @@ type Props = {
 export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin }: Props) {
   const c = useThemeColors();
   const isCompleted = !!todo.completedAt;
-  const scale = useSharedValue(1);
-
-  const checkboxStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
 
   function handleToggle() {
-    scale.value = withSequence(
-      withSpring(0.75, { duration: 80 }),
-      withSpring(1.15, { duration: 100 }),
-      withSpring(1, { duration: 120 }),
-    );
     if (isCompleted) feedbackUncomplete();
     else feedbackComplete();
     onToggle?.();
@@ -50,35 +35,22 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin
       accessibilityRole="button"
       accessibilityLabel={`${todo.title}${isCompleted ? ', 완료됨' : ''}`}
       accessibilityHint="길게 눌러 순서 변경"
-      style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, gap: 14, minHeight: 48 }}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 13,
+        gap: 14,
+        minHeight: 48,
+        opacity: isCompleted ? 0.72 : 1,
+      }}
     >
-      <Pressable
-        onPress={handleToggle}
-        hitSlop={12}
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: isCompleted }}
-        accessibilityLabel={`${todo.title} 완료 토글`}
-      >
-        <Animated.View
-          style={[
-            {
-              width: 24,
-              height: 24,
-              borderRadius: 11,
-              borderWidth: 1.5,
-              borderColor: isCompleted ? c.primary : c.borderStrong,
-              backgroundColor: isCompleted ? c.primary : 'transparent',
-              alignItems: 'center',
-              justifyContent: 'center',
-            },
-            checkboxStyle,
-          ]}
-        >
-          {isCompleted && <AppIcon name="Check" size={12} color={c.onPrimary} strokeWidth={2.5} />}
-        </Animated.View>
-      </Pressable>
+      <CompletionCheckbox
+        checked={isCompleted}
+        onToggle={handleToggle}
+        label={`${todo.title} 완료 토글`}
+        shape="circle"
+      />
 
-      {/* 내용 */}
       <View style={{ flex: 1 }}>
         <AppText
           variant="body"
@@ -102,7 +74,6 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin
         })()}
       </View>
 
-      {/* 홈 고정 / 우선순위 */}
       {!isCompleted && onToggleHomePin && (
         <Pressable
           onPress={onToggleHomePin}
@@ -113,7 +84,7 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin
           <AppIcon
             name={todo.pinnedToHome ? 'Pin' : 'PinOff'}
             size={16}
-            color={todo.pinnedToHome ? c.ink : c.inkDisabled}
+            color={todo.pinnedToHome ? c.primary : c.inkDisabled}
           />
         </Pressable>
       )}

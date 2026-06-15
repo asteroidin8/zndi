@@ -18,11 +18,11 @@ export function EmptyIllustration({ variant, size = 72 }: Props) {
   if (variant === 'routine') {
     return (
       <Svg width={size} height={size} viewBox="0 0 72 72" fill="none">
-        <Circle cx="36" cy="36" r="28" stroke={stroke} strokeWidth={STROKE_WIDTH} />
+        <Circle cx="36" cy="36" r="28" stroke={c.borderStrong} strokeWidth={STROKE_WIDTH} />
         <Path
           d="M24 38 L32 46 L50 28"
-          stroke={stroke}
-          strokeWidth={STROKE_WIDTH}
+          stroke={c.primary}
+          strokeWidth={STROKE_WIDTH + 0.5}
           strokeLinecap="round"
           strokeLinejoin="round"
         />

@@ -47,10 +47,10 @@ export function SwipeActions({
       <Animated.View
         style={[
           styles.actionContainer,
-          { backgroundColor: c.inkSecondary, transform: [{ translateX }] },
+          { backgroundColor: c.primary, transform: [{ translateX }] },
         ]}
       >
-        <Text style={{ color: c.surface, fontSize: 13, fontWeight: '600' }}>{completeLabel}</Text>
+        <Text style={{ color: c.onPrimary, fontSize: 13, fontWeight: '600' }}>{completeLabel}</Text>
       </Animated.View>
     );
   }
