@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Pressable, TextInput, View } from 'react-nati
 
 import { AppText } from '../AppText';
 import { Card } from '../Card';
+import { SettingDestructiveRow } from './SettingDestructiveRow';
 import { SettingRow } from './SettingRow';
 import { SettingSection } from './SettingSection';
 import { spacing } from '@/constants/spacing';
@@ -96,11 +97,23 @@ export function SettingAccountSection() {
   }
 
   async function handleLogout() {
-    setBusy(true);
-    await signOut();
-    setBusy(false);
-    setEmailMode(false);
-    setOtpSent(false);
+    Alert.alert('로그아웃', '계정에서 로그아웃할까요?', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '로그아웃',
+        style: 'destructive',
+        onPress: async () => {
+          setBusy(true);
+          const result = await signOut();
+          setBusy(false);
+          setEmailMode(false);
+          setOtpSent(false);
+          setEmail('');
+          setOtp('');
+          if (result.error) Alert.alert('로그아웃 실패', result.error);
+        },
+      },
+    ]);
   }
 
   if (!user) {
@@ -187,11 +200,14 @@ export function SettingAccountSection() {
   }
 
   return (
-    <SettingSection title="계정 · 클라우드" footer="로컬 저장은 항상 유지됩니다. 클라우드는 백업·다기기 동기화용이에요.">
+    <SettingSection
+      title="계정 · 클라우드"
+      footer="로컬 저장은 항상 1차입니다. 클라우드 백업·복원은 버튼을 눌렀을 때만 실행돼요(자동 백업 없음). 로그인 중이면 다른 기기 변경은 Realtime으로 반영됩니다."
+    >
       <SettingRow label="로그인 계정" value={user.email ?? 'Google'} showChevron={false} />
       <SettingRow label="클라우드에 백업" onPress={handlePush} />
       <SettingRow label="클라우드에서 복원" onPress={handlePull} />
-      <SettingRow label="로그아웃" onPress={handleLogout} danger />
+      <SettingDestructiveRow label="로그아웃" onPress={handleLogout} />
     </SettingSection>
   );
 }
