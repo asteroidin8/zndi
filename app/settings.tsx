@@ -293,6 +293,7 @@ export default function SettingsScreen() {
         </SettingSection>
 
         <SettingSection title="앱 정보">
+          <SettingRow label="이용약관" onPress={() => router.push('/terms')} />
           <SettingRow label="개인정보처리방침" onPress={() => router.push('/privacy')} />
           <SettingRow
             label="문의하기"
