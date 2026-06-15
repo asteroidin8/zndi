@@ -35,4 +35,11 @@ export const STATS_LABELS = {
   deleteAlertMessage: '이 기록을 삭제할까요?',
   cancel: '취소',
   delete: '삭제',
+  sectionWeightGoal: '체중 목표',
+  weightArrow: '\u2192',
+  weightToLose: '감량 목표',
+  weightToGain: '증량 목표',
+  weightAtGoal: '목표 체중에 도달했어요',
+  summarySeparator: '\u00b7',
+  timeRangeSeparator: '\u007e',
 } as const;

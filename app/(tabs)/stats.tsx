@@ -154,7 +154,7 @@ function DayDetailModal({
         >
           <AppText variant="title">{summary.date}</AppText>
         <AppText variant="caption" tone="tertiary" style={{ marginBottom: 20, marginTop: 4 }}>
-          {L.summaryPrefix} {formatMinutes(summary.totalMinutes)} ù {summary.count}
+          {L.summaryPrefix} {formatMinutes(summary.totalMinutes)} {L.summarySeparator} {summary.count}
           {L.summarySuffix}
         </AppText>
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -184,7 +184,7 @@ function DayDetailModal({
                   </View>
                 </View>
                 <AppText variant="caption" tone="tertiary">
-                  {formatHHMM(r.startedAt)} ù {formatHHMM(r.endedAt)}
+                  {formatHHMM(r.startedAt)} {L.timeRangeSeparator} {formatHHMM(r.endedAt)}
                 </AppText>
               </Pressable>
               {i < summary.records.length - 1 && <Divider />}
@@ -338,17 +338,18 @@ export default function StatsScreen() {
 
             {profile.weightKg != null && profile.targetWeightKg != null && (
               <View style={{ gap: spacing.sm }}>
-                <SectionHeader title="?? ??" />
+                <SectionHeader title={L.sectionWeightGoal} />
                 <Card>
                   <AppText variant="body" style={{ fontWeight: '600' }}>
-                    {formatMetric(profile.weightKg, 'kg')} ? {formatMetric(profile.targetWeightKg, 'kg')}
+                    {formatMetric(profile.weightKg, 'kg')} {L.weightArrow}{' '}
+                    {formatMetric(profile.targetWeightKg, 'kg')}
                   </AppText>
                   <AppText variant="caption" tone="tertiary" style={{ marginTop: spacing.xs }}>
                     {profile.weightKg > profile.targetWeightKg
-                      ? `${(profile.weightKg - profile.targetWeightKg).toFixed(1)}kg ?? ??`
+                      ? `${(profile.weightKg - profile.targetWeightKg).toFixed(1)}kg ${L.weightToLose}`
                       : profile.weightKg < profile.targetWeightKg
-                        ? `${(profile.targetWeightKg - profile.weightKg).toFixed(1)}kg ?? ??`
-                        : '?? ??? ?????'}
+                        ? `${(profile.targetWeightKg - profile.weightKg).toFixed(1)}kg ${L.weightToGain}`
+                        : L.weightAtGoal}
                   </AppText>
                 </Card>
               </View>
