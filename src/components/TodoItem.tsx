@@ -66,15 +66,15 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin
               height: 24,
               borderRadius: 11,
               borderWidth: 1.5,
-              borderColor: isCompleted ? c.ink : c.borderStrong,
-              backgroundColor: isCompleted ? c.ink : 'transparent',
+              borderColor: isCompleted ? c.primary : c.borderStrong,
+              backgroundColor: isCompleted ? c.primary : 'transparent',
               alignItems: 'center',
               justifyContent: 'center',
             },
             checkboxStyle,
           ]}
         >
-          {isCompleted && <AppIcon name="Check" size={12} color={c.surface} strokeWidth={2.5} />}
+          {isCompleted && <AppIcon name="Check" size={12} color={c.onPrimary} strokeWidth={2.5} />}
         </Animated.View>
       </Pressable>
 

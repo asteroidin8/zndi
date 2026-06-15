@@ -117,7 +117,7 @@ function MonthGrid({
                     height: 4,
                     borderRadius: 2,
                     backgroundColor:
-                      routineRate >= 1 ? c.ink : routineRate > 0 ? c.inkTertiary : c.surfaceMuted,
+                      routineRate >= 1 ? c.primary : routineRate > 0 ? c.accent : c.surfaceMuted,
                   }}
                 />
               )}

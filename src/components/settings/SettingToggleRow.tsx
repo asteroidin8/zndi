@@ -28,7 +28,7 @@ export function SettingToggleRow({ label, description, value, onToggle }: Props)
       <Switch
         value={value}
         onValueChange={onToggle}
-        trackColor={{ false: c.surfaceMuted, true: c.ink }}
+        trackColor={{ false: c.surfaceMuted, true: c.primary }}
         thumbColor={c.surface}
         accessibilityLabel={description ? `${label}, ${description}` : label}
       />

@@ -6,15 +6,19 @@ import { Card } from '../Card';
 import { SettingDestructiveRow } from './SettingDestructiveRow';
 import { SettingRow } from './SettingRow';
 import { SettingSection } from './SettingSection';
+import { SettingToggleRow } from './SettingToggleRow';
 import { spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { pullCloudToLocal, pushLocalToCloud } from '@/services/sync/cloudSync';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 
 export function SettingAccountSection() {
   const c = useThemeColors();
   const { configured, loading, user, signInGoogle, sendEmailOtp, verifyEmailOtp, signOut } =
     useAuth();
+  const cloudAutoSyncEnabled = useSettingsStore((s) => s.cloudAutoSyncEnabled);
+  const setCloudAutoSyncEnabled = useSettingsStore((s) => s.setCloudAutoSyncEnabled);
   const [busy, setBusy] = useState(false);
   const [emailMode, setEmailMode] = useState(false);
   const [email, setEmail] = useState('');
@@ -120,7 +124,7 @@ export function SettingAccountSection() {
     return (
       <SettingSection
         title="계정 · 클라우드"
-        footer="로그인하면 기기 간 백업과 실시간 동기화를 사용할 수 있어요. 오프라인에서도 로컬 저장은 계속됩니다."
+        footer="로그인하면 자동 클라우드 동기화(기본 ON)로 다른 기기와 맞출 수 있어요. 오프라인에서도 로컬 저장은 계속됩니다."
       >
         <Pressable
           onPress={handleGoogle}
@@ -128,14 +132,14 @@ export function SettingAccountSection() {
           accessibilityRole="button"
           accessibilityLabel="Google로 로그인"
           style={{
-            backgroundColor: c.ink,
+            backgroundColor: c.primary,
             borderRadius: 14,
             paddingVertical: 14,
             alignItems: 'center',
             opacity: busy ? 0.6 : 1,
           }}
         >
-          <AppText variant="body" style={{ color: c.surface, fontWeight: '700' }}>
+          <AppText variant="body" style={{ color: c.onPrimary, fontWeight: '700' }}>
             Google로 로그인
           </AppText>
         </Pressable>
@@ -202,9 +206,15 @@ export function SettingAccountSection() {
   return (
     <SettingSection
       title="계정 · 클라우드"
-      footer="로컬 저장은 항상 1차입니다. 클라우드 백업·복원은 버튼을 눌렀을 때만 실행돼요(자동 백업 없음). 로그인 중이면 다른 기기 변경은 Realtime으로 반영됩니다."
+      footer="로컬이 1차 저장소예요. 자동 동기화 ON이면 변경 시 클라우드에 올라가고, 수동 백업·복원도 사용할 수 있어요."
     >
       <SettingRow label="로그인 계정" value={user.email ?? 'Google'} showChevron={false} />
+      <SettingToggleRow
+        label="자동 클라우드 동기화"
+        description="루틴·할일 변경 시 Supabase에 자동 저장"
+        value={cloudAutoSyncEnabled}
+        onToggle={setCloudAutoSyncEnabled}
+      />
       <SettingRow label="클라우드에 백업" onPress={handlePush} />
       <SettingRow label="클라우드에서 복원" onPress={handlePull} />
       <SettingDestructiveRow label="로그아웃" onPress={handleLogout} />

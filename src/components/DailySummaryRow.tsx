@@ -111,13 +111,13 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                       height: 18,
                       borderRadius: 9,
                       borderWidth: 1.5,
-                      borderColor: done ? c.ink : c.borderStrong,
-                      backgroundColor: done ? c.ink : 'transparent',
+                      borderColor: done ? c.primary : c.borderStrong,
+                      backgroundColor: done ? c.primary : 'transparent',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
-                    {done && <AppIcon name="Check" size={10} color={c.surface} strokeWidth={3} />}
+                    {done && <AppIcon name="Check" size={10} color={c.onPrimary} strokeWidth={3} />}
                   </View>
                   <AppText
                     variant="body"
