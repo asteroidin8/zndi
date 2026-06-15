@@ -18,9 +18,9 @@ import {
 function dotColor(status: DayDotStatus, c: ReturnType<typeof useThemeColors>) {
   switch (status) {
     case 'full':
-      return c.ink;
+      return c.primary;
     case 'partial':
-      return c.inkTertiary;
+      return c.accent;
     case 'empty':
       return c.borderStrong;
     case 'none':
