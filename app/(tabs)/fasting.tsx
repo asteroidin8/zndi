@@ -160,7 +160,7 @@ export default function FastingScreen() {
           }}
         >
           <View style={{ alignItems: 'center', gap: 2 }}>
-            <AppText variant="display" style={{ fontSize: 22, fontWeight: '800', letterSpacing: -1 }}>
+            <AppText variant="stat">
               {formatTotalHours(totalFastMs)}
             </AppText>
             <AppText variant="caption" tone="tertiary">
@@ -171,7 +171,7 @@ export default function FastingScreen() {
           <View style={{ width: 1, height: 32, backgroundColor: c.border }} />
 
           <View style={{ alignItems: 'center', gap: 2 }}>
-            <AppText variant="display" style={{ fontSize: 22, fontWeight: '800', letterSpacing: -1 }}>
+            <AppText variant="stat">
               {completedCount}
             </AppText>
             <AppText variant="caption" tone="tertiary">
@@ -182,7 +182,7 @@ export default function FastingScreen() {
           <View style={{ width: 1, height: 32, backgroundColor: c.border }} />
 
           <View style={{ alignItems: 'center', gap: 2 }}>
-            <AppText variant="display" style={{ fontSize: 22, fontWeight: '800', letterSpacing: -1 }}>
+            <AppText variant="stat">
               {totalCount}
             </AppText>
             <AppText variant="caption" tone="tertiary">
@@ -208,12 +208,10 @@ export default function FastingScreen() {
         )}
         <Animated.View style={timerAnimStyle}>
         <AppText
-          variant="display"
+          variant="timer"
+          accessibilityRole="timer"
+          accessibilityLabel={status === 'idle' ? '단식 타이머' : `경과 시간 ${formatElapsed(elapsedMs)}`}
           style={{
-            fontSize: 62,
-            letterSpacing: -3,
-            lineHeight: 70,
-            fontWeight: '700',
             color: isOverGoal && status === 'fasting' ? c.booster : c.ink,
             opacity: status === 'idle' ? 0.15 : 1,
           }}

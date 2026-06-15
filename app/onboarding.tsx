@@ -62,7 +62,7 @@ export default function OnboardingScreen() {
               gap: spacing.section,
             }}
           >
-            <AppText variant="title" style={{ fontSize: 28, lineHeight: 36 }}>
+            <AppText variant="headline">
               {slide.title}
             </AppText>
             <AppText variant="body" tone="secondary" style={{ lineHeight: 22 }}>
