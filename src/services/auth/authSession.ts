@@ -76,20 +76,31 @@ export async function signOut(): Promise<{ error?: string }> {
   return error ? { error: error.message } : {};
 }
 
-/** Deep link 콜백 처리 (앱 cold start) */
-export async function handleAuthCallbackUrl(url: string): Promise<void> {
+/** Deep link 콜백 처리 (앱 cold start·OAuth redirect) */
+export async function handleAuthCallbackUrl(url: string): Promise<{ error?: string }> {
   const supabase = getSupabase();
-  if (!supabase) return;
+  if (!supabase) return { error: 'Supabase 클라이언트를 만들 수 없어요.' };
+
   const { access_token, refresh_token } = parseAuthParams(url);
   if (access_token && refresh_token) {
-    await supabase.auth.setSession({ access_token, refresh_token });
-    return;
+    const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+    return error ? { error: error.message } : {};
   }
+
   const parsed = Linking.parse(url);
+  const code = typeof parsed.queryParams?.code === 'string' ? parsed.queryParams.code : undefined;
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    return error ? { error: error.message } : {};
+  }
+
   if (parsed.queryParams?.access_token && parsed.queryParams?.refresh_token) {
-    await supabase.auth.setSession({
+    const { error } = await supabase.auth.setSession({
       access_token: String(parsed.queryParams.access_token),
       refresh_token: String(parsed.queryParams.refresh_token),
     });
+    return error ? { error: error.message } : {};
   }
+
+  return { error: '인증 정보를 찾지 못했어요.' };
 }
