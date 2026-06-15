@@ -299,6 +299,9 @@ export default function FastingScreen() {
                 <Pressable
                   key={h}
                   onPress={() => setGoalHours(h)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${h}시간 목표`}
+                  accessibilityState={{ selected: goalHours === h }}
                   style={{
                     flex: 1,
                     paddingVertical: 10,
@@ -320,6 +323,11 @@ export default function FastingScreen() {
               ))}
               <Pressable
                 onPress={() => setPickerVisible(true)}
+                accessibilityRole="button"
+                accessibilityLabel="직접 입력 목표 시간"
+                accessibilityState={{
+                  selected: !PRESETS.includes(goalHours as (typeof PRESETS)[number]),
+                }}
                 style={{
                   flex: 1,
                   paddingVertical: 10,
@@ -356,6 +364,8 @@ export default function FastingScreen() {
         {status === 'idle' ? (
           <Pressable
             onPress={startFasting}
+            accessibilityRole="button"
+            accessibilityLabel="단식 시작"
             style={{
               backgroundColor: c.ink,
               borderRadius: 14,
@@ -373,6 +383,8 @@ export default function FastingScreen() {
               feedbackSuccess();
               stopFasting('completed');
             }}
+            accessibilityRole="button"
+            accessibilityLabel="단식 완료"
             style={{
               backgroundColor: c.ink,
               borderRadius: 14,
