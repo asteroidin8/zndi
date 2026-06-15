@@ -52,7 +52,9 @@ export function SettingRow({
               </AppText>
             )}
             {showChevron && interactive && (
-              <AppIcon name="ChevronRight" size={16} color={c.inkTertiary} />
+              <View style={{ marginLeft: 0 }}>
+                <AppIcon name="ChevronRight" size={16} color={c.inkTertiary} />
+              </View>
             )}
           </View>
         )

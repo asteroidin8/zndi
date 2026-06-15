@@ -24,6 +24,8 @@ type Props<T extends string | boolean> = {
   allowDeselect?: boolean;
   /** inline: row trailing / full: 카드 단일 row */
   layout?: 'inline' | 'full';
+  /** settings: neutral selected (no primary green) */
+  tone?: 'default' | 'settings';
 };
 
 type SegmentButtonProps = {
@@ -34,8 +36,9 @@ type SegmentButtonProps = {
   onPress: () => void;
 };
 
-function SegmentButton({ label, icon, selected, flex, onPress }: SegmentButtonProps) {
+function SegmentButton({ label, icon, selected, flex, onPress, tone = 'default' }: SegmentButtonProps & { tone?: 'default' | 'settings' }) {
   const c = useThemeColors();
+  const neutral = tone === 'settings';
 
   return (
     <Pressable
@@ -53,20 +56,24 @@ function SegmentButton({ label, icon, selected, flex, onPress }: SegmentButtonPr
         gap: spacing.xs,
         paddingHorizontal: spacing.sm,
         borderRadius: radius.md,
-        backgroundColor: selected ? c.primary : c.surfaceMuted,
+        backgroundColor: selected ? (neutral ? c.ink : c.primary) : c.surfaceMuted,
         borderWidth: 1,
-        borderColor: selected ? c.primary : c.border,
+        borderColor: selected ? (neutral ? c.ink : c.primary) : c.borderNeutral,
         opacity: pressed ? 0.88 : 1,
       })}
     >
       {icon && (
-        <AppIcon name={icon} size={14} color={selected ? c.onPrimary : c.inkTertiary} />
+        <AppIcon
+          name={icon}
+          size={14}
+          color={selected ? (neutral ? c.surface : c.onPrimary) : c.inkTertiary}
+        />
       )}
       <AppText
         variant="caption"
         style={{
           fontWeight: selected ? '700' : '600',
-          color: selected ? c.onPrimary : c.ink,
+          color: selected ? (neutral ? c.surface : c.onPrimary) : c.ink,
         }}
       >
         {label}
@@ -81,6 +88,7 @@ export function SettingSegmentTrack<T extends string | boolean>({
   onChange,
   allowDeselect = false,
   layout = 'full',
+  tone = 'default',
 }: Props<T>) {
   const isInline = layout === 'inline';
 
@@ -99,6 +107,7 @@ export function SettingSegmentTrack<T extends string | boolean>({
               if (allowDeselect && selected) onChange(null);
               else onChange(opt.value);
             }}
+            tone={tone}
           />
         );
       })}

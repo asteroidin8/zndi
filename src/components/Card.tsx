@@ -9,7 +9,7 @@ type Props = Omit<PressableProps, 'style'> & {
   padded?: boolean;
   pressable?: boolean;
   /** elevated = surfaceCard 배경 */
-  variant?: 'default' | 'elevated';
+  variant?: 'default' | 'elevated' | 'settings';
   glow?: boolean | 'soft' | 'strong';
   style?: StyleProp<ViewStyle>;
 };
@@ -25,18 +25,21 @@ export function Card({
 }: Props) {
   const c = useThemeColors();
 
+  const isSettings = variant === 'settings';
   const cardStyle: ViewStyle = {
-    backgroundColor: variant === 'elevated' ? c.surfaceCard : c.surfaceSubtle,
-    borderRadius: radius.xl,
+    backgroundColor: isSettings ? c.surfaceSubtle : variant === 'elevated' ? c.surfaceCard : c.surfaceSubtle,
+    borderRadius: isSettings ? radius.lg : radius.xl,
     borderWidth: 1,
-    borderColor: c.border,
+    borderColor: isSettings ? c.borderNeutral : c.border,
     padding: padded ? spacing.card : 0,
     overflow: 'hidden',
-    ...(glow === true || glow === 'soft'
-      ? neonGlowShadow(c, 'soft')
-      : glow === 'strong'
-        ? neonGlowShadow(c, 'strong')
-        : {}),
+    ...(isSettings || !glow
+      ? {}
+      : glow === true || glow === 'soft'
+        ? neonGlowShadow(c, 'soft')
+        : glow === 'strong'
+          ? neonGlowShadow(c, 'strong')
+          : {}),
   };
 
   if (pressable) {

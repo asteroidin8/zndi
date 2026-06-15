@@ -10,7 +10,7 @@ export function SettingInsetDivider() {
     <View
       style={{
         height: 1,
-        backgroundColor: c.border,
+        backgroundColor: c.borderNeutral,
         marginLeft: spacing.card,
       }}
     />

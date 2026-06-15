@@ -2,8 +2,8 @@ import type { ViewStyle } from 'react-native';
 
 import { spacing } from '@/constants/spacing';
 
-/** iOS Settings 기준 단일 row 높이 */
-export const SETTING_ROW_HEIGHT = spacing.section * 2;
+/** iOS Settings 기준 row 높이 */
+export const SETTING_ROW_HEIGHT = 56;
 
 /** 세그먼트·버튼 — row 높이 안에 맞춤 */
 export const SETTING_CONTROL_HEIGHT = spacing.section + spacing.sm;

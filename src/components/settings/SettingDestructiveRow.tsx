@@ -9,9 +9,8 @@ type Props = {
   onPress: () => void;
 };
 
+/** 설정 리스트 — 평소 중립, 확인 다이얼로그에서만 destructive */
 export function SettingDestructiveRow({ label, onPress }: Props) {
-  const c = useThemeColors();
-
   return (
     <Pressable
       onPress={onPress}
@@ -23,7 +22,7 @@ export function SettingDestructiveRow({ label, onPress }: Props) {
         opacity: pressed ? 0.7 : 1,
       })}
     >
-      <AppText variant="body" style={{ color: c.danger, fontWeight: '500' }} numberOfLines={1}>
+      <AppText variant="body" tone="primary" style={{ fontWeight: '500' }} numberOfLines={1}>
         {label}
       </AppText>
     </Pressable>
