@@ -1,5 +1,4 @@
 import { Pressable, View } from 'react-native';
-import { formatDueDate, getDueDateColor, getPriorityColor } from '@/utils/dateFormat';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,9 +8,11 @@ import Animated, {
 
 import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
+import { TodoPriorityBadge } from './TodoPriorityBadge';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { feedbackComplete, feedbackUncomplete } from '@/utils/microFeedback';
 import type { Todo } from '@/stores/useTodoStore';
+import { formatDueDate, getDueDateColor } from '@/utils/dateFormat';
 
 type Props = {
   todo: Todo;
@@ -24,7 +25,6 @@ type Props = {
 export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin }: Props) {
   const c = useThemeColors();
   const isCompleted = !!todo.completedAt;
-  const dotColor = getPriorityColor(todo.priority, c);
   const scale = useSharedValue(1);
 
   const checkboxStyle = useAnimatedStyle(() => ({
@@ -117,16 +117,7 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin
           />
         </Pressable>
       )}
-      {!isCompleted && !onToggleHomePin && (
-        <View
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: dotColor,
-          }}
-        />
-      )}
+      {!isCompleted && !onToggleHomePin && <TodoPriorityBadge priority={todo.priority} />}
     </Pressable>
   );
 }

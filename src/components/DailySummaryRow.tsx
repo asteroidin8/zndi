@@ -2,6 +2,7 @@ import { Pressable, View } from 'react-native';
 
 import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
+import { TodoPriorityBadge } from './TodoPriorityBadge';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { formatDueDate, getDueDateColor } from '@/utils/dateFormat';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
@@ -48,12 +49,6 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
   const hasTodos = activeTodos.length > 0;
 
   if (!hasRoutines && !hasTodos) return null;
-
-  const priorityColor: Record<string, string> = {
-    high: c.ink,
-    mid: c.inkTertiary,
-    low: c.inkDisabled,
-  };
 
   return (
     <View style={{ gap: 12 }}>
@@ -187,36 +182,33 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                   paddingVertical: 11,
                   gap: 10,
                 }}
+                accessibilityLabel={`${todo.title}${todo.pinnedToHome ? ', 홈 고정' : ''}`}
               >
-                {todo.pinnedToHome ? (
-                  <AppIcon name="Pin" size={12} color={c.inkTertiary} />
-                ) : (
-                  <View
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: priorityColor[todo.priority],
-                    }}
-                  />
-                )}
+                <TodoPriorityBadge priority={todo.priority} />
                 <AppText variant="body" style={{ flex: 1 }} numberOfLines={1}>
                   {todo.title}
                 </AppText>
-                {todo.dueDate &&
-                  (() => {
-                    const { label, urgency } = formatDueDate(todo.dueDate);
-                    const color = getDueDateColor(urgency, c);
-                    return (
-                      <AppText
-                        variant="caption"
-                        style={color ? { color } : undefined}
-                        tone={color ? undefined : 'disabled'}
-                      >
-                        {label}
-                      </AppText>
-                    );
-                  })()}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  {todo.dueDate &&
+                    (() => {
+                      const { label, urgency } = formatDueDate(todo.dueDate);
+                      const color = getDueDateColor(urgency, c);
+                      return (
+                        <AppText
+                          variant="caption"
+                          style={color ? { color } : undefined}
+                          tone={color ? undefined : 'disabled'}
+                        >
+                          {label}
+                        </AppText>
+                      );
+                    })()}
+                  {todo.pinnedToHome && (
+                    <View accessibilityLabel="홈 고정">
+                      <AppIcon name="Pin" size={12} color={c.inkTertiary} />
+                    </View>
+                  )}
+                </View>
               </View>
               {index < homeTodos.length - 1 && (
                 <View style={{ height: 1, backgroundColor: c.border, marginLeft: 34 }} />
