@@ -8,6 +8,5 @@ export { RoutineItem } from './RoutineItem';
 export { RoutineModal } from './RoutineModal';
 export { TodoItem } from './TodoItem';
 export { TodoModal } from './TodoModal';
-export { ScreenPlaceholder } from './ScreenPlaceholder';
 export { TabBarIcon } from './TabBarIcon';
 export { WheelPicker } from './WheelPicker';

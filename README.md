@@ -16,8 +16,11 @@ npm start
 | `npm start` | Expo 개발 서버 |
 | `npm run lint` | ESLint |
 | `npx tsc --noEmit` | TypeScript 검사 |
+| `scripts/qa-p0.ps1` | P0 로컬 QA (tsc·에셋·bundle id) |
 
 ## 환경 변수
+
+`.env.example`을 참고해 `.env` 또는 EAS Secrets에 설정합니다.
 
 | 변수 | 설명 |
 |------|------|
