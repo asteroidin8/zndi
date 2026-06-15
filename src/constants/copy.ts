@@ -3,7 +3,7 @@
 export const TAB_LABELS = {
   fasting: '단식',
   routine: '루틴',
-  home: '잔디',
+  home: '홈',
   todo: '할일',
   stats: '통계',
 } as const;
