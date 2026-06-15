@@ -24,7 +24,7 @@ export function SettingAccountSection() {
   if (!configured) {
     return (
       <SettingSection title="계정 · 클라우드">
-        <Card style={{ padding: spacing.card }}>
+        <Card variant="elevated" style={{ padding: spacing.card }}>
           <AppText variant="caption" tone="tertiary">
             Supabase 환경 변수가 없어요. .env에 URL과 anon key를 설정해 주세요.
           </AppText>
@@ -36,7 +36,7 @@ export function SettingAccountSection() {
   if (loading) {
     return (
       <SettingSection title="계정 · 클라우드">
-        <Card style={{ padding: spacing.card, alignItems: 'center' }}>
+        <Card variant="elevated" style={{ padding: spacing.card, alignItems: 'center' }}>
           <ActivityIndicator color={c.ink} />
         </Card>
       </SettingSection>
@@ -122,7 +122,7 @@ export function SettingAccountSection() {
         title="계정 · 클라우드"
         footer="로그인하지 않아도 기기에 저장돼요. 로그인하면 다른 기기와 자동으로 맞춰져요."
       >
-        <Card style={{ gap: spacing.sm, padding: spacing.card }}>
+        <Card variant="elevated" style={{ gap: spacing.sm, padding: spacing.card }}>
           <Pressable
             onPress={handleGoogle}
             disabled={busy}

@@ -53,20 +53,20 @@ function SegmentButton({ label, icon, selected, flex, onPress }: SegmentButtonPr
         gap: spacing.xs,
         paddingHorizontal: spacing.sm,
         borderRadius: radius.md,
-        backgroundColor: selected ? c.ink : c.surface,
+        backgroundColor: selected ? c.primary : c.surfaceMuted,
         borderWidth: 1,
-        borderColor: selected ? c.ink : c.borderStrong,
+        borderColor: selected ? c.primary : c.border,
         opacity: pressed ? 0.88 : 1,
       })}
     >
       {icon && (
-        <AppIcon name={icon} size={14} color={selected ? c.surface : c.inkTertiary} />
+        <AppIcon name={icon} size={14} color={selected ? c.onPrimary : c.inkTertiary} />
       )}
       <AppText
         variant="caption"
         style={{
           fontWeight: selected ? '700' : '600',
-          color: selected ? c.surface : c.ink,
+          color: selected ? c.onPrimary : c.ink,
         }}
       >
         {label}

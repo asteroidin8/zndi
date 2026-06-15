@@ -1,5 +1,6 @@
 import { Pressable, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 
+import { neonGlowShadow } from '@/constants/themeEffects';
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
@@ -7,19 +8,35 @@ type Props = Omit<PressableProps, 'style'> & {
   children: React.ReactNode;
   padded?: boolean;
   pressable?: boolean;
+  /** elevated = surfaceCard 배경 */
+  variant?: 'default' | 'elevated';
+  glow?: boolean | 'soft' | 'strong';
   style?: StyleProp<ViewStyle>;
 };
 
-export function Card({ children, padded = true, pressable, style, ...props }: Props) {
+export function Card({
+  children,
+  padded = true,
+  pressable,
+  variant = 'default',
+  glow,
+  style,
+  ...props
+}: Props) {
   const c = useThemeColors();
 
   const cardStyle: ViewStyle = {
-    backgroundColor: c.surfaceSubtle,
+    backgroundColor: variant === 'elevated' ? c.surfaceCard : c.surfaceSubtle,
     borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: c.border,
     padding: padded ? spacing.card : 0,
     overflow: 'hidden',
+    ...(glow === true || glow === 'soft'
+      ? neonGlowShadow(c, 'soft')
+      : glow === 'strong'
+        ? neonGlowShadow(c, 'strong')
+        : {}),
   };
 
   if (pressable) {
@@ -37,9 +54,5 @@ export function Card({ children, padded = true, pressable, style, ...props }: Pr
     );
   }
 
-  return (
-    <View style={[cardStyle, style]}>
-      {children}
-    </View>
-  );
+  return <View style={[cardStyle, style]}>{children}</View>;
 }

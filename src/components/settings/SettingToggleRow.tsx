@@ -29,7 +29,8 @@ export function SettingToggleRow({ label, description, value, onToggle }: Props)
         value={value}
         onValueChange={onToggle}
         trackColor={{ false: c.surfaceMuted, true: c.primary }}
-        thumbColor={c.surface}
+        thumbColor={value ? c.onPrimary : c.inkTertiary}
+        ios_backgroundColor={c.surfaceMuted}
         accessibilityLabel={description ? `${label}, ${description}` : label}
       />
     </View>

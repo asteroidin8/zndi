@@ -12,7 +12,7 @@ export function SettingsList({ children }: Props) {
   const rows = Children.toArray(children).filter(isValidElement);
 
   return (
-    <Card padded={false}>
+    <Card padded={false} variant="elevated">
       {rows.map((row, index) => (
         <Fragment key={row.key ?? index}>
           {index > 0 && <SettingInsetDivider />}
