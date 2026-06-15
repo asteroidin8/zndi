@@ -7,6 +7,10 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://jxtbkupehalukvqxrjad.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4dGJrdXBlaGFsdWt2cXhyamFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzE2MzEsImV4cCI6MjA5NzEwNzYzMX0.uJMasFBFnPia1smcH64UpInNWiUTPnfroEweJkG9ybI"
+      },
       "android": {
         "buildType": "apk"
       }

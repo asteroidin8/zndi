@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
-/** SecureStore는 2048바이트 제한 — 청크 저장 */
+/** SecureStore 2048바이트 제한 — 청크 저장 */
 const ExpoSecureStoreAdapter = {
   getItem: async (key: string) => {
     const chunksStr = await SecureStore.getItemAsync(`${key}_chunks`);

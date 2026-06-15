@@ -59,14 +59,24 @@ keytool -list -v -keystore "$env:USERPROFILE\.android\debug.keystore" -alias and
 
 `routines`, `todos`, `routine_completions`가 Realtime publication에 포함됐는지 확인
 
-## 3. 앱 `.env`
+## 3. Dev Client 재빌드 (Supabase 연동 후 필수)
+
+`expo-secure-store`, `expo-web-browser` 등 네이티브 모듈은 **development 빌드에 포함**돼야 합니다.
+
+```bash
+eas build --profile development --platform android
+```
+
+Auth 세션은 **SecureStore**에 저장합니다.
+
+## 4. 앱 `.env` (로컬 Metro용)
 
 ```env
 EXPO_PUBLIC_SUPABASE_URL=https://jxtbkupehalukvqxrjad.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon key>
 ```
 
-## 4. 아키텍처
+## 5. 아키텍처
 
 - **로컬(AsyncStorage/Zustand)** = 1차 저장, 오프라인 동작
 - **Supabase** = 클라우드 백업 + 다기기 Realtime (Phase 1)
