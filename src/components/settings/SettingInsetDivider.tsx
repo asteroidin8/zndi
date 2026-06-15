@@ -1,8 +1,8 @@
 import { View } from 'react-native';
 
-import { SETTING_ROW_INSET } from './settingStyles';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
+/** 카드 padding 안쪽 전체 너비 구분선 */
 export function SettingInsetDivider() {
   const c = useThemeColors();
 
@@ -10,8 +10,8 @@ export function SettingInsetDivider() {
     <View
       style={{
         height: 1,
+        width: '100%',
         backgroundColor: c.borderNeutral,
-        marginLeft: SETTING_ROW_INSET,
       }}
     />
   );

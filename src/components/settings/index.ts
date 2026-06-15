@@ -10,8 +10,14 @@ export { SettingSegmentTrack, type SegmentOption } from './SettingSegmentTrack';
 export { SettingToggleRow } from './SettingToggleRow';
 export { SettingsList } from './SettingsList';
 export {
+  SETTING_CARD_INSET_Y,
+  SETTING_CARD_PADDING_X,
+  SETTING_CARD_PADDING_Y,
   SETTING_CONTROL_HEIGHT,
   SETTING_ROW_HEIGHT,
+  SETTING_ROW_INSET,
+  settingCardBlockStyle,
+  settingCardStyle,
   settingCompactRowStyle,
   settingRowLabelStyle,
   settingRowStyle,

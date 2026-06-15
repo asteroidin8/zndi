@@ -17,7 +17,7 @@ export function SettingToggleRow({ label, description, value, onToggle }: Props)
 
   return (
     <View style={settingRowStyle()}>
-      <View style={{ flex: 1, gap: spacing.xs, justifyContent: 'center', minWidth: 0 }}>
+      <View style={{ flex: 1, gap: spacing.xs, justifyContent: 'center', minWidth: 0, alignSelf: 'stretch' }}>
         <AppText variant="body">{label}</AppText>
         {description && (
           <AppText variant="caption" tone="tertiary" style={{ fontSize: 13, lineHeight: 17 }} numberOfLines={1}>
