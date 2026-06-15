@@ -2,7 +2,7 @@
 
 > `docs/design-system.md` · `docs/copy-guide.md`
 
-## 잔디 탭 = 오늘 요약
+## 홈 탭 = 오늘 요약
 
 1. **TopBar** — 잔디 심볼(0일) / 🔥 연속(1일+) · zndi(중앙) · 설정
 2. **단식 카드**
