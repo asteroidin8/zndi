@@ -12,10 +12,11 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 type Props = {
   title: string;
   children: ReactNode;
-  closeIcon?: 'X' | 'ChevronLeft';
+  /** false면 메인 설정처럼 타이틀만 (모달 스와이프·뒤로로 닫기) */
+  showBackButton?: boolean;
 };
 
-export function SettingsScaffold({ title, children, closeIcon = 'ChevronLeft' }: Props) {
+export function SettingsScaffold({ title, children, showBackButton = true }: Props) {
   const c = useThemeColors();
 
   return (
@@ -25,19 +26,29 @@ export function SettingsScaffold({ title, children, closeIcon = 'ChevronLeft' }:
           flexDirection: 'row',
           alignItems: 'center',
           paddingHorizontal: spacing.screen,
-          paddingVertical: spacing.item,
+          paddingTop: showBackButton ? spacing.item : spacing.section,
+          paddingBottom: spacing.item,
           gap: spacing.item,
         }}
       >
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel={closeIcon === 'X' ? '닫기' : '뒤로'}
+        {showBackButton && (
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="뒤로"
+          >
+            <AppIcon name="ChevronLeft" size={20} color={c.ink} />
+          </Pressable>
+        )}
+        <AppText
+          variant="title"
+          style={{
+            flex: 1,
+            fontSize: showBackButton ? undefined : 28,
+            lineHeight: showBackButton ? undefined : 34,
+          }}
         >
-          <AppIcon name={closeIcon} size={20} color={c.ink} />
-        </Pressable>
-        <AppText variant="title" style={{ flex: 1 }}>
           {title}
         </AppText>
       </View>

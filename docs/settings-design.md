@@ -9,6 +9,11 @@
 
 ## 1. 전체 구조
 
+### 헤더
+
+- **메인** (`/settings`): 닫기(X) 없음 · 큰 타이틀 · 모달 스와이프·뒤로로 닫기
+- **하위 화면**: `ChevronLeft` 뒤로
+
 ### 메인 (`app/settings/index.tsx`)
 
 ```
@@ -39,7 +44,7 @@ v1.0.0        (카드 밖, 중앙)
 | 화면 좌우 | `paddingHorizontal: 20` |
 | 섹션 간 | `marginBottom: 32` |
 | 제목 ↔ 카드 | `marginBottom: 12` |
-| 카드 내부 | `paddingVertical: 4~8` |
+| 카드 내부 | row 좌우 `16` (`SETTING_ROW_INSET`) · 상하 `4` (`SETTING_CARD_INSET_Y`) |
 
 ---
 
@@ -93,7 +98,7 @@ v1.0.0        (카드 밖, 중앙)
 | 로그인 계정 | value만, chevron 없음 |
 | 클라우드 데이터로 덮어쓰기 | **계정 카드 (메인)** — 로그인 계정 아래 |
 | 프로필 | `>` → `settings/profile` |
-| 로그아웃 | 중립 텍스트 → 확인 다이얼로그에서 destructive |
+| 로그아웃 | **danger 라벨** → 확인 다이얼로그에서 destructive |
 
 **프로필 미완성:** 상단 배너 없음 · **계정** 섹션 `프로필` 행 `미설정` 강조
 
@@ -112,8 +117,8 @@ v1.0.0        (카드 밖, 중앙)
 
 ## 10. 데이터
 
-- 라벨: `데이터 초기화` (빨간색 **금지**)
-- 탭 → Alert에서만 destructive
+- 라벨: `데이터 초기화` — **danger 라벨** (배경·테두리 빨강 금지)
+- 탭 → Alert에서 destructive 버튼
 
 ---
 
@@ -139,7 +144,7 @@ v1.0.0        (카드 밖, 중앙)
 |------|-----|------|
 | A | settings-visual-a | neutral border · spacing · neon bar 제거 · destructive 중립 |
 | B | settings-structure | 4섹션 · profile/notifications/theme 라우트 |
-| C | settings-copy | 설명·footer·task.md 정리 |
+| C | settings-copy | 헤더·여백·danger 라벨 · task.md |
 
 ---
 

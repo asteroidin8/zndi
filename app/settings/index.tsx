@@ -72,7 +72,7 @@ export default function SettingsIndexScreen() {
   }
 
   return (
-    <SettingsScaffold title="설정" closeIcon="X">
+    <SettingsScaffold title="설정" showBackButton={false}>
       <SettingAccountSection />
 
       <SettingSection title="환경">

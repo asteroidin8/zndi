@@ -2,6 +2,12 @@ import type { ViewStyle } from 'react-native';
 
 import { spacing } from '@/constants/spacing';
 
+/** 설정 카드 row 좌우·divider inset (통일) */
+export const SETTING_ROW_INSET = spacing.card;
+
+/** 설정 카드 상하 여백 */
+export const SETTING_CARD_INSET_Y = spacing.xs;
+
 /** iOS Settings 기준 row 높이 */
 export const SETTING_ROW_HEIGHT = 56;
 
@@ -15,7 +21,7 @@ export function settingCompactRowStyle(): ViewStyle {
     alignItems: 'center',
     justifyContent: 'space-between',
     height: SETTING_ROW_HEIGHT,
-    paddingHorizontal: spacing.card,
+    paddingHorizontal: SETTING_ROW_INSET,
   };
 }
 
@@ -26,7 +32,7 @@ export function settingRowStyle(): ViewStyle {
     alignItems: 'center',
     justifyContent: 'space-between',
     minHeight: SETTING_ROW_HEIGHT,
-    paddingHorizontal: spacing.card,
+    paddingHorizontal: SETTING_ROW_INSET,
     paddingVertical: spacing.sm,
   };
 }
@@ -56,7 +62,7 @@ export function settingSegmentRowStyle(): ViewStyle {
     flexDirection: 'row',
     alignItems: 'center',
     height: SETTING_ROW_HEIGHT,
-    paddingHorizontal: spacing.card,
+    paddingHorizontal: SETTING_ROW_INSET,
     gap: spacing.sm,
   };
 }
