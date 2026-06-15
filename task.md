@@ -9,7 +9,7 @@
 
 | 구분 | % | 상태 |
 |------|---|------|
-| v1 로컬 | ~95% | 홈 요약·카피 [x] |
+| v1 로컬 | ~96% | 홈·통계 UI [x] |
 | Supabase MVP | ~85% | [x] |
 | 출시 통합 | ~83% | EAS [⏸] |
 
@@ -19,9 +19,8 @@
 
 ```
 P1 [x] privacy · 홈/통계 역할 분리 · 카피 가이드
-P2 [x] Settings UI (1-8) — 계정 섹션 Card 톤
-P2 [x] CI lint (1-6) — tsc + expo lint
-P3 [ ] a11y (1-7) · Sentry DSN (1-5)
+P2 [x] Settings UI (1-8) · CI lint (1-6)
+P3 [~] a11y (1-7) · Sentry DSN (1-5)
 [⏸] EAS · dev APK (zndi package) · 실기 QA
 ```
 
@@ -37,11 +36,11 @@ P3 [ ] a11y (1-7) · Sentry DSN (1-5)
 
 | # | 작업 | 상태 |
 |---|------|------|
-| 1-4 | zndi UI·카피 | [x] 홈 7칸 · 통계 42일 그리드 |
-| 1-5 | Sentry DSN | [~] 코드만 · Dashboard DSN [ ] |
-| 1-6 | CI lint | [x] `.github/workflows/ci.yml` tsc + lint |
-| 1-7 | a11y | [~] 부분 라벨 |
-| 1-8 | Settings UI | [x] A안 클라oud · Card 톤 통일 |
+| 1-4 | zndi UI·카피 | [x] |
+| 1-5 | Sentry DSN | [~] 코드·`docs/sentry-setup.md` · Dashboard DSN [ ] |
+| 1-6 | CI lint | [x] |
+| 1-7 | a11y | [~] 홈·섹션 헤더 보강 (#98) · 탭·모달 추가 [ ] |
+| 1-8 | Settings UI | [x] |
 
 ---
 
@@ -59,8 +58,8 @@ P3 [ ] a11y (1-7) · Sentry DSN (1-5)
 |------|------|
 | Supabase Dashboard SQL·Redirect `zndi://` | 사용자 확인 |
 | Google Cloud 패키지 `com.asteroidin8.zndi` | 사용자 확인 |
-| Sentry `EXPO_PUBLIC_SENTRY_DSN` | 미설정 |
-| eslint warning 7건 (unused import·exhaustive-deps) | 비차단 |
+| Sentry `EXPO_PUBLIC_SENTRY_DSN` | `.env` 설정 필요 |
+| eslint warning 7건 | 비차단 |
 
 ---
 
@@ -68,6 +67,6 @@ P3 [ ] a11y (1-7) · Sentry DSN (1-5)
 
 | 일시 | 작업 |
 |------|------|
-| 2026-06-16 | Settings Card · CI lint · 홈/통계 (#95) |
-| 2026-06-16 | 홈 요약 복귀 · 카피 · 통계 잔디 (#94) |
-| 2026-06-16 | zndi 아이콘 (#93) · privacy (#91) · 홈 그리드 (#92) |
+| 2026-06-16 | a11y 홈 라벨 (#98) · stats 캘린더 잔디 (#97) · 홈 TopBar (#96) · 할일 배지 (#95) |
+| 2026-06-16 | Settings Card · CI lint · 홈/통계 (#94) |
+| 2026-06-16 | zndi 아이콘 (#93) · privacy (#91) |
