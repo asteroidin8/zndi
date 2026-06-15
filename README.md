@@ -20,10 +20,12 @@ npm start
 
 ## 환경 변수
 
-`.env.example`을 참고해 `.env` 또는 EAS Secrets에 설정합니다.
+프로젝트 루트 `.env` (Git 제외) 또는 EAS Secrets에 설정합니다.
 
 | 변수 | 설명 |
 |------|------|
+| `EXPO_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
 | `EXPO_PUBLIC_SENTRY_DSN` | (선택) Sentry DSN — 미설정 시 크래시 리포팅 비활성 |
 
 ## 스토어 에셋
