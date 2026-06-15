@@ -1,4 +1,5 @@
 export { DecimalWheelPicker } from './DecimalWheelPicker';
+export { SettingsScaffold } from './SettingsScaffold';
 export { SettingAccountSection } from './SettingAccountSection';
 export { SettingChoiceRow } from './SettingChoiceRow';
 export { SettingDestructiveRow } from './SettingDestructiveRow';
