@@ -1,6 +1,6 @@
 # Google OAuth 설정 (Supabase)
 
-> Routiner 패키지: `com.asteroidin8.routiner`  
+> **앱:** 잔디 (zndi) · 패키지: `com.asteroidin8.zndi`  
 > Supabase URL: `https://jxtbkupehalukvqxrjad.supabase.co`
 
 ## 1. Google Cloud Console
@@ -9,7 +9,7 @@
 
 1. [Google Cloud Console](https://console.cloud.google.com) → APIs & Services → **OAuth consent screen**
 2. User Type: **External** → Create
-3. App name: **Routiner**
+3. App name: **잔디**
 4. Authorized domains: `supabase.co` 추가
 5. Save and Continue로 완료
 
@@ -17,7 +17,7 @@
 
 1. Credentials → **+ CREATE CREDENTIALS** → OAuth client ID
 2. Type: **Web application**
-3. Name: `Routiner Web Client`
+3. Name: `zndi Web Client`
 4. Authorized redirect URIs:
 
 ```
@@ -29,7 +29,7 @@ https://jxtbkupehalukvqxrjad.supabase.co/auth/v1/callback
 ### Android Client (선택 — 네이티브 Google Sign-In 확장 시)
 
 1. Type: **Android**
-2. Package: `com.asteroidin8.routiner`
+2. Package: `com.asteroidin8.zndi`
 3. SHA-1 (디버그):
 
 ```powershell
@@ -48,8 +48,10 @@ keytool -list -v -keystore "$env:USERPROFILE\.android\debug.keystore" -alias and
 
 | 항목 | 값 |
 |------|-----|
-| Site URL | `routiner://` |
-| Redirect URLs | `routiner://auth/callback`, `exp://**` (Expo Go/dev) |
+| Site URL | `zndi://` |
+| Redirect URLs | `zndi://auth/callback`, `exp://**` (Expo Go/dev) |
+
+> **패키지/scheme 변경 시** Supabase Redirect URLs와 Google Android Client를 위 값으로 **반드시 갱신**하세요.
 
 ### SQL Editor
 
@@ -59,7 +61,7 @@ keytool -list -v -keystore "$env:USERPROFILE\.android\debug.keystore" -alias and
 
 `routines`, `todos`, `routine_completions`가 Realtime publication에 포함됐는지 확인
 
-## 3. Dev Client 재빌드 (Supabase 연동 후 필수)
+## 3. Dev Client 재빌드 (Supabase·패키지 변경 후 필수)
 
 `expo-secure-store`, `expo-web-browser` 등 네이티브 모듈은 **development 빌드에 포함**돼야 합니다.
 

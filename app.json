@@ -1,31 +1,31 @@
 {
   "expo": {
-    "name": "routiner",
-    "slug": "routiner",
+    "name": "잔디",
+    "slug": "zndi",
     "owner": "asteroidin8",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "routiner",
+    "scheme": "zndi",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#121212"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.asteroidin8.routiner",
+      "bundleIdentifier": "com.asteroidin8.zndi",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "단식 진행, 루틴·할 일 알림을 보내기 위해 알림 권한이 필요합니다.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.asteroidin8.routiner",
+      "package": "com.asteroidin8.zndi",
       "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#121212",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -45,7 +45,7 @@
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
-          "color": "#0a0a0a"
+          "color": "#22C55E"
         }
       ]
     ],

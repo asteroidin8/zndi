@@ -1,4 +1,4 @@
-# Routiner
+# 잔디 (zndi)
 
 단식·루틴·할 일을 한곳에서 관리하는 React Native (Expo) 앱입니다.
 

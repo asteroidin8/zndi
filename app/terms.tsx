@@ -11,7 +11,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 const SECTIONS = [
   {
     title: '1. 목적',
-    body: '본 약관은 Routiner(이하 "앱")의 이용 조건과 이용자와 개발자 간의 권리·의무를 정합니다.',
+    body: '본 약관은 잔디(zndi)(이하 "앱")의 이용 조건과 이용자와 개발자 간의 권리·의무를 정합니다.',
   },
   {
     title: '2. 서비스 내용',

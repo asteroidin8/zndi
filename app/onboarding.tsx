@@ -12,7 +12,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 
 const SLIDES = [
   {
-    title: 'Routiner에 오신 것을\n환영해요',
+    title: '잔디에 오신 것을\n환영해요',
     body: '단식·루틴·할 일을 한곳에서 관리하세요.',
   },
   {

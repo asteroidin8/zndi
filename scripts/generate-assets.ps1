@@ -1,4 +1,4 @@
-# Routiner 스토어 에셋 생성 (1024 icon, splash, adaptive, favicon)
+# zndi (잔디) 스토어 에셋 생성 (1024 icon, splash, adaptive, favicon)
 Add-Type -AssemblyName System.Drawing
 
 $assetsDir = Join-Path $PSScriptRoot '..\assets' | Resolve-Path

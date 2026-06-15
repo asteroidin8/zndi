@@ -11,7 +11,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 const SECTIONS = [
   {
     title: '1. 수집하는 정보',
-    body: 'Routiner는 아래 정보를 기기 내부(AsyncStorage)에만 저장합니다.\n\n· 신체 정보(키, 체중, 목표 체중, 나이, 성별)\n· 단식 기록, 루틴, 할 일\n· 앱 설정(테마, 알림 설정 등)',
+    body: '잔디는 아래 정보를 기기 내부(AsyncStorage)에 저장합니다. 로그인 시 Supabase 클라우드에 백업·동기화할 수 있습니다.\n\n· 신체 정보(키, 체중, 목표 체중, 나이, 성별)\n· 단식 기록, 루틴, 할 일\n· 앱 설정(테마, 알림 설정 등)',
   },
   {
     title: '2. 정보 이용 목적',
@@ -19,7 +19,7 @@ const SECTIONS = [
   },
   {
     title: '3. 보관 및 전송',
-    body: '모든 데이터는 사용자 기기에만 저장되며, Routiner 서버로 전송되거나 외부에 공유되지 않습니다.',
+    body: '로그인하지 않으면 모든 데이터는 기기에만 저장됩니다. 클라우드 동기화는 로그인 사용자가 선택한 경우에만 Supabase에 저장됩니다.',
   },
   {
     title: '4. 알림',

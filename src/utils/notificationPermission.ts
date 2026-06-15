@@ -10,7 +10,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
 
   Alert.alert(
     '알림 권한이 필요해요',
-    '설정에서 Routiner 알림을 허용하면 리마인더와 단식 알림을 받을 수 있어요.',
+    '설정에서 잔디 알림을 허용하면 리마인더와 단식 알림을 받을 수 있어요.',
     [
       { text: '나중에', style: 'cancel' },
       {

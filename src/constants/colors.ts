@@ -1,4 +1,4 @@
-/** zndi (잔디) 브랜드 팔레트 — Routiner 테마 토큰 */
+/** zndi (잔디) 브랜드 팔레트 */
 export const colors = {
   light: {
     surface: '#ffffff',

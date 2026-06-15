@@ -301,7 +301,7 @@ export default function SettingsScreen() {
           <SettingRow
             label="문의하기"
             onPress={() =>
-              Linking.openURL('mailto:asteroidin8@gmail.com?subject=Routiner%20문의')
+              Linking.openURL('mailto:asteroidin8@gmail.com?subject=%EC%9E%94%EB%94%94%20%EB%AC%B8%EC%9D%98')
             }
           />
           <SettingRow

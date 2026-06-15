@@ -7,7 +7,7 @@ import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 WebBrowser.maybeCompleteAuthSession();
 
 export function getAuthRedirectUri(): string {
-  return makeRedirectUri({ scheme: 'routiner', path: 'auth/callback' });
+  return makeRedirectUri({ scheme: 'zndi', path: 'auth/callback' });
 }
 
 function parseAuthParams(url: string): { access_token?: string; refresh_token?: string } {

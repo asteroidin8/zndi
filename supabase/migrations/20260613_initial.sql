@@ -1,4 +1,4 @@
--- Routiner cloud backup schema (Supabase free tier)
+-- zndi (잔디) cloud backup schema (Supabase free tier)
 -- 로컬(AsyncStorage) = 1차 저장, Supabase = 백업 + 다기기 Realtime
 
 -- profiles
