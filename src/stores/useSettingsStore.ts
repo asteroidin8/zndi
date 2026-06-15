@@ -9,14 +9,12 @@ type HintKey = 'swipeActions' | 'longPressEdit';
 type SettingsStore = {
   foregroundServiceEnabled: boolean;
   themeMode: ThemeMode;
-  cloudAutoSyncEnabled: boolean;
   routineNotificationsEnabled: boolean;
   todoNotificationsEnabled: boolean;
   onboardingCompleted: boolean;
   seenHints: Partial<Record<HintKey, boolean>>;
   toggleForegroundService: () => void;
   setThemeMode: (mode: ThemeMode) => void;
-  setCloudAutoSyncEnabled: (enabled: boolean) => void;
   setRoutineNotifications: (enabled: boolean) => void;
   setTodoNotifications: (enabled: boolean) => void;
   setOnboardingCompleted: (completed: boolean) => void;
@@ -28,7 +26,6 @@ export const useSettingsStore = create<SettingsStore>()(
     (set) => ({
       foregroundServiceEnabled: true,
       themeMode: 'dark',
-      cloudAutoSyncEnabled: true,
       routineNotificationsEnabled: false,
       todoNotificationsEnabled: false,
       onboardingCompleted: false,
@@ -36,7 +33,6 @@ export const useSettingsStore = create<SettingsStore>()(
       toggleForegroundService: () =>
         set((s) => ({ foregroundServiceEnabled: !s.foregroundServiceEnabled })),
       setThemeMode: (mode) => set({ themeMode: mode }),
-      setCloudAutoSyncEnabled: (enabled) => set({ cloudAutoSyncEnabled: enabled }),
       setRoutineNotifications: (enabled) => set({ routineNotificationsEnabled: enabled }),
       setTodoNotifications: (enabled) => set({ todoNotificationsEnabled: enabled }),
       setOnboardingCompleted: (completed) => set({ onboardingCompleted: completed }),

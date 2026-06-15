@@ -6,19 +6,15 @@ import { Card } from '../Card';
 import { SettingDestructiveRow } from './SettingDestructiveRow';
 import { SettingRow } from './SettingRow';
 import { SettingSection } from './SettingSection';
-import { SettingToggleRow } from './SettingToggleRow';
 import { spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { pullCloudToLocal, pushLocalToCloud } from '@/services/sync/cloudSync';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { pullCloudToLocal } from '@/services/sync/cloudSync';
 
 export function SettingAccountSection() {
   const c = useThemeColors();
   const { configured, loading, user, signInGoogle, sendEmailOtp, verifyEmailOtp, signOut } =
     useAuth();
-  const cloudAutoSyncEnabled = useSettingsStore((s) => s.cloudAutoSyncEnabled);
-  const setCloudAutoSyncEnabled = useSettingsStore((s) => s.setCloudAutoSyncEnabled);
   const [busy, setBusy] = useState(false);
   const [emailMode, setEmailMode] = useState(false);
   const [email, setEmail] = useState('');
@@ -76,28 +72,28 @@ export function SettingAccountSection() {
     }
   }
 
-  async function handlePush() {
-    if (!user) return;
-    setBusy(true);
-    const result = await pushLocalToCloud(user.id);
-    setBusy(false);
-    Alert.alert(result.error ? '백업 실패' : '백업 완료', result.error ?? '로컬 데이터를 클라우드에 저장했어요.');
-  }
-
   async function handlePull() {
     if (!user) return;
-    Alert.alert('클라우드에서 복원', '로컬 데이터를 클라우드 내용으로 덮어씁니다. 계속할까요?', [
-      { text: '취소', style: 'cancel' },
-      {
-        text: '복원',
-        onPress: async () => {
-          setBusy(true);
-          const result = await pullCloudToLocal(user.id);
-          setBusy(false);
-          Alert.alert(result.error ? '복원 실패' : '복원 완료', result.error ?? '클라우드 데이터를 불러왔어요.');
+    Alert.alert(
+      '클라우드 데이터로 덮어쓰기',
+      '이 기기의 로컬 데이터가 클라우드 내용으로 교체됩니다. 최근 이 기기에서만 수정한 내용은 사라질 수 있어요. 계속할까요?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '덮어쓰기',
+          style: 'destructive',
+          onPress: async () => {
+            setBusy(true);
+            const result = await pullCloudToLocal(user.id);
+            setBusy(false);
+            Alert.alert(
+              result.error ? '복원 실패' : '복원 완료',
+              result.error ?? '클라우드 데이터를 불러왔어요.',
+            );
+          },
         },
-      },
-    ]);
+      ],
+    );
   }
 
   async function handleLogout() {
@@ -124,7 +120,7 @@ export function SettingAccountSection() {
     return (
       <SettingSection
         title="계정 · 클라우드"
-        footer="로그인하면 자동 클라우드 동기화(기본 ON)로 다른 기기와 맞출 수 있어요. 오프라인에서도 로컬 저장은 계속됩니다."
+        footer="로그인하지 않아도 기기에 저장돼요. 로그인하면 다른 기기와 자동으로 맞춰져요."
       >
         <Pressable
           onPress={handleGoogle}
@@ -206,17 +202,10 @@ export function SettingAccountSection() {
   return (
     <SettingSection
       title="계정 · 클라우드"
-      footer="로컬이 1차 저장소예요. 자동 동기화 ON이면 변경 시 클라우드에 올라가고, 수동 백업·복원도 사용할 수 있어요."
+      footer="변경 사항은 자동으로 맞춰져요. 동기화 문제가 있을 때만 아래 덮어쓰기를 사용하세요."
     >
       <SettingRow label="로그인 계정" value={user.email ?? 'Google'} showChevron={false} />
-      <SettingToggleRow
-        label="자동 클라우드 동기화"
-        description="루틴·할일 변경 시 Supabase에 자동 저장"
-        value={cloudAutoSyncEnabled}
-        onToggle={setCloudAutoSyncEnabled}
-      />
-      <SettingRow label="클라우드에 백업" onPress={handlePush} />
-      <SettingRow label="클라우드에서 복원" onPress={handlePull} />
+      <SettingRow label="클라우드 데이터로 덮어쓰기" onPress={handlePull} />
       <SettingDestructiveRow label="로그아웃" onPress={handleLogout} />
     </SettingSection>
   );

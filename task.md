@@ -46,7 +46,7 @@
 
 [앱] Zustand persist (AsyncStorage)  ← 항상 1차
 
-        ↕ auto push (debounce) + 수동 push/pull
+        ↕ auto push (debounce, 로그인 시 항상) · 수동 pull(덮어쓰기 안전장치)
 
 [Supabase] Postgres + RLS + Realtime
 
@@ -64,7 +64,7 @@
 
 | Realtime | — | [x] routines/todos/completions |
 
-| 자동 sync | [x] | debounce push (토글 ON, 기본 ON) |
+| 자동 sync | [x] | 로그인 시 항상 ON (설정 토글 없음) |
 
 | 오프라인 | [x] | 로그인 시 로컬 비어 있으면 pull |
 

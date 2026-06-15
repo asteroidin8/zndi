@@ -5,22 +5,20 @@ import { pushLocalToCloud, pullCloudToLocal } from '@/services/sync/cloudSync';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
 
 const PUSH_DEBOUNCE_MS = 2500;
 
-/** 로그인 + 자동 동기화 ON 시 로컬 변경을 debounce push */
+/** 로그인 시 로컬 변경을 debounce push (항상 ON) */
 export function useAutoCloudSync() {
   const { user } = useAuth();
-  const autoSyncEnabled = useSettingsStore((s) => s.cloudAutoSyncEnabled);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialPullUserRef = useRef<string | null>(null);
 
   useEffect(() => {
     const userId = user?.id;
-    if (!userId || !autoSyncEnabled) return;
+    if (!userId) return;
 
     if (initialPullUserRef.current !== userId) {
       initialPullUserRef.current = userId;
@@ -52,5 +50,5 @@ export function useAutoCloudSync() {
       for (const unsub of unsubs) unsub();
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [user?.id, autoSyncEnabled]);
+  }, [user?.id]);
 }
