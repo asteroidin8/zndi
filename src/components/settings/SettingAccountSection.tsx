@@ -7,7 +7,8 @@ import { AppText } from '../AppText';
 import { Card } from '../Card';
 import { SettingDestructiveRow } from './SettingDestructiveRow';
 import { SettingRow } from './SettingRow';
-import { SettingSection } from './SettingSection';
+import { SettingSection, SettingSectionTitle } from './SettingSection';
+import { SettingsList } from './SettingsList';
 import { settingCardBlockStyle, settingCardStyle } from './settingStyles';
 import { spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -24,10 +25,17 @@ function StandaloneSettingsCard({
   centered?: boolean;
 }) {
   return (
-    <View style={{ marginBottom: spacing.settingsSection }}>
-      <Card padded={false} variant="settings" style={settingCardStyle()}>
-        <View style={settingCardBlockStyle({ centered })}>{children}</View>
-      </Card>
+    <Card padded={false} variant="settings" style={settingCardStyle()}>
+      <View style={settingCardBlockStyle({ centered })}>{children}</View>
+    </Card>
+  );
+}
+
+function AccountSectionShell({ children }: { children: ReactNode }) {
+  return (
+    <View style={{ gap: spacing.settingsTitle, marginBottom: spacing.settingsSection }}>
+      <SettingSectionTitle title="계정" />
+      {children}
     </View>
   );
 }
@@ -43,7 +51,7 @@ export function SettingAccountSection() {
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
 
-  const profileRow = getProfileRowValue(profile);
+  const bodyRow = getProfileRowValue(profile);
 
   async function handleGoogle() {
     setBusy(true);
@@ -131,106 +139,113 @@ export function SettingAccountSection() {
     color: c.ink,
   } as const;
 
+  const bodyRowNode = (
+    <SettingRow
+      label="신체 정보"
+      value={bodyRow.value}
+      unset={bodyRow.unset}
+      onPress={() => router.push('/settings/body')}
+    />
+  );
+
+  const loginCard = (
+    <StandaloneSettingsCard>
+      <Pressable
+        onPress={handleGoogle}
+        disabled={busy}
+        accessibilityRole="button"
+        accessibilityLabel="Google로 로그인"
+        style={{
+          backgroundColor: c.primary,
+          borderRadius: 12,
+          paddingVertical: 14,
+          alignItems: 'center',
+          opacity: busy ? 0.6 : 1,
+        }}
+      >
+        <AppText variant="body" style={{ color: c.onPrimary, fontWeight: '700' }}>
+          Google로 로그인
+        </AppText>
+      </Pressable>
+
+      {!emailMode ? (
+        <Pressable
+          onPress={() => setEmailMode(true)}
+          accessibilityRole="button"
+          style={{ alignItems: 'center', paddingVertical: spacing.xs }}
+        >
+          <AppText variant="caption" tone="tertiary" style={{ fontSize: 13 }}>
+            이메일로 로그인
+          </AppText>
+        </Pressable>
+      ) : (
+        <View style={{ gap: spacing.sm, width: '100%' }}>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="email@example.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={inputStyle}
+            placeholderTextColor={c.inkTertiary}
+          />
+          {otpSent && (
+            <TextInput
+              value={otp}
+              onChangeText={setOtp}
+              placeholder="인증 코드 6자리"
+              keyboardType="number-pad"
+              style={inputStyle}
+              placeholderTextColor={c.inkTertiary}
+            />
+          )}
+          <Pressable
+            onPress={otpSent ? handleVerifyOtp : handleSendOtp}
+            disabled={busy}
+            style={{
+              backgroundColor: c.surfaceMuted,
+              borderRadius: 10,
+              paddingVertical: 12,
+              alignItems: 'center',
+            }}
+          >
+            <AppText variant="body" style={{ fontWeight: '600' }}>
+              {otpSent ? '인증하기' : '인증 코드 받기'}
+            </AppText>
+          </Pressable>
+        </View>
+      )}
+    </StandaloneSettingsCard>
+  );
+
   if (!configured) {
     return (
-      <StandaloneSettingsCard>
-        <AppText variant="caption" tone="tertiary" style={{ fontSize: 13 }}>
-          Supabase 환경 변수가 없어요. .env에 URL과 anon key를 설정해 주세요.
-        </AppText>
-      </StandaloneSettingsCard>
+      <AccountSectionShell>
+        <StandaloneSettingsCard>
+          <AppText variant="caption" tone="tertiary" style={{ fontSize: 13 }}>
+            Supabase 환경 변수가 없어요. .env에 URL과 anon key를 설정해 주세요.
+          </AppText>
+        </StandaloneSettingsCard>
+      </AccountSectionShell>
     );
   }
 
   if (loading) {
     return (
-      <StandaloneSettingsCard centered>
-        <ActivityIndicator color={c.ink} />
-      </StandaloneSettingsCard>
+      <AccountSectionShell>
+        <StandaloneSettingsCard centered>
+          <ActivityIndicator color={c.ink} />
+        </StandaloneSettingsCard>
+      </AccountSectionShell>
     );
   }
 
-  const profileRowNode = (
-    <SettingRow
-      label="프로필"
-      value={profileRow.value}
-      unset={profileRow.unset}
-      onPress={() => router.push('/settings/profile')}
-    />
-  );
-
   if (!user) {
     return (
-      <View>
-        <StandaloneSettingsCard>
-          <Pressable
-            onPress={handleGoogle}
-            disabled={busy}
-            accessibilityRole="button"
-            accessibilityLabel="Google로 로그인"
-            style={{
-              backgroundColor: c.primary,
-              borderRadius: 12,
-              paddingVertical: 14,
-              alignItems: 'center',
-              opacity: busy ? 0.6 : 1,
-            }}
-          >
-            <AppText variant="body" style={{ color: c.onPrimary, fontWeight: '700' }}>
-              Google로 로그인
-            </AppText>
-          </Pressable>
-
-          {!emailMode ? (
-            <Pressable
-              onPress={() => setEmailMode(true)}
-              accessibilityRole="button"
-              style={{ alignItems: 'center', paddingVertical: spacing.xs }}
-            >
-              <AppText variant="caption" tone="tertiary" style={{ fontSize: 13 }}>
-                이메일로 로그인
-              </AppText>
-            </Pressable>
-          ) : (
-            <View style={{ gap: spacing.sm, width: '100%' }}>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="email@example.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                style={inputStyle}
-                placeholderTextColor={c.inkTertiary}
-              />
-              {otpSent && (
-                <TextInput
-                  value={otp}
-                  onChangeText={setOtp}
-                  placeholder="인증 코드 6자리"
-                  keyboardType="number-pad"
-                  style={inputStyle}
-                  placeholderTextColor={c.inkTertiary}
-                />
-              )}
-              <Pressable
-                onPress={otpSent ? handleVerifyOtp : handleSendOtp}
-                disabled={busy}
-                style={{
-                  backgroundColor: c.surfaceMuted,
-                  borderRadius: 10,
-                  paddingVertical: 12,
-                  alignItems: 'center',
-                }}
-              >
-                <AppText variant="body" style={{ fontWeight: '600' }}>
-                  {otpSent ? '인증하기' : '인증 코드 받기'}
-                </AppText>
-              </Pressable>
-            </View>
-          )}
-        </StandaloneSettingsCard>
-
-        <SettingSection title="계정">{profileRowNode}</SettingSection>
-      </View>
+      <AccountSectionShell>
+        {loginCard}
+        <SettingsList>{bodyRowNode}</SettingsList>
+      </AccountSectionShell>
     );
   }
 
@@ -238,7 +253,7 @@ export function SettingAccountSection() {
     <SettingSection title="계정">
       <SettingRow label="로그인 계정" value={user.email ?? 'Google'} showChevron={false} />
       <SettingRow label="클라우드 데이터로 덮어쓰기" onPress={handlePull} />
-      {profileRowNode}
+      {bodyRowNode}
       <SettingDestructiveRow label="로그아웃" onPress={handleLogout} />
     </SettingSection>
   );

@@ -31,8 +31,8 @@ export function Card({
     borderRadius: isSettings ? radius.lg : radius.xl,
     borderWidth: 1,
     borderColor: isSettings ? c.borderNeutral : c.border,
-    padding: padded ? spacing.card : 0,
-    overflow: 'hidden',
+    ...(padded ? { padding: spacing.card } : {}),
+    overflow: isSettings ? 'visible' : 'hidden',
     ...(isSettings || !glow
       ? {}
       : glow === true || glow === 'soft'

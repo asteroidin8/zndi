@@ -20,7 +20,7 @@ export function BaseSettingItem({ children, onPress, accessibilityLabel }: Props
     justifyContent: 'space-between' as const,
     minHeight: SETTING_ROW_HEIGHT,
     paddingHorizontal: SETTINGS_INSET,
-    width: '100%' as const,
+    alignSelf: 'stretch' as const,
   };
 
   if (onPress) {

@@ -1,27 +1,54 @@
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
-import { Alert, Linking, View } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
 
-import { AppText } from '@/components/AppText';
 import {
   SettingAccountSection,
   SettingDestructiveRow,
   SettingRow,
   SettingSection,
+  SettingToggleRow,
   SettingsScaffold,
 } from '@/components/settings';
-import { THEME_LABELS } from '@/constants/settingsOptions';
+import { NOTIFICATION_COPY, THEME_LABELS } from '@/constants/settingsOptions';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
+import { requestNotificationPermission } from '@/utils/notificationPermission';
 import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
 
 export default function SettingsIndexScreen() {
-  const { themeMode } = useSettingsStore();
+  const {
+    themeMode,
+    foregroundServiceEnabled,
+    toggleForegroundService,
+    routineNotificationsEnabled,
+    setRoutineNotifications,
+    todoNotificationsEnabled,
+    setTodoNotifications,
+  } = useSettingsStore();
+
+  const version = Constants.expoConfig?.version ?? '1.0.0';
+  const copy = NOTIFICATION_COPY;
+
+  async function handleRoutineNotifications(enabled: boolean) {
+    if (enabled && !(await requestNotificationPermission())) return;
+    setRoutineNotifications(enabled);
+  }
+
+  async function handleTodoNotifications(enabled: boolean) {
+    if (enabled && !(await requestNotificationPermission())) return;
+    setTodoNotifications(enabled);
+  }
+
+  async function handleForegroundServiceToggle() {
+    if (!foregroundServiceEnabled && !(await requestNotificationPermission())) return;
+    toggleForegroundService();
+  }
 
   function handleDataReset() {
     Alert.alert(
@@ -81,11 +108,23 @@ export default function SettingsIndexScreen() {
           value={THEME_LABELS[themeMode]}
           onPress={() => router.push('/settings/theme')}
         />
-        <SettingRow label="알림" onPress={() => router.push('/settings/notifications')} />
-      </SettingSection>
-
-      <SettingSection title="데이터">
-        <SettingDestructiveRow label="데이터 초기화" onPress={handleDataReset} />
+        <SettingToggleRow
+          label={copy.fastingBar.label}
+          value={foregroundServiceEnabled}
+          onToggle={() => {
+            handleForegroundServiceToggle();
+          }}
+        />
+        <SettingToggleRow
+          label={copy.routine.label}
+          value={routineNotificationsEnabled}
+          onToggle={handleRoutineNotifications}
+        />
+        <SettingToggleRow
+          label={copy.todo.label}
+          value={todoNotificationsEnabled}
+          onToggle={handleTodoNotifications}
+        />
       </SettingSection>
 
       <SettingSection title="정보">
@@ -97,13 +136,9 @@ export default function SettingsIndexScreen() {
             Linking.openURL('mailto:asteroidin8@gmail.com?subject=%EC%9E%94%EB%94%94%20%EB%AC%B8%EC%9D%98')
           }
         />
+        <SettingRow label="버전" value={`v${version}`} showChevron={false} />
+        <SettingDestructiveRow label="데이터 초기화" onPress={handleDataReset} />
       </SettingSection>
-
-      <View style={{ alignItems: 'center', paddingTop: 8 }}>
-        <AppText variant="caption" tone="tertiary" style={{ fontSize: 12 }}>
-          v{Constants.expoConfig?.version ?? '1.0.0'}
-        </AppText>
-      </View>
     </SettingsScaffold>
   );
 }

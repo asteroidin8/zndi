@@ -6,7 +6,7 @@ export { SettingChoiceRow, SettingSegmentRow } from './SettingChoiceRow';
 export { SettingDangerRow, SettingDestructiveRow } from './SettingDestructiveRow';
 export { SettingInsetDivider } from './SettingInsetDivider';
 export { SettingRow } from './SettingRow';
-export { SettingSection } from './SettingSection';
+export { SettingSection, SettingSectionTitle } from './SettingSection';
 export { SettingSegmentTrack, type SegmentOption } from './SettingSegmentTrack';
 export { SettingToggleRow } from './SettingToggleRow';
 export { SettingValueAccessory } from './SettingValueAccessory';
