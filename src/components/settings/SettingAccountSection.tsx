@@ -1,18 +1,36 @@
 import { router } from 'expo-router';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, TextInput, View } from 'react-native';
 
 import { AppText } from '../AppText';
+import { Card } from '../Card';
 import { SettingDestructiveRow } from './SettingDestructiveRow';
 import { SettingRow } from './SettingRow';
 import { SettingSection } from './SettingSection';
-import { settingCardBlockStyle } from './settingStyles';
+import { settingCardBlockStyle, settingCardStyle } from './settingStyles';
 import { spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useUserStore } from '@/stores/useUserStore';
 import { pullCloudToLocal } from '@/services/sync/cloudSync';
 import { getProfileRowValue } from '@/utils/profileSummary';
+
+function StandaloneSettingsCard({
+  children,
+  centered,
+}: {
+  children: ReactNode;
+  centered?: boolean;
+}) {
+  return (
+    <View style={{ marginBottom: spacing.settingsSection }}>
+      <Card padded={false} variant="settings" style={settingCardStyle()}>
+        <View style={settingCardBlockStyle({ centered })}>{children}</View>
+      </Card>
+    </View>
+  );
+}
 
 export function SettingAccountSection() {
   const c = useThemeColors();
@@ -26,28 +44,6 @@ export function SettingAccountSection() {
   const [otpSent, setOtpSent] = useState(false);
 
   const profileRow = getProfileRowValue(profile);
-
-  if (!configured) {
-    return (
-      <SettingSection title="계정">
-        <View style={settingCardBlockStyle()}>
-          <AppText variant="caption" tone="tertiary" style={{ fontSize: 13 }}>
-            Supabase 환경 변수가 없어요. .env에 URL과 anon key를 설정해 주세요.
-          </AppText>
-        </View>
-      </SettingSection>
-    );
-  }
-
-  if (loading) {
-    return (
-      <SettingSection title="계정">
-        <View style={settingCardBlockStyle({ centered: true })}>
-          <ActivityIndicator color={c.ink} />
-        </View>
-      </SettingSection>
-    );
-  }
 
   async function handleGoogle() {
     setBusy(true);
@@ -130,10 +126,37 @@ export function SettingAccountSection() {
     color: c.ink,
   } as const;
 
-  return (
-    <SettingSection title="계정">
-      {!user && (
-        <View style={settingCardBlockStyle()}>
+  if (!configured) {
+    return (
+      <StandaloneSettingsCard>
+        <AppText variant="caption" tone="tertiary" style={{ fontSize: 13 }}>
+          Supabase 환경 변수가 없어요. .env에 URL과 anon key를 설정해 주세요.
+        </AppText>
+      </StandaloneSettingsCard>
+    );
+  }
+
+  if (loading) {
+    return (
+      <StandaloneSettingsCard centered>
+        <ActivityIndicator color={c.ink} />
+      </StandaloneSettingsCard>
+    );
+  }
+
+  const profileRowNode = (
+    <SettingRow
+      label="프로필"
+      value={profileRow.value}
+      unset={profileRow.unset}
+      onPress={() => router.push('/settings/profile')}
+    />
+  );
+
+  if (!user) {
+    return (
+      <>
+        <StandaloneSettingsCard>
           <Pressable
             onPress={handleGoogle}
             disabled={busy}
@@ -199,24 +222,19 @@ export function SettingAccountSection() {
               </Pressable>
             </View>
           )}
-        </View>
-      )}
+        </StandaloneSettingsCard>
 
-      {user && (
-        <>
-          <SettingRow label="로그인 계정" value={user.email ?? 'Google'} showChevron={false} />
-          <SettingRow label="클라우드 데이터로 덮어쓰기" onPress={handlePull} />
-        </>
-      )}
+        <SettingSection title="계정">{profileRowNode}</SettingSection>
+      </>
+    );
+  }
 
-      <SettingRow
-        label="프로필"
-        value={profileRow.value}
-        unset={profileRow.unset}
-        onPress={() => router.push('/settings/profile')}
-      />
-
-      {user && <SettingDestructiveRow label="로그아웃" onPress={handleLogout} />}
+  return (
+    <SettingSection title="계정">
+      <SettingRow label="로그인 계정" value={user.email ?? 'Google'} showChevron={false} />
+      <SettingRow label="클라우드 데이터로 덮어쓰기" onPress={handlePull} />
+      {profileRowNode}
+      <SettingDestructiveRow label="로그아웃" onPress={handleLogout} />
     </SettingSection>
   );
 }

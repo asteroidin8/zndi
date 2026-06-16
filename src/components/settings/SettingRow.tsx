@@ -26,7 +26,6 @@ export function SettingRow({
   showChevron = Boolean(onPress),
 }: Props) {
   const c = useThemeColors();
-  const interactive = Boolean(onPress);
 
   const labelNode = (
     <AppText
@@ -39,18 +38,15 @@ export function SettingRow({
     </AppText>
   );
 
-  const trailingNode =
-    trailing !== undefined && trailing !== null
-      ? trailing
-      : value !== undefined || (interactive && showChevron)
-        ? (
-            <SettingValueAccessory
-              value={value}
-              unset={unset}
-              showChevron={interactive && showChevron}
-            />
-          )
-        : null;
+  const trailingNode = (() => {
+    if (trailing != null) return trailing;
+    if (value !== undefined || showChevron) {
+      return (
+        <SettingValueAccessory value={value} unset={unset} showChevron={showChevron} />
+      );
+    }
+    return null;
+  })();
 
   return (
     <BaseSettingItem

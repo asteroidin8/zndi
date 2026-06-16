@@ -107,6 +107,6 @@ export function settingCardBlockStyle(options?: { centered?: boolean }): ViewSty
     alignItems: options?.centered ? 'center' : 'stretch',
     justifyContent: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
   };
 }

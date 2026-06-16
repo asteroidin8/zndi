@@ -12,6 +12,8 @@ type Props = {
 export function SettingsList({ children }: Props) {
   const rows = Children.toArray(children).filter(isValidElement);
 
+  if (rows.length === 0) return null;
+
   return (
     <Card padded={false} variant="settings" style={settingCardStyle()}>
       {rows.map((row, index) => (

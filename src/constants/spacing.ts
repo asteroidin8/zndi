@@ -5,6 +5,7 @@ export const spacing = {
   card: 16,
   item: 14,
   sm: 8,
+  md: 12,
   xs: 4,
   /** 설정 화면 섹션 간격 */
   settingsSection: 32,
