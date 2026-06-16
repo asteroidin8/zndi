@@ -5,6 +5,7 @@ export { SettingAccountSection } from './SettingAccountSection';
 export { SettingChoiceRow, SettingSegmentRow } from './SettingChoiceRow';
 export { SettingDangerRow, SettingDestructiveRow } from './SettingDestructiveRow';
 export { SettingInsetDivider } from './SettingInsetDivider';
+export { SettingOptionSheet, type SettingOption } from './SettingOptionSheet';
 export { SettingRow } from './SettingRow';
 export { SettingSection, SettingSectionTitle } from './SettingSection';
 export { SettingSegmentTrack, type SegmentOption } from './SettingSegmentTrack';

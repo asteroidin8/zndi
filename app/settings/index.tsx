@@ -1,17 +1,19 @@
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
+import { useState } from 'react';
 import { Alert, Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
 
 import {
   SettingAccountSection,
   SettingDestructiveRow,
+  SettingOptionSheet,
   SettingRow,
   SettingSection,
   SettingToggleRow,
   SettingsScaffold,
 } from '@/components/settings';
-import { NOTIFICATION_COPY, THEME_LABELS } from '@/constants/settingsOptions';
+import { NOTIFICATION_COPY, THEME_LABELS, THEME_OPTIONS } from '@/constants/settingsOptions';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
@@ -22,8 +24,10 @@ import { requestNotificationPermission } from '@/utils/notificationPermission';
 import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
 
 export default function SettingsIndexScreen() {
+  const [themeSheetVisible, setThemeSheetVisible] = useState(false);
   const {
     themeMode,
+    setThemeMode,
     foregroundServiceEnabled,
     toggleForegroundService,
     routineNotificationsEnabled,
@@ -106,7 +110,7 @@ export default function SettingsIndexScreen() {
         <SettingRow
           label="테마"
           value={THEME_LABELS[themeMode]}
-          onPress={() => router.push('/settings/theme')}
+          onPress={() => setThemeSheetVisible(true)}
         />
         <SettingToggleRow
           label={copy.fastingBar.label}
@@ -126,6 +130,15 @@ export default function SettingsIndexScreen() {
           onToggle={handleTodoNotifications}
         />
       </SettingSection>
+
+      <SettingOptionSheet
+        visible={themeSheetVisible}
+        title="테마"
+        options={THEME_OPTIONS.map((opt) => ({ label: opt.label, value: opt.mode }))}
+        selectedValue={themeMode}
+        onSelect={setThemeMode}
+        onClose={() => setThemeSheetVisible(false)}
+      />
 
       <SettingSection title="정보">
         <SettingRow label="이용약관" onPress={() => router.push('/terms')} />

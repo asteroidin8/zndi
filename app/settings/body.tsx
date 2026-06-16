@@ -2,12 +2,13 @@ import { useState } from 'react';
 
 import { DecimalWheelPicker } from '@/components/settings/DecimalWheelPicker';
 import {
-  SettingChoiceRow,
+  SettingOptionSheet,
   SettingRow,
   SettingSection,
   SettingsScaffold,
 } from '@/components/settings';
 import { WheelPicker } from '@/components/WheelPicker';
+import { GENDER_OPTIONS, getGenderLabel } from '@/constants/settingsOptions';
 import { useUserStore } from '@/stores/useUserStore';
 import { formatMetric } from '@/utils/formatMetric';
 
@@ -24,6 +25,7 @@ const METRIC_LIMITS = {
 export default function SettingsBodyScreen() {
   const { profile, setHeight, setWeight, setTargetWeight, setAge, setIsMale } = useUserStore();
   const [pickerType, setPickerType] = useState<PickerType>(null);
+  const [genderSheetVisible, setGenderSheetVisible] = useState(false);
 
   function getDecimalPickerProps() {
     switch (pickerType) {
@@ -93,17 +95,22 @@ export default function SettingsBodyScreen() {
           unset={profile.ageYears == null}
           onPress={() => setPickerType('age')}
         />
-        <SettingChoiceRow
+        <SettingRow
           label="성별"
-          allowDeselect
-          value={profile.isMale}
-          onChange={setIsMale}
-          options={[
-            { label: '남성', value: true },
-            { label: '여성', value: false },
-          ]}
+          value={getGenderLabel(profile.isMale)}
+          unset={profile.isMale == null}
+          onPress={() => setGenderSheetVisible(true)}
         />
       </SettingSection>
+
+      <SettingOptionSheet
+        visible={genderSheetVisible}
+        title="성별"
+        options={GENDER_OPTIONS}
+        selectedValue={profile.isMale}
+        onSelect={setIsMale}
+        onClose={() => setGenderSheetVisible(false)}
+      />
 
       <DecimalWheelPicker
         visible={isDecimalPicker}
