@@ -1,0 +1,46 @@
+---
+description: Agent 역할·handoff 워크플로 — 작업마다 docs/agent 확인
+alwaysApply: true
+---
+
+# Agent 워크플로
+
+## 시작 (매 세션)
+
+1. [planner.md](../../docs/agent/planner.md) checklist
+2. 역할 문서:
+
+| 역할 | 문서 |
+|------|------|
+| 구현 | `docs/agent/claude.md` + `workflow.md` |
+| Git | `docs/agent/composer.md` + `workflow.md` |
+| merge 전 검토 | `docs/agent/reviewer.md` |
+
+## handoff 자동 처리
+
+`handoff.json` 갱신 후 에이전트 턴이 끝나면 **`.cursor/hooks/check-handoff.ps1`** 이 status를 확인한다.
+
+| status | stop hook |
+|--------|-----------|
+| `READY` | Git Manager follow-up 자동 실행 (composer.md) |
+| `DONE` / `BLOCKED` / `PARTIAL` | follow-up 없음 |
+
+매 세션 시작 시에도 `handoff.json`을 **먼저 읽는다**. `READY`이면 Implementation 대신 Git Manager부터 수행한다.
+
+## handoff status
+
+| status | 행동 |
+|--------|------|
+| `READY` | Composer: 검증 → 커밋 분리 → PR → Reviewer → **squash merge** |
+| `DONE` | 없음 |
+| `BLOCKED` | Implementation 수정 후 다시 `READY` |
+| `PARTIAL` | 남은 work 새 handoff |
+
+## 필수 규칙
+
+- **Implementation:** commit/push/merge 금지 · `task.md` 갱신 · `commit_groups` (관심사 2+)
+- **Composer:** pre-merge validation · 최소 단위 커밋 · 무관 파일 제외 · **squash merge**
+- **Reviewer:** read-only · FAIL → `BLOCKED`
+- **`handoff_type: native`:** PR에 기기 재설치 체크리스트
+
+상세: `docs/agent/workflow.md`

@@ -30,7 +30,11 @@ npm start
 
 ## 스토어 에셋
 
-`assets/` 폴더의 PNG 파일은 `assets/README.md`를 참고하세요.
+`assets/` PNG — `assets/README.md` 참고.
+
+## 에이전트 워크플로
+
+구현 ↔ Git 분리: `docs/agent/` (planner · claude · composer · reviewer · workflow)
 
 ## 개인정보
 
