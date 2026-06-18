@@ -76,30 +76,40 @@ export default function SettingsBodyScreen() {
           value={formatMetric(profile.heightCm, 'cm')}
           unset={profile.heightCm == null}
           onPress={() => setPickerType('height')}
+          icon="Ruler"
+          iconColor="#3B82F6"
         />
         <SettingRow
           label="체중"
           value={formatMetric(profile.weightKg, 'kg')}
           unset={profile.weightKg == null}
           onPress={() => setPickerType('weight')}
+          icon="Scale"
+          iconColor="#F59E0B"
         />
         <SettingRow
           label="목표 체중"
           value={formatMetric(profile.targetWeightKg, 'kg')}
           unset={profile.targetWeightKg == null}
           onPress={() => setPickerType('targetWeight')}
+          icon="Target"
+          iconColor="#EF4444"
         />
         <SettingRow
           label="나이"
           value={profile.ageYears != null ? `${profile.ageYears}세` : '미설정'}
           unset={profile.ageYears == null}
           onPress={() => setPickerType('age')}
+          icon="Calendar"
+          iconColor="#8B5CF6"
         />
         <SettingRow
           label="성별"
           value={getGenderLabel(profile.isMale)}
           unset={profile.isMale == null}
           onPress={() => setGenderSheetVisible(true)}
+          icon="Users"
+          iconColor="#06B6D4"
         />
       </SettingSection>
 

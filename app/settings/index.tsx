@@ -111,23 +111,34 @@ export default function SettingsIndexScreen() {
           label="테마"
           value={THEME_LABELS[themeMode]}
           onPress={() => setThemeSheetVisible(true)}
+          icon="Palette"
+          iconColor="#6366F1"
         />
         <SettingToggleRow
           label={copy.fastingBar.label}
+          description={copy.fastingBar.description}
           value={foregroundServiceEnabled}
           onToggle={() => {
             handleForegroundServiceToggle();
           }}
+          icon="Smartphone"
+          iconColor="#16A34A"
         />
         <SettingToggleRow
           label={copy.routine.label}
+          description={copy.routine.description}
           value={routineNotificationsEnabled}
           onToggle={handleRoutineNotifications}
+          icon="Bell"
+          iconColor="#F59E0B"
         />
         <SettingToggleRow
           label={copy.todo.label}
+          description={copy.todo.description}
           value={todoNotificationsEnabled}
           onToggle={handleTodoNotifications}
+          icon="Clock"
+          iconColor="#3B82F6"
         />
       </SettingSection>
 
@@ -141,16 +152,34 @@ export default function SettingsIndexScreen() {
       />
 
       <SettingSection title="정보">
-        <SettingRow label="이용약관" onPress={() => router.push('/terms')} />
-        <SettingRow label="개인정보처리방침" onPress={() => router.push('/privacy')} />
+        <SettingRow
+          label="이용약관"
+          onPress={() => router.push('/terms')}
+          icon="FileText"
+          iconColor="#6B7280"
+        />
+        <SettingRow
+          label="개인정보처리방침"
+          onPress={() => router.push('/privacy')}
+          icon="Shield"
+          iconColor="#6B7280"
+        />
         <SettingRow
           label="문의하기"
           onPress={() =>
             Linking.openURL('mailto:asteroidin8@gmail.com?subject=%EC%9E%94%EB%94%94%20%EB%AC%B8%EC%9D%98')
           }
+          icon="Mail"
+          iconColor="#16A34A"
         />
-        <SettingRow label="버전" value={`v${version}`} showChevron={false} />
-        <SettingDestructiveRow label="데이터 초기화" onPress={handleDataReset} />
+        <SettingRow
+          label="버전"
+          value={`v${version}`}
+          showChevron={false}
+          icon="Info"
+          iconColor="#94A3B8"
+        />
+        <SettingDestructiveRow label="데이터 초기화" onPress={handleDataReset} icon="Trash2" />
       </SettingSection>
     </SettingsScaffold>
   );
