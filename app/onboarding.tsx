@@ -5,9 +5,8 @@ import PagerView from 'react-native-pager-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/AppText';
-import { Card } from '@/components/Card';
 import { ONBOARDING } from '@/constants/copy';
-import { spacing } from '@/constants/spacing';
+import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 
@@ -73,21 +72,27 @@ export default function OnboardingScreen() {
                 width: i === page ? 20 : 6,
                 height: 6,
                 borderRadius: 3,
-                backgroundColor: i === page ? c.ink : c.border,
+                backgroundColor: i === page ? c.primary : c.surfaceMuted,
               }}
             />
           ))}
         </View>
-        <Card
-          pressable
+        <Pressable
           onPress={next}
           accessibilityRole="button"
           accessibilityLabel={isLast ? ONBOARDING.ctaStart : ONBOARDING.ctaNext}
+          style={({ pressed }) => ({
+            backgroundColor: c.primary,
+            borderRadius: radius.lg,
+            paddingVertical: spacing.item,
+            alignItems: 'center',
+            opacity: pressed ? 0.88 : 1,
+          })}
         >
-          <AppText variant="body" style={{ textAlign: 'center', fontWeight: '600' }}>
+          <AppText variant="body" style={{ fontWeight: '700', color: c.onPrimary }}>
             {isLast ? ONBOARDING.ctaStart : ONBOARDING.ctaNext}
           </AppText>
-        </Card>
+        </Pressable>
         {!isLast && (
           <Pressable onPress={finish} accessibilityRole="button" accessibilityLabel={ONBOARDING.skip}>
             <AppText variant="caption" tone="tertiary" style={{ textAlign: 'center' }}>

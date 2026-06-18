@@ -92,13 +92,13 @@ export function grassCellColors(
     };
   }
 
-  const fill = level >= 4 ? c.primary : c.accent;
-  const fillOpacity = level === 1 ? 0.28 : level === 2 ? 0.48 : level === 3 ? 0.72 : 1;
+  const fill = c.primary;
+  const fillOpacity = level === 1 ? 0.2 : level === 2 ? 0.4 : level === 3 ? 0.65 : 1;
 
   return {
     fill,
     fillOpacity,
-    borderColor: isToday ? c.accent : level >= 4 ? c.primary : c.borderStrong,
-    glow: level >= 4,
+    borderColor: isToday ? c.accent : level >= 3 ? c.primary : c.borderStrong,
+    glow: level >= 3,
   };
 }

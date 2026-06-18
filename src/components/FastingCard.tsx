@@ -68,7 +68,7 @@ export function FastingCard({ onPress }: Props) {
   const isOverGoal = elapsedMs >= goalMs;
   const progress = Math.min(elapsedMs / goalMs, 1);
   const completionTs = startedAt ? startedAt + goalMs : null;
-  const accent = isOverGoal ? c.booster : c.ink;
+  const accent = isOverGoal ? c.booster : c.primary;
 
   if (status === 'idle') {
     return (

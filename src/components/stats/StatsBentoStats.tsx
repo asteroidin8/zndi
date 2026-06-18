@@ -10,10 +10,10 @@ import { useRoutineStore } from '@/stores/useRoutineStore';
 import { getMonthRoutineStats } from '@/utils/contributionGrid';
 import { getRoutineStreakDays } from '@/utils/homeDailyBoard';
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value, glow }: { label: string; value: string; glow?: boolean }) {
   const c = useThemeColors();
   return (
-    <Card style={{ flex: 1, gap: spacing.xs, padding: spacing.item }}>
+    <Card glow={glow ? 'soft' : false} style={{ flex: 1, gap: spacing.xs, padding: spacing.item }}>
       <AppText variant="caption" tone="tertiary">
         {label}
       </AppText>
@@ -30,17 +30,24 @@ export function StatsBentoStats() {
   const { isCompleted } = useRoutineCompletionStore();
   const streak = getRoutineStreakDays(routines, isCompleted);
   const month = getMonthRoutineStats(routines, isCompleted);
+  const rate = month.daysWithRoutines > 0 ? Math.round(month.rate * 100) : 0;
 
   return (
     <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-      <StatCard label={STATS_BENTO.streak} value={streak > 0 ? `${streak}일` : '—'} />
+      <StatCard
+        label={STATS_BENTO.streak}
+        value={streak > 0 ? `${streak}일` : '—'}
+        glow={streak >= 7}
+      />
       <StatCard
         label={STATS_BENTO.monthDays}
         value={month.daysFullyComplete > 0 ? `${month.daysFullyComplete}일` : '—'}
+        glow={month.daysFullyComplete >= 20}
       />
       <StatCard
         label={STATS_BENTO.achievementRate}
-        value={month.daysWithRoutines > 0 ? `${Math.round(month.rate * 100)}%` : '—'}
+        value={month.daysWithRoutines > 0 ? `${rate}%` : '—'}
+        glow={rate >= 80}
       />
     </View>
   );

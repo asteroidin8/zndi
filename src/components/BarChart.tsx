@@ -41,7 +41,7 @@ export function BarChart({ data, width, height = 140, unit = '', maxValue }: Pro
           <G key={`${item.label}-${i}`}>
             <Rect x={x} y={0} width={barW} height={chartH} rx={BAR_RADIUS} fill={c.surfaceMuted} />
             {barH > 0 && (
-              <Rect x={x} y={y} width={barW} height={barH} rx={BAR_RADIUS} fill={isToday ? c.ink : c.inkTertiary} />
+              <Rect x={x} y={y} width={barW} height={barH} rx={BAR_RADIUS} fill={isToday ? c.primary : c.accent} opacity={isToday ? 1 : 0.4} />
             )}
             {item.value > 0 ? (
               <SvgText x={x + barW / 2} y={y - 3} textAnchor="middle" fontSize={9} fill={c.inkSecondary}>

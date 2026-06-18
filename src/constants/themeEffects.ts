@@ -9,19 +9,30 @@ export function neonGlowShadow(
 ): ViewStyle {
   if (intensity === 'strong') {
     return {
-      shadowColor: c.primary,
-      shadowOpacity: 0.55,
-      shadowRadius: 10,
+      shadowColor: c.neonGlow,
+      shadowOpacity: 0.6,
+      shadowRadius: 12,
       shadowOffset: { width: 0, height: 0 },
-      elevation: 5,
+      elevation: 6,
     };
   }
   return {
-    shadowColor: c.primary,
-    shadowOpacity: 0.35,
-    shadowRadius: 5,
+    shadowColor: c.neonGlow,
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
     shadowOffset: { width: 0, height: 0 },
     elevation: 3,
+  };
+}
+
+/** 잔디 셀 전용 글로우 */
+export function grassGlowShadow(c: ThemeColors): ViewStyle {
+  return {
+    shadowColor: c.neonGlow,
+    shadowOpacity: 0.55,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 4,
   };
 }
 

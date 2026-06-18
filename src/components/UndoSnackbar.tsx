@@ -70,7 +70,7 @@ export function UndoSnackbar({ message, visible, onUndo, onDismiss, duration = 3
         accessibilityRole="button"
         accessibilityLabel="실행 취소"
       >
-        <AppText variant="caption" style={{ color: c.surface, fontWeight: '700' }}>
+        <AppText variant="caption" style={{ color: c.accent, fontWeight: '700' }}>
           취소
         </AppText>
       </Pressable>

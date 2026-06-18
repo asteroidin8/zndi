@@ -120,11 +120,11 @@ function MonthGrid({
                 justifyContent: 'center',
                 ...(colors.glow
                   ? {
-                      shadowColor: c.primary,
-                      shadowOpacity: 0.45,
-                      shadowRadius: 4,
+                      shadowColor: c.neonGlow,
+                      shadowOpacity: 0.5,
+                      shadowRadius: 5,
                       shadowOffset: { width: 0, height: 0 },
-                      elevation: 3,
+                      elevation: 4,
                     }
                   : {}),
               }}
