@@ -111,21 +111,25 @@ Composer PR body **필수 문구**:
 - **PR 제목:** 첫 커밋 또는 feature 한 줄 (한국어)
 - **Merge:** **Squash merge** only (`project-conventions.mdc`)
 
-## Auto-trigger (Cursor hook)
+## Auto-trigger (Cursor hooks)
 
 `.cursor/hooks.json` — Windows는 **`powershell -File`** 로 실행 (`.ps1` 직접 경로만으로는 실패할 수 있음).
 
-| Event | 동작 |
-|-------|------|
-| `sessionStart` | 채팅 시작 시 `READY` → Git Manager 안내 주입 |
-| `postToolUse` (Write) | `handoff.json` 저장 직후 컨텍스트 주입 |
-| `stop` | 턴 종료 시 `READY` → **followup_message**로 Composer 자동 실행 |
+| Hook | 시점 |
+|------|------|
+| `sessionStart` | 채팅/세션 시작 → `additional_context` |
+| `postToolUse` | `handoff.json` Write/Edit/StrReplace 후 |
+| `stop` | Implementation 턴 종료 → `followup_message` |
 
-**자동 실행이 안 될 때**
+Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File ...` 필수.
 
-1. Cursor **Settings → Hooks** 에서 hook 로드 확인 (저장 후 **Cursor 재시작**)
-2. `stop` hook은 **에이전트 턴이 끝날 때만** 동작 — handoff만 저장하고 채팅을 닫으면 follow-up 없을 수 있음
-3. Implementation이 **다른 채팅/외부**에서 handoff를 쓰면, **새 메시지** 또는 `sessionStart`로 처리
-4. Hooks **Output** 채널에서 스크립트 오류 확인
+### 자동 실행이 안 될 때
 
-세션 **시작** 시에도 `handoff.json`을 먼저 읽고, `READY`면 Implementation 생략 → Composer 우선.
+1. **Cursor Settings → Hooks** 활성화 여부 확인 (`hooks.json` 저장 후 **Cursor 재시작**)
+2. **stop hook**은 Implementation **에이전트 턴이 끝날 때만** 동작 — handoff 파일만 저장하고 턴이 안 끝나면 follow-up 없음
+3. **followup_message** = 다음 턴 **제안** — Always Allow / Auto-run 설정에 따라 수동 승인 필요할 수 있음
+4. **새 채팅**을 열면 `sessionStart`만 동작 — 이전 세션 stop follow-up은 해당 세션에만 적용
+5. **Output → Hooks** 채널에서 스크립트 실패(exit 1, cwd 오류) 확인
+6. hook 실패 시: 에이전트 규칙(`agent-workflow.mdc`) — **매 턴 `handoff.json` 먼저 읽기**
+
+세션 **시작**·**매 사용자 메시지** 시 `READY`면 Implementation 생략 → Composer 우선.

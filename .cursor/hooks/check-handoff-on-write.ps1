@@ -1,18 +1,23 @@
-# postToolUse: after Write — if handoff.json is READY, inject Git Manager context
+# postToolUse — handoff.json written as READY → remind Git Manager
 $ErrorActionPreference = 'SilentlyContinue'
 
 $stdin = [Console]::In.ReadToEnd()
 if ($stdin) {
   try {
     $payload = $stdin | ConvertFrom-Json
-    $blob = ($payload | ConvertTo-Json -Compress)
-    if ($blob -notmatch 'handoff\.json') {
+    $path = "$($payload.tool_input.path)$($payload.file_path)$($payload.path)"
+    if (-not $path) {
+      $blob = ($payload | ConvertTo-Json -Compress)
+      if ($blob -notmatch 'handoff\.json') { exit 0 }
+    } elseif ($path -notmatch 'handoff\.json') {
       exit 0
     }
   } catch { }
 }
 
-$handoffPath = Join-Path (Get-Location) 'handoff.json'
+$projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+$handoffPath = Join-Path $projectRoot 'handoff.json'
+
 if (-not (Test-Path $handoffPath)) { exit 0 }
 
 try {

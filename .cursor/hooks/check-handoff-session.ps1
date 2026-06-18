@@ -1,9 +1,11 @@
-# sessionStart: if handoff READY, inject context at chat open
+# sessionStart — inject context when handoff is READY
 $ErrorActionPreference = 'SilentlyContinue'
 
 $null = [Console]::In.ReadToEnd()
 
-$handoffPath = Join-Path (Get-Location) 'handoff.json'
+$projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+$handoffPath = Join-Path $projectRoot 'handoff.json'
+
 if (-not (Test-Path $handoffPath)) { exit 0 }
 
 try {
