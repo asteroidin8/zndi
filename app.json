@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "잔디",
+    "name": "zndi",
     "slug": "zndi",
     "owner": "asteroidin8",
     "version": "1.0.0",
@@ -39,6 +39,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-dev-client",
       "expo-router",
       [
         "expo-notifications",
