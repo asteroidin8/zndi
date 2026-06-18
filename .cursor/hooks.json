@@ -15,7 +15,7 @@
     "postToolUse": [
       {
         "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/check-handoff-on-write.ps1",
-        "matcher": "Write|StrReplace|EditNotebook"
+        "matcher": "Write|Edit|StrReplace|EditNotebook"
       }
     ]
   }

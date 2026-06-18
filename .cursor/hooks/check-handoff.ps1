@@ -10,16 +10,20 @@ if (-not (Test-Path $handoffPath)) { exit 0 }
 
 try {
   $handoff = Get-Content -Path $handoffPath -Raw -Encoding UTF8 | ConvertFrom-Json
-} catch { exit 0 }
+} catch {
+  exit 0
+}
 
 if ($handoff.status -ne 'READY') { exit 0 }
 
-$followup = @'
-handoff.json status is READY. Git Manager only (docs/agent/composer.md).
+$msg = @'
+handoff.json status is READY. Git Manager role only (docs/agent/composer.md, reviewer.md).
 
-Validate diff, commit_groups, push, PR, squash merge, handoff DONE.
-No new implementation.
+- No implementation/refactor
+- Commit only files_changed / commit_groups
+- pre-merge validation, minimal commits, push, PR, squash merge
+- Set handoff.json status = DONE when merged
 '@
 
-@{ followup_message = $followup.Trim() } | ConvertTo-Json -Compress
+@{ followup_message = $msg.Trim() } | ConvertTo-Json -Compress
 exit 0

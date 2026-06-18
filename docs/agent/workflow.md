@@ -113,12 +113,12 @@ Composer PR body **필수 문구**:
 
 ## Auto-trigger (Cursor hooks)
 
-`.cursor/hooks.json` — **3곳**에서 `handoff.json` 확인:
+`.cursor/hooks.json` — Windows는 **`powershell -File`** 로 실행 (`.ps1` 직접 경로만으로는 실패할 수 있음).
 
 | Hook | 시점 |
 |------|------|
 | `sessionStart` | 채팅/세션 시작 → `additional_context` |
-| `postToolUse` | `handoff.json` Write/StrReplace 후 |
+| `postToolUse` | `handoff.json` Write/Edit/StrReplace 후 |
 | `stop` | Implementation 턴 종료 → `followup_message` |
 
 Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File ...` 필수.
