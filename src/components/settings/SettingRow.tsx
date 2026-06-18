@@ -6,7 +6,6 @@ import { AppText } from '../AppText';
 import { BaseSettingItem } from './BaseSettingItem';
 import { settingRowLabelStyle } from './settingStyles';
 import { SettingValueAccessory } from './SettingValueAccessory';
-import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 type IconName = React.ComponentProps<typeof AppIcon>['name'];
@@ -47,7 +46,6 @@ export function SettingRow({
         backgroundColor: iconColor ?? c.primary,
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: spacing.md,
       }}
     >
       <AppIcon name={icon} size={15} color="#ffffff" strokeWidth={2} />

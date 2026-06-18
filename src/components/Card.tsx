@@ -29,8 +29,8 @@ export function Card({
   const cardStyle: ViewStyle = {
     backgroundColor: isSettings ? c.surfaceSubtle : variant === 'elevated' ? c.surfaceCard : c.surfaceSubtle,
     borderRadius: isSettings ? radius.lg : radius.xl,
-    borderWidth: 1,
-    borderColor: isSettings ? c.borderNeutral : c.border,
+    borderWidth: isSettings ? 0 : 1,
+    borderColor: isSettings ? 'transparent' : c.border,
     ...(padded ? { padding: spacing.card } : {}),
     overflow: isSettings ? 'visible' : 'hidden',
     ...(isSettings || !glow

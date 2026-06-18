@@ -10,7 +10,7 @@ import { SettingRow } from './SettingRow';
 import { SettingSection, SettingSectionTitle } from './SettingSection';
 import { SettingsList } from './SettingsList';
 import { settingCardBlockStyle, settingCardStyle } from './settingStyles';
-import { spacing } from '@/constants/spacing';
+import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useUserStore } from '@/stores/useUserStore';
@@ -134,9 +134,10 @@ export function SettingAccountSection() {
   const inputStyle = {
     borderWidth: 1,
     borderColor: c.borderNeutral,
-    borderRadius: 10,
-    padding: 12,
+    borderRadius: radius.md,
+    padding: spacing.md,
     color: c.ink,
+    fontSize: 15,
   } as const;
 
   const bodyRowNode = (
@@ -145,8 +146,6 @@ export function SettingAccountSection() {
       value={bodyRow.value}
       unset={bodyRow.unset}
       onPress={() => router.push('/settings/body')}
-      icon="Heart"
-      iconColor="#EF4444"
     />
   );
 
@@ -159,7 +158,7 @@ export function SettingAccountSection() {
         accessibilityLabel="Google로 로그인"
         style={{
           backgroundColor: c.primary,
-          borderRadius: 12,
+          borderRadius: radius.md,
           paddingVertical: 14,
           alignItems: 'center',
           opacity: busy ? 0.6 : 1,
@@ -206,7 +205,7 @@ export function SettingAccountSection() {
             disabled={busy}
             style={{
               backgroundColor: c.surfaceMuted,
-              borderRadius: 10,
+              borderRadius: radius.md,
               paddingVertical: 12,
               alignItems: 'center',
             }}
@@ -253,21 +252,10 @@ export function SettingAccountSection() {
 
   return (
     <SettingSection title="계정">
-      <SettingRow
-        label="로그인 계정"
-        value={user.email ?? 'Google'}
-        showChevron={false}
-        icon="User"
-        iconColor="#3B82F6"
-      />
-      <SettingRow
-        label="클라우드 데이터로 덮어쓰기"
-        onPress={handlePull}
-        icon="CloudDownload"
-        iconColor="#16A34A"
-      />
+      <SettingRow label="로그인 계정" value={user.email ?? 'Google'} showChevron={false} />
+      <SettingRow label="클라우드 복원" onPress={handlePull} />
       {bodyRowNode}
-      <SettingDestructiveRow label="로그아웃" onPress={handleLogout} icon="LogOut" />
+      <SettingDestructiveRow label="로그아웃" onPress={handleLogout} />
     </SettingSection>
   );
 }

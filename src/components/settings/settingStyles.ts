@@ -11,7 +11,7 @@ export const SETTING_CARD_PADDING_X = SETTINGS_INSET;
 /** @deprecated SETTINGS_INSET */
 export const SETTING_ROW_INSET = SETTINGS_INSET;
 
-export const SETTING_CARD_PADDING_Y = spacing.xs;
+export const SETTING_CARD_PADDING_Y = spacing.sm;
 
 /** @deprecated SETTING_CARD_PADDING_Y */
 export const SETTING_CARD_INSET_Y = SETTING_CARD_PADDING_Y;

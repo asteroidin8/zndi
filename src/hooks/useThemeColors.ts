@@ -8,7 +8,7 @@ export function useThemeColors() {
   const themeMode = useSettingsStore((s) => s.themeMode);
 
   const scheme =
-    themeMode === 'system' ? systemScheme : themeMode;
+    themeMode === 'system' ? (systemScheme ?? 'dark') : themeMode;
 
   return scheme === 'dark' ? colors.dark : colors.light;
 }

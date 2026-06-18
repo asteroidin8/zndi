@@ -11,6 +11,8 @@ type Props = {
 };
 
 export function SettingSectionTitle({ title }: { title: string }) {
+  if (!title) return null;
+
   return (
     <AppText
       variant="caption"
@@ -24,14 +26,23 @@ export function SettingSectionTitle({ title }: { title: string }) {
 
 export function SettingSection({ title, footer, children }: Props) {
   return (
-    <View style={{ gap: spacing.settingsTitle, marginBottom: spacing.settingsSection }}>
+    <View
+      style={{
+        gap: title ? spacing.settingsTitle : 0,
+        marginBottom: spacing.settingsSection,
+      }}
+    >
       <SettingSectionTitle title={title} />
       <SettingsList>{children}</SettingsList>
-      {footer && (
-        <AppText variant="caption" tone="tertiary" style={{ fontSize: 13, lineHeight: 17 }}>
+      {footer ? (
+        <AppText
+          variant="caption"
+          tone="tertiary"
+          style={{ fontSize: 13, lineHeight: 17, paddingHorizontal: 2, marginTop: spacing.xs }}
+        >
           {footer}
         </AppText>
-      )}
+      ) : null}
     </View>
   );
 }

@@ -2,15 +2,15 @@ import { useState } from 'react';
 
 import { DecimalWheelPicker } from '@/components/settings/DecimalWheelPicker';
 import {
-  SettingOptionSheet,
+  SettingChoiceRow,
   SettingRow,
   SettingSection,
   SettingsScaffold,
 } from '@/components/settings';
 import { WheelPicker } from '@/components/WheelPicker';
-import { GENDER_OPTIONS, getGenderLabel } from '@/constants/settingsOptions';
 import { useUserStore } from '@/stores/useUserStore';
 import { formatMetric } from '@/utils/formatMetric';
+import type { SegmentOption } from '@/components/settings/SettingSegmentTrack';
 
 const AGE_VALUES = Array.from({ length: 83 }, (_, i) => i + 10);
 
@@ -22,10 +22,29 @@ const METRIC_LIMITS = {
   targetWeight: { min: 30, max: 180, defaultValue: 65, unit: 'kg', title: '목표 체중 선택' },
 } as const;
 
+type GenderSegment = 'male' | 'female' | 'none';
+
+const GENDER_SEGMENTS: SegmentOption<GenderSegment>[] = [
+  { value: 'male', label: '남성' },
+  { value: 'female', label: '여성' },
+  { value: 'none', label: '미설정' },
+];
+
+function genderToSegment(isMale: boolean | null): GenderSegment {
+  if (isMale === true) return 'male';
+  if (isMale === false) return 'female';
+  return 'none';
+}
+
+function segmentToGender(value: GenderSegment | null): boolean | null {
+  if (value === 'male') return true;
+  if (value === 'female') return false;
+  return null;
+}
+
 export default function SettingsBodyScreen() {
   const { profile, setHeight, setWeight, setTargetWeight, setAge, setIsMale } = useUserStore();
   const [pickerType, setPickerType] = useState<PickerType>(null);
-  const [genderSheetVisible, setGenderSheetVisible] = useState(false);
 
   function getDecimalPickerProps() {
     switch (pickerType) {
@@ -70,57 +89,41 @@ export default function SettingsBodyScreen() {
 
   return (
     <SettingsScaffold title="신체 정보">
-      <SettingSection title="신체 정보">
+      <SettingSection title="측정">
         <SettingRow
           label="키"
           value={formatMetric(profile.heightCm, 'cm')}
           unset={profile.heightCm == null}
           onPress={() => setPickerType('height')}
-          icon="Ruler"
-          iconColor="#3B82F6"
         />
         <SettingRow
           label="체중"
           value={formatMetric(profile.weightKg, 'kg')}
           unset={profile.weightKg == null}
           onPress={() => setPickerType('weight')}
-          icon="Scale"
-          iconColor="#F59E0B"
         />
         <SettingRow
           label="목표 체중"
           value={formatMetric(profile.targetWeightKg, 'kg')}
           unset={profile.targetWeightKg == null}
           onPress={() => setPickerType('targetWeight')}
-          icon="Target"
-          iconColor="#EF4444"
         />
+      </SettingSection>
+
+      <SettingSection title="기본 정보">
         <SettingRow
           label="나이"
           value={profile.ageYears != null ? `${profile.ageYears}세` : '미설정'}
           unset={profile.ageYears == null}
           onPress={() => setPickerType('age')}
-          icon="Calendar"
-          iconColor="#8B5CF6"
         />
-        <SettingRow
+        <SettingChoiceRow
           label="성별"
-          value={getGenderLabel(profile.isMale)}
-          unset={profile.isMale == null}
-          onPress={() => setGenderSheetVisible(true)}
-          icon="Users"
-          iconColor="#06B6D4"
+          options={GENDER_SEGMENTS}
+          value={genderToSegment(profile.isMale)}
+          onChange={(v) => setIsMale(segmentToGender(v ?? 'none'))}
         />
       </SettingSection>
-
-      <SettingOptionSheet
-        visible={genderSheetVisible}
-        title="성별"
-        options={GENDER_OPTIONS}
-        selectedValue={profile.isMale}
-        onSelect={setIsMale}
-        onClose={() => setGenderSheetVisible(false)}
-      />
 
       <DecimalWheelPicker
         visible={isDecimalPicker}

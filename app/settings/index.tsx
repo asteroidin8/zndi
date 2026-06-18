@@ -1,19 +1,19 @@
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
-import { useState } from 'react';
 import { Alert, Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
 
 import {
   SettingAccountSection,
+  SettingChoiceRow,
   SettingDestructiveRow,
-  SettingOptionSheet,
   SettingRow,
   SettingSection,
   SettingToggleRow,
   SettingsScaffold,
 } from '@/components/settings';
-import { NOTIFICATION_COPY, THEME_LABELS, THEME_OPTIONS } from '@/constants/settingsOptions';
+import { NOTIFICATION_COPY } from '@/constants/settingsOptions';
+import type { ThemeMode } from '@/stores/useSettingsStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
@@ -22,9 +22,15 @@ import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { requestNotificationPermission } from '@/utils/notificationPermission';
 import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
+import type { SegmentOption } from '@/components/settings/SettingSegmentTrack';
+
+const THEME_SEGMENTS: SegmentOption<string>[] = [
+  { value: 'system', label: '시스템' },
+  { value: 'light', label: '라이트' },
+  { value: 'dark', label: '다크' },
+];
 
 export default function SettingsIndexScreen() {
-  const [themeSheetVisible, setThemeSheetVisible] = useState(false);
   const {
     themeMode,
     setThemeMode,
@@ -90,7 +96,7 @@ export default function SettingsIndexScreen() {
             });
             useSettingsStore.setState({
               foregroundServiceEnabled: true,
-              themeMode: 'system',
+              themeMode: 'dark',
               routineNotificationsEnabled: false,
               todoNotificationsEnabled: false,
               onboardingCompleted: false,
@@ -107,12 +113,11 @@ export default function SettingsIndexScreen() {
       <SettingAccountSection />
 
       <SettingSection title="환경">
-        <SettingRow
+        <SettingChoiceRow
           label="테마"
-          value={THEME_LABELS[themeMode]}
-          onPress={() => setThemeSheetVisible(true)}
-          icon="Palette"
-          iconColor="#6366F1"
+          options={THEME_SEGMENTS}
+          value={themeMode}
+          onChange={(v) => setThemeMode((v ?? 'dark') as ThemeMode)}
         />
         <SettingToggleRow
           label={copy.fastingBar.label}
@@ -121,65 +126,35 @@ export default function SettingsIndexScreen() {
           onToggle={() => {
             handleForegroundServiceToggle();
           }}
-          icon="Smartphone"
-          iconColor="#16A34A"
         />
         <SettingToggleRow
           label={copy.routine.label}
           description={copy.routine.description}
           value={routineNotificationsEnabled}
           onToggle={handleRoutineNotifications}
-          icon="Bell"
-          iconColor="#F59E0B"
         />
         <SettingToggleRow
           label={copy.todo.label}
           description={copy.todo.description}
           value={todoNotificationsEnabled}
           onToggle={handleTodoNotifications}
-          icon="Clock"
-          iconColor="#3B82F6"
         />
       </SettingSection>
 
-      <SettingOptionSheet
-        visible={themeSheetVisible}
-        title="테마"
-        options={THEME_OPTIONS.map((opt) => ({ label: opt.label, value: opt.mode }))}
-        selectedValue={themeMode}
-        onSelect={setThemeMode}
-        onClose={() => setThemeSheetVisible(false)}
-      />
-
       <SettingSection title="정보">
-        <SettingRow
-          label="이용약관"
-          onPress={() => router.push('/terms')}
-          icon="FileText"
-          iconColor="#6B7280"
-        />
-        <SettingRow
-          label="개인정보처리방침"
-          onPress={() => router.push('/privacy')}
-          icon="Shield"
-          iconColor="#6B7280"
-        />
+        <SettingRow label="이용약관" onPress={() => router.push('/terms')} />
+        <SettingRow label="개인정보처리방침" onPress={() => router.push('/privacy')} />
         <SettingRow
           label="문의하기"
           onPress={() =>
             Linking.openURL('mailto:asteroidin8@gmail.com?subject=%EC%9E%94%EB%94%94%20%EB%AC%B8%EC%9D%98')
           }
-          icon="Mail"
-          iconColor="#16A34A"
         />
-        <SettingRow
-          label="버전"
-          value={`v${version}`}
-          showChevron={false}
-          icon="Info"
-          iconColor="#94A3B8"
-        />
-        <SettingDestructiveRow label="데이터 초기화" onPress={handleDataReset} icon="Trash2" />
+        <SettingRow label="버전" value={`v${version}`} showChevron={false} />
+      </SettingSection>
+
+      <SettingSection title="">
+        <SettingDestructiveRow label="데이터 초기화" onPress={handleDataReset} />
       </SettingSection>
     </SettingsScaffold>
   );
