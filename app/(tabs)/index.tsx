@@ -38,6 +38,8 @@ export default function HomeScreen() {
       >
         <HomeTopBar />
 
+        <HomeWeeklyGrass />
+
         {isProfileBannerVisible && (
           <InfoBanner
             title="프로필을 설정하면 칼로리 계산이 가능해요"
@@ -50,8 +52,6 @@ export default function HomeScreen() {
         <FastingCard />
 
         <DailySummaryRow onRoutinePress={() => navigateTo(1)} onTodoPress={() => navigateTo(2)} />
-
-        <HomeWeeklyGrass />
       </ScrollView>
     </SafeAreaView>
   );
