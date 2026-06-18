@@ -12,6 +12,18 @@ export const THEME_LABELS: Record<ThemeMode, string> = {
   dark: '다크',
 };
 
+export const GENDER_OPTIONS = [
+  { value: true as const, label: '남성' },
+  { value: false as const, label: '여성' },
+  { value: null, label: '선택 안 함' },
+];
+
+export function getGenderLabel(isMale: boolean | null): string {
+  if (isMale === true) return '남성';
+  if (isMale === false) return '여성';
+  return '미설정';
+}
+
 export const NOTIFICATION_COPY = {
   fastingBar: {
     label: '단식 알림바',

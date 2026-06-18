@@ -145,6 +145,8 @@ export function SettingAccountSection() {
       value={bodyRow.value}
       unset={bodyRow.unset}
       onPress={() => router.push('/settings/body')}
+      icon="Heart"
+      iconColor="#EF4444"
     />
   );
 
@@ -251,10 +253,21 @@ export function SettingAccountSection() {
 
   return (
     <SettingSection title="계정">
-      <SettingRow label="로그인 계정" value={user.email ?? 'Google'} showChevron={false} />
-      <SettingRow label="클라우드 데이터로 덮어쓰기" onPress={handlePull} />
+      <SettingRow
+        label="로그인 계정"
+        value={user.email ?? 'Google'}
+        showChevron={false}
+        icon="User"
+        iconColor="#3B82F6"
+      />
+      <SettingRow
+        label="클라우드 데이터로 덮어쓰기"
+        onPress={handlePull}
+        icon="CloudDownload"
+        iconColor="#16A34A"
+      />
       {bodyRowNode}
-      <SettingDestructiveRow label="로그아웃" onPress={handleLogout} />
+      <SettingDestructiveRow label="로그아웃" onPress={handleLogout} icon="LogOut" />
     </SettingSection>
   );
 }

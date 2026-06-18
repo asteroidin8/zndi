@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
-import { Divider } from '@/components/Divider';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
@@ -27,7 +26,7 @@ export function SettingsScaffold({ title, children, showBackButton = true }: Pro
           alignItems: 'center',
           paddingHorizontal: spacing.screen,
           paddingTop: showBackButton ? spacing.item : spacing.section,
-          paddingBottom: spacing.item,
+          paddingBottom: showBackButton ? spacing.item : spacing.section,
           gap: spacing.item,
         }}
       >
@@ -52,8 +51,6 @@ export function SettingsScaffold({ title, children, showBackButton = true }: Pro
           {title}
         </AppText>
       </View>
-
-      <Divider />
 
       <ScrollView
         showsVerticalScrollIndicator={false}

@@ -1,24 +1,60 @@
-import { Switch } from 'react-native';
+import { Switch, View } from 'react-native';
 
+import { AppIcon } from '../AppIcon';
 import { AppText } from '../AppText';
 import { BaseSettingItem } from './BaseSettingItem';
 import { settingRowLabelStyle } from './settingStyles';
+import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
+
+type IconName = React.ComponentProps<typeof AppIcon>['name'];
 
 type Props = {
   label: string;
   value: boolean;
   onToggle: (value: boolean) => void;
+  description?: string;
+  icon?: IconName;
+  iconColor?: string;
 };
 
-export function SettingToggleRow({ label, value, onToggle }: Props) {
+export function SettingToggleRow({
+  label,
+  value,
+  onToggle,
+  description,
+  icon,
+  iconColor,
+}: Props) {
   const c = useThemeColors();
 
   return (
     <BaseSettingItem accessibilityLabel={label}>
-      <AppText variant="body" style={settingRowLabelStyle()} numberOfLines={1}>
-        {label}
-      </AppText>
+      {icon ? (
+        <View
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: 7,
+            backgroundColor: iconColor ?? c.primary,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: spacing.md,
+          }}
+        >
+          <AppIcon name={icon} size={15} color="#ffffff" strokeWidth={2} />
+        </View>
+      ) : null}
+      <View style={settingRowLabelStyle()}>
+        <AppText variant="body" numberOfLines={1}>
+          {label}
+        </AppText>
+        {description ? (
+          <AppText variant="caption" tone="tertiary" numberOfLines={2} style={{ marginTop: 2 }}>
+            {description}
+          </AppText>
+        ) : null}
+      </View>
       <Switch
         value={value}
         onValueChange={onToggle}
