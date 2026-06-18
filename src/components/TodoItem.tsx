@@ -5,6 +5,7 @@ import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
 import { TodoPriorityBadge } from './TodoPriorityBadge';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { opacity, size, spacing } from '@/constants/spacing';
 import { feedbackComplete, feedbackUncomplete } from '@/utils/microFeedback';
 import type { Todo } from '@/stores/useTodoStore';
 import { formatDueDate, getDueDateColor } from '@/utils/dateFormat';
@@ -38,10 +39,10 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 13,
-        gap: 14,
-        minHeight: 48,
-        opacity: isCompleted ? 0.72 : 1,
+        paddingVertical: spacing.md,
+        gap: spacing.item,
+        minHeight: size.touchTarget,
+        opacity: isCompleted ? opacity.completed : 1,
       }}
     >
       <CompletionCheckbox
@@ -83,7 +84,7 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin
         >
           <AppIcon
             name={todo.pinnedToHome ? 'Pin' : 'PinOff'}
-            size={16}
+            size={size.iconMd}
             color={todo.pinnedToHome ? c.primary : c.inkDisabled}
           />
         </Pressable>

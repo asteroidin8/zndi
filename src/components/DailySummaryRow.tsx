@@ -4,6 +4,7 @@ import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
 import { TodoPriorityBadge } from './TodoPriorityBadge';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { radius, size, spacing } from '@/constants/spacing';
 import { formatDueDate, getDueDateColor } from '@/utils/dateFormat';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
@@ -50,27 +51,37 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
 
   if (!hasRoutines && !hasTodos) return null;
 
+  const cardStyle = {
+    backgroundColor: c.surfaceSubtle,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: c.border,
+    overflow: 'hidden' as const,
+  };
+
+  const headerRowStyle = {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: spacing.card,
+    paddingVertical: spacing.md,
+  };
+
+  const itemRowStyle = {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: spacing.card,
+    paddingVertical: spacing.sm + 2,
+    gap: spacing.sm + 2,
+  };
+
   return (
-    <View style={{ gap: 12 }}>
+    <View style={{ gap: spacing.md }}>
       {hasRoutines && (
-        <View
-          style={{
-            backgroundColor: c.surfaceSubtle,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: c.border,
-            overflow: 'hidden',
-          }}
-        >
+        <View style={cardStyle}>
           <Pressable
             onPress={onRoutinePress}
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-            }}
+            style={headerRowStyle}
             accessibilityRole="button"
             accessibilityLabel="오늘의 루틴 보기"
           >
@@ -83,11 +94,11 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
             >
               {allRoutinesDone ? '오늘 잔디 완료 ✓' : '오늘의 루틴'}
             </AppText>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
               <AppText variant="caption" tone="tertiary">
                 {todayRoutines.filter((r) => isCompleted(r.id, today)).length}/{todayRoutines.length}
               </AppText>
-              <AppIcon name="ChevronRight" size={14} color={c.inkTertiary} />
+              <AppIcon name="ChevronRight" size={size.iconSm} color={c.inkTertiary} />
             </View>
           </Pressable>
 
@@ -98,20 +109,14 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
             return (
               <View key={routine.id}>
                 <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingHorizontal: 16,
-                    paddingVertical: 11,
-                    gap: 10,
-                  }}
+                  style={itemRowStyle}
                   accessibilityLabel={`${routine.name}${done ? ', 완료' : ', 미완료'}`}
                 >
                   <View
                     style={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: 9,
+                      width: size.checkboxSm,
+                      height: size.checkboxSm,
+                      borderRadius: size.checkboxSm / 2,
                       borderWidth: 1.5,
                       borderColor: done ? c.primary : c.borderStrong,
                       backgroundColor: done ? c.primary : 'transparent',
@@ -139,14 +144,14 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                   </AppText>
                 </View>
                 {index < Math.min(todayRoutines.length, MAX_ROUTINES) - 1 && (
-                  <View style={{ height: 1, backgroundColor: c.border, marginLeft: 44 }} />
+                  <View style={{ height: 1, backgroundColor: c.border, marginLeft: spacing.card + size.checkboxSm + spacing.sm + 2 }} />
                 )}
               </View>
             );
           })}
 
           {todayRoutines.length > MAX_ROUTINES && (
-            <Pressable onPress={onRoutinePress} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+            <Pressable onPress={onRoutinePress} style={{ paddingHorizontal: spacing.card, paddingVertical: spacing.sm + 2 }}>
               <AppText variant="caption" tone="tertiary">
                 +{todayRoutines.length - MAX_ROUTINES}개 더보기
               </AppText>
@@ -156,33 +161,19 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
       )}
 
       {hasTodos && (
-        <View
-          style={{
-            backgroundColor: c.surfaceSubtle,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: c.border,
-            overflow: 'hidden',
-          }}
-        >
+        <View style={cardStyle}>
           <Pressable
             onPress={onTodoPress}
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-            }}
+            style={headerRowStyle}
             accessibilityRole="button"
             accessibilityLabel="오늘의 할일 보기"
           >
             <AppText variant="body" style={{ fontWeight: '600' }}>오늘의 할 일</AppText>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
               <AppText variant="caption" tone="tertiary">
                 {activeTodos.length}개
               </AppText>
-              <AppIcon name="ChevronRight" size={14} color={c.inkTertiary} />
+              <AppIcon name="ChevronRight" size={size.iconSm} color={c.inkTertiary} />
             </View>
           </Pressable>
 
@@ -191,20 +182,14 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
           {homeTodos.map((todo, index) => (
             <View key={todo.id}>
               <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingHorizontal: 16,
-                  paddingVertical: 11,
-                  gap: 10,
-                }}
+                style={itemRowStyle}
                 accessibilityLabel={`${todo.title}${todo.pinnedToHome ? ', 홈 고정' : ''}`}
               >
                 <TodoPriorityBadge priority={todo.priority} />
                 <AppText variant="body" style={{ flex: 1 }} numberOfLines={1}>
                   {todo.title}
                 </AppText>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
                   {todo.dueDate &&
                     (() => {
                       const { label, urgency } = formatDueDate(todo.dueDate);
@@ -227,13 +212,13 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                 </View>
               </View>
               {index < homeTodos.length - 1 && (
-                <View style={{ height: 1, backgroundColor: c.border, marginLeft: 34 }} />
+                <View style={{ height: 1, backgroundColor: c.border, marginLeft: spacing.card + 8 + spacing.sm + 2 }} />
               )}
             </View>
           ))}
 
           {activeTodos.length > homeTodos.length && (
-            <Pressable onPress={onTodoPress} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+            <Pressable onPress={onTodoPress} style={{ paddingHorizontal: spacing.card, paddingVertical: spacing.sm + 2 }}>
               <AppText variant="caption" tone="tertiary">
                 +{activeTodos.length - homeTodos.length}개 더보기
               </AppText>
@@ -244,3 +229,4 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
     </View>
   );
 }
+

@@ -17,7 +17,7 @@ import {
   estimateCaloriesBurned,
   getFastingMessage,
 } from '@/constants/fastingMessages';
-import { spacing } from '@/constants/spacing';
+import { radius, size, spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { feedbackBooster, feedbackSuccess } from '@/utils/microFeedback';
@@ -142,7 +142,7 @@ export default function FastingScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <ScrollView ref={scrollRef} scrollEnabled={false} contentContainerStyle={{ flexGrow: 1 }}>
       {/* ── 헤더 ── */}
-      <View style={{ paddingHorizontal: spacing.screen, paddingTop: 16, paddingBottom: 8 }}>
+      <View style={{ paddingHorizontal: spacing.screen, paddingTop: spacing.card, paddingBottom: spacing.sm }}>
         <AppText variant="title">단식</AppText>
       </View>
 
@@ -152,8 +152,8 @@ export default function FastingScreen() {
           style={{
             flexDirection: 'row',
             backgroundColor: c.surfaceSubtle,
-            borderRadius: 16,
-            paddingVertical: 14,
+            borderRadius: radius.lg,
+            paddingVertical: spacing.item,
             paddingHorizontal: spacing.screen,
             alignItems: 'center',
             justifyContent: 'space-around',
@@ -253,13 +253,13 @@ export default function FastingScreen() {
               </View>
 
               {/* 진행 바 */}
-              <View style={{ height: 3, backgroundColor: c.surfaceMuted, borderRadius: 2, overflow: 'hidden' }}>
+              <View style={{ height: size.progressBar, backgroundColor: c.surfaceMuted, borderRadius: radius.xs, overflow: 'hidden' }}>
                 <View
                   style={{
-                    height: 3,
+                    height: size.progressBar,
                     width: `${progress * 100}%`,
-                    backgroundColor: isOverGoal ? c.booster : c.ink,
-                    borderRadius: 2,
+                    backgroundColor: isOverGoal ? c.booster : c.primary,
+                    borderRadius: radius.xs,
                   }}
                 />
               </View>
@@ -285,7 +285,7 @@ export default function FastingScreen() {
       </View>
 
       {/* ── 하단 ── */}
-      <View style={{ paddingHorizontal: spacing.screen, paddingBottom: 16, gap: spacing.item }}>
+      <View style={{ paddingHorizontal: spacing.screen, paddingBottom: spacing.card, gap: spacing.item }}>
         <Divider />
 
         {/* 목표 설정 (idle 시만) */}
@@ -305,7 +305,7 @@ export default function FastingScreen() {
                   style={{
                     flex: 1,
                     paddingVertical: 10,
-                    borderRadius: 10,
+                    borderRadius: radius.sm,
                     borderWidth: 1,
                     borderColor: goalHours === h ? c.ink : c.border,
                     backgroundColor: goalHours === h ? c.surfaceSubtle : 'transparent',
@@ -331,7 +331,7 @@ export default function FastingScreen() {
                 style={{
                   flex: 1,
                   paddingVertical: 10,
-                  borderRadius: 10,
+                  borderRadius: radius.sm,
                   borderWidth: 1,
                   borderColor: !PRESETS.includes(goalHours as (typeof PRESETS)[number])
                     ? c.ink
@@ -368,7 +368,7 @@ export default function FastingScreen() {
             accessibilityLabel="단식 시작"
             style={{
               backgroundColor: c.ink,
-              borderRadius: 14,
+              borderRadius: radius.lg,
               paddingVertical: 18,
               alignItems: 'center',
             }}
@@ -387,7 +387,7 @@ export default function FastingScreen() {
             accessibilityLabel="단식 완료"
             style={{
               backgroundColor: c.ink,
-              borderRadius: 14,
+              borderRadius: radius.lg,
               paddingVertical: 18,
               alignItems: 'center',
             }}

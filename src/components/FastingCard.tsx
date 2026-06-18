@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
 import { Card } from './Card';
-import { radius } from '@/constants/spacing';
+import { radius, size, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useFastingStore } from '@/stores/useFastingStore';
 
@@ -74,7 +74,7 @@ export function FastingCard({ onPress }: Props) {
     return (
       <Card pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="단식, 도전하기">
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <View style={{ flex: 1, gap: 10 }}>
+          <View style={{ flex: 1, gap: spacing.sm + 2 }}>
             <AppText variant="caption" tone="secondary">
               단식
             </AppText>
@@ -83,7 +83,7 @@ export function FastingCard({ onPress }: Props) {
               시작 전
             </AppText>
           </View>
-          <AppIcon name="ChevronRight" size={16} color={c.inkTertiary} />
+          <AppIcon name="ChevronRight" size={size.iconMd} color={c.inkTertiary} />
         </View>
       </Card>
     );
@@ -98,13 +98,13 @@ export function FastingCard({ onPress }: Props) {
         <AppText variant="caption" tone="secondary">
           {isOverGoal ? '부스터 모드' : `${goalHours}시간 단식`}
         </AppText>
-        <AppIcon name="ChevronRight" size={16} color={c.inkTertiary} />
+        <AppIcon name="ChevronRight" size={size.iconMd} color={c.inkTertiary} />
       </View>
 
       <AppText
         variant="display"
         style={{
-          marginTop: 10,
+          marginTop: spacing.sm + 2,
           fontSize: 40,
           letterSpacing: -2,
           fontWeight: '700',
@@ -116,7 +116,7 @@ export function FastingCard({ onPress }: Props) {
       </AppText>
 
       {start && end && (
-        <View style={{ marginTop: 12, gap: 8 }}>
+        <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <View>
               <AppText variant="caption" tone="tertiary">시작</AppText>
@@ -131,13 +131,13 @@ export function FastingCard({ onPress }: Props) {
               </AppText>
             </View>
           </View>
-          <View style={{ height: 3, backgroundColor: c.surfaceMuted, borderRadius: radius.sm, overflow: 'hidden' }}>
+          <View style={{ height: size.progressBar, backgroundColor: c.surfaceMuted, borderRadius: radius.xs, overflow: 'hidden' }}>
             <View
               style={{
-                height: 3,
+                height: size.progressBar,
                 width: `${progress * 100}%`,
                 backgroundColor: accent,
-                borderRadius: radius.sm,
+                borderRadius: radius.xs,
               }}
             />
           </View>

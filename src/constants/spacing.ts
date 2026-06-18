@@ -14,9 +14,30 @@ export const spacing = {
 } as const;
 
 export const radius = {
+  xs: 4,
   sm: 8,
   md: 12,
   lg: 16,
   xl: 20,
   sheet: 24,
+} as const;
+
+/** 재사용 가능한 크기 토큰 */
+export const size = {
+  touchTarget: 48,
+  checkboxSm: 18,
+  checkboxMd: 24,
+  progressBar: 4,
+  iconSm: 14,
+  iconMd: 18,
+  iconLg: 24,
+} as const;
+
+/** 재사용 가능한 불투명도 토큰 */
+export const opacity = {
+  completed: 0.72,
+  partial: 0.45,
+  disabled: 0.38,
+  pressed: 0.88,
+  ghost: 0.15,
 } as const;

@@ -2,6 +2,7 @@ import { Pressable, View } from 'react-native';
 
 import { CompletionCheckbox } from './CompletionCheckbox';
 import { AppText } from './AppText';
+import { opacity, size, spacing } from '@/constants/spacing';
 import { feedbackComplete, feedbackUncomplete } from '@/utils/microFeedback';
 import type { Routine } from '@/stores/useRoutineStore';
 
@@ -33,10 +34,10 @@ export function RoutineItem({ routine, isCompleted = false, onToggle, onLongPres
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 14,
-        gap: 14,
-        minHeight: 48,
-        opacity: isCompleted ? 0.72 : 1,
+        paddingVertical: spacing.item,
+        gap: spacing.item,
+        minHeight: size.touchTarget,
+        opacity: isCompleted ? opacity.completed : 1,
       }}
     >
       <CompletionCheckbox
@@ -46,7 +47,7 @@ export function RoutineItem({ routine, isCompleted = false, onToggle, onLongPres
         iconSize={13}
       />
 
-      <View style={{ flex: 1, gap: 2 }}>
+      <View style={{ flex: 1, gap: spacing.xs }}>
         <AppText
           variant="body"
           tone={isCompleted ? 'tertiary' : 'primary'}

@@ -3,12 +3,16 @@ import { View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { SectionHeader } from '@/components/SectionHeader';
 import { HOME_COPY } from '@/constants/copy';
-import { spacing } from '@/constants/spacing';
+import { opacity, radius, spacing } from '@/constants/spacing';
 import { grassGlowShadow } from '@/constants/themeEffects';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { getWeekDayDots, toDateStr, type DayDotStatus } from '@/utils/homeDailyBoard';
+
+const CELL_SIZE = 14;
+const CELL_SIZE_TODAY = 16;
+const CELL_GAP = 6;
 
 function cellColor(status: DayDotStatus, c: ReturnType<typeof useThemeColors>) {
   switch (status) {
@@ -48,7 +52,7 @@ export function HomeWeeklyGrass() {
       <View
         style={{
           backgroundColor: c.surfaceSubtle,
-          borderRadius: 14,
+          borderRadius: radius.lg,
           borderWidth: 1,
           borderColor: c.border,
           paddingHorizontal: spacing.item,
@@ -59,7 +63,7 @@ export function HomeWeeklyGrass() {
           {weekDots.map((dot) => {
             const isToday = dot.dateStr === todayStr;
             const colors = cellColor(dot.status, c);
-            const size = isToday ? 16 : 14;
+            const cellSize = isToday ? CELL_SIZE_TODAY : CELL_SIZE;
             const partial = dot.status === 'partial';
             const statusA11y =
               dot.status === 'full'
@@ -72,16 +76,16 @@ export function HomeWeeklyGrass() {
             return (
               <View
                 key={dot.dateStr}
-                style={{ flex: 1, alignItems: 'center', gap: 6 }}
+                style={{ flex: 1, alignItems: 'center', gap: CELL_GAP }}
                 accessibilityLabel={`${dot.weekdayLabel} ${statusA11y}`}
               >
                 <View
                   style={{
-                    width: size,
-                    height: size,
-                    borderRadius: 4,
+                    width: cellSize,
+                    height: cellSize,
+                    borderRadius: radius.xs,
                     backgroundColor: colors.bg,
-                    opacity: partial ? 0.45 : 1,
+                    opacity: partial ? opacity.partial : 1,
                     borderWidth: dot.status === 'none' || dot.status === 'empty' ? 1 : 0,
                     borderColor: colors.border,
                     transform: [{ scale: isToday ? 1.15 : 1 }],

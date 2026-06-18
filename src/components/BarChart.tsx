@@ -1,5 +1,6 @@
 import { G, Rect, Svg, Text as SvgText } from 'react-native-svg';
 
+import { radius } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 export type BarChartItem = {
@@ -17,7 +18,7 @@ type Props = {
   maxValue?: number;
 };
 
-const BAR_RADIUS = 4;
+const BAR_RADIUS = radius.xs;
 const LABEL_HEIGHT = 18;
 const VALUE_HEIGHT = 14;
 
