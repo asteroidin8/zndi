@@ -1,8 +1,22 @@
-# handoff.json status check — stop hook
-# READY → followup_message for Git Manager (composer.md)
+# Shared: read handoff.json from project root
+param(
+  [switch]$OnWrite
+)
+
 $ErrorActionPreference = 'SilentlyContinue'
 
-$null = [Console]::In.ReadToEnd()
+$stdin = [Console]::In.ReadToEnd()
+if ($OnWrite -and $stdin) {
+  try {
+    $payload = $stdin | ConvertFrom-Json
+    $path = "$($payload.tool_input.path)$($payload.file_path)$($payload.path)"
+    if ($path -and $path -notmatch 'handoff\.json') {
+      exit 0
+    }
+  } catch {
+    # fall through — still check handoff on disk
+  }
+}
 
 $root = Get-Location
 $handoffPath = Join-Path $root 'handoff.json'
@@ -12,8 +26,7 @@ if (-not (Test-Path $handoffPath)) {
 }
 
 try {
-  $raw = Get-Content -Path $handoffPath -Raw -Encoding UTF8
-  $handoff = $raw | ConvertFrom-Json
+  $handoff = Get-Content -Path $handoffPath -Raw -Encoding UTF8 | ConvertFrom-Json
 } catch {
   exit 0
 }
@@ -22,15 +35,14 @@ if ($handoff.status -ne 'READY') {
   exit 0
 }
 
-$followup = @'
-handoff.json status is READY. Git Manager 역할만 수행한다 (docs/agent/composer.md, reviewer.md, workflow.md).
+$msg = @'
+handoff.json status is READY. Git Manager role only (docs/agent/composer.md, reviewer.md).
 
-- 구현·리팩터 금지
-- handoff files_changed / commit_groups만 커밋
-- pre-merge validation → 최소 단위 커밋 → push → PR → squash merge
-- 완료 후 handoff.json status = DONE
+- No implementation/refactor
+- Commit only files_changed / commit_groups
+- pre-merge validation, minimal commits, push, PR, squash merge
+- Set handoff.json status = DONE when merged
 '@
 
-$out = @{ followup_message = $followup.Trim() } | ConvertTo-Json -Compress
-Write-Output $out
+@{ followup_message = $msg.Trim() } | ConvertTo-Json -Compress
 exit 0

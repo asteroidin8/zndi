@@ -1,12 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { LayoutAnimation, Platform, Pressable, UIManager, View } from 'react-native';
 
 import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
 import { Card } from './Card';
+import { HoldToConfirmButton } from './HoldToConfirmButton';
+import { WheelPicker } from './WheelPicker';
+import { estimateCaloriesBurned, getFastingMessage } from '@/constants/fastingMessages';
 import { radius, size, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useFastingStore } from '@/stores/useFastingStore';
+import { useUserStore } from '@/stores/useUserStore';
+import { feedbackSuccess } from '@/utils/microFeedback';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+const GOAL_HOURS = Array.from({ length: 72 }, (_, i) => i + 1);
+const PRESETS = [12, 16, 18, 24] as const;
 
 function formatElapsed(ms: number) {
   const totalSec = Math.floor(Math.abs(ms) / 1000);
@@ -42,14 +54,14 @@ function formatRelativeDate(ts: number): { timeLabel: string; dayLabel: string }
   return { timeLabel, dayLabel };
 }
 
-type Props = {
-  onPress?: () => void;
-};
-
-export function FastingCard({ onPress }: Props) {
+export function FastingCard() {
   const c = useThemeColors();
-  const { status, startedAt, goalHours } = useFastingStore();
+  const { status, startedAt, goalHours, setGoalHours, startFasting, stopFasting } =
+    useFastingStore();
+  const { profile } = useUserStore();
   const [now, setNow] = useState(Date.now());
+  const [expanded, setExpanded] = useState(false);
+  const [pickerVisible, setPickerVisible] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -70,79 +82,315 @@ export function FastingCard({ onPress }: Props) {
   const completionTs = startedAt ? startedAt + goalMs : null;
   const accent = isOverGoal ? c.booster : c.primary;
 
-  if (status === 'idle') {
+  const calories =
+    status === 'fasting' && profile.weightKg && profile.heightCm && profile.isMale !== null
+      ? estimateCaloriesBurned({
+          weightKg: profile.weightKg,
+          heightCm: profile.heightCm,
+          ageYears: profile.ageYears ?? 30,
+          isMale: profile.isMale,
+          elapsedMs,
+        })
+      : null;
+
+  const phaseMessage = status === 'fasting' ? getFastingMessage(elapsedMs) : null;
+
+  function toggleExpanded() {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded((prev) => !prev);
+  }
+
+  function handleStart() {
+    startFasting();
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded(true);
+  }
+
+  function handleComplete() {
+    feedbackSuccess();
+    stopFasting('completed');
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded(false);
+  }
+
+  function handleAbandon() {
+    stopFasting('abandoned');
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded(false);
+  }
+
+  const isCustomGoal = !PRESETS.includes(goalHours as (typeof PRESETS)[number]);
+
+  if (status === 'idle' && !expanded) {
     return (
-      <Card pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="단식, 도전하기">
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <View style={{ flex: 1, gap: spacing.sm + 2 }}>
-            <AppText variant="caption" tone="secondary">
-              단식
-            </AppText>
-            <AppText variant="title">도전하기</AppText>
-            <AppText variant="caption" tone="tertiary">
-              시작 전
-            </AppText>
+      <Card
+        pressable
+        onPress={toggleExpanded}
+        accessibilityRole="button"
+        accessibilityLabel="단식, 도전하기"
+      >
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View style={{ gap: spacing.xs }}>
+            <AppText variant="caption" tone="tertiary">단식</AppText>
+            <AppText variant="body" style={{ fontWeight: '600' }}>도전하기</AppText>
           </View>
-          <AppIcon name="ChevronRight" size={size.iconMd} color={c.inkTertiary} />
+          <AppIcon name="ChevronDown" size={size.iconMd} color={c.inkTertiary} />
         </View>
       </Card>
     );
   }
 
-  const start = startedAt ? formatRelativeDate(startedAt) : null;
-  const end = completionTs ? formatRelativeDate(completionTs) : null;
+  if (status === 'fasting' && !expanded) {
+    const start = startedAt ? formatRelativeDate(startedAt) : null;
+    const end = completionTs ? formatRelativeDate(completionTs) : null;
+
+    return (
+      <Card
+        pressable
+        onPress={toggleExpanded}
+        accessibilityRole="button"
+        accessibilityLabel="단식 상세 보기"
+      >
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <AppText variant="caption" tone="secondary">
+            {isOverGoal ? '부스터 모드' : `${goalHours}h 단식`}
+          </AppText>
+          <AppIcon name="ChevronDown" size={size.iconMd} color={c.inkTertiary} />
+        </View>
+
+        <AppText
+          variant="display"
+          style={{
+            marginTop: spacing.sm,
+            fontSize: 36,
+            letterSpacing: -2,
+            fontWeight: '700',
+            color: accent,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {formatElapsed(elapsedMs)}
+        </AppText>
+
+        {start && end && (
+          <View style={{ marginTop: spacing.sm }}>
+            <View style={{ height: size.progressBar, backgroundColor: c.surfaceMuted, borderRadius: radius.xs, overflow: 'hidden' }}>
+              <View
+                style={{
+                  height: size.progressBar,
+                  width: `${progress * 100}%`,
+                  backgroundColor: accent,
+                  borderRadius: radius.xs,
+                }}
+              />
+            </View>
+          </View>
+        )}
+      </Card>
+    );
+  }
 
   return (
-    <Card pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="단식 화면으로 이동">
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <AppText variant="caption" tone="secondary">
-          {isOverGoal ? '부스터 모드' : `${goalHours}시간 단식`}
-        </AppText>
-        <AppIcon name="ChevronRight" size={size.iconMd} color={c.inkTertiary} />
-      </View>
-
-      <AppText
-        variant="display"
-        style={{
-          marginTop: spacing.sm + 2,
-          fontSize: 40,
-          letterSpacing: -2,
-          fontWeight: '700',
-          color: accent,
-          fontVariant: ['tabular-nums'],
-        }}
+    <Card>
+      <Pressable
+        onPress={toggleExpanded}
+        style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+        accessibilityRole="button"
+        accessibilityLabel={expanded ? '단식 접기' : '단식 펼치기'}
       >
-        {formatElapsed(elapsedMs)}
-      </AppText>
+        <AppText variant="caption" tone="secondary">
+          {status === 'idle'
+            ? '단식'
+            : isOverGoal
+              ? '부스터 모드'
+              : `${goalHours}h 단식`}
+        </AppText>
+        <AppIcon name="ChevronUp" size={size.iconMd} color={c.inkTertiary} />
+      </Pressable>
 
-      {start && end && (
-        <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <View>
-              <AppText variant="caption" tone="tertiary">시작</AppText>
-              <AppText variant="caption" style={{ fontWeight: '600' }}>{start.timeLabel}</AppText>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <AppText variant="caption" style={{ color: isOverGoal ? c.booster : c.inkTertiary }}>
-                {isOverGoal ? '부스터' : '완료'}
+      {status === 'fasting' && (
+        <>
+          <AppText
+            variant="display"
+            accessibilityRole="timer"
+            style={{
+              marginTop: spacing.md,
+              fontSize: 40,
+              letterSpacing: -2,
+              fontWeight: '700',
+              color: accent,
+              fontVariant: ['tabular-nums'],
+              textAlign: 'center',
+            }}
+          >
+            {formatElapsed(elapsedMs)}
+          </AppText>
+
+          {startedAt && completionTs && (() => {
+            const start = formatRelativeDate(startedAt);
+            const end = formatRelativeDate(completionTs);
+            return (
+              <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View style={{ gap: 2 }}>
+                    <AppText variant="caption" tone="tertiary">시작</AppText>
+                    <AppText variant="caption" style={{ fontWeight: '600' }}>
+                      {start.timeLabel}
+                    </AppText>
+                  </View>
+                  <View style={{ alignItems: 'flex-end', gap: 2 }}>
+                    <AppText variant="caption" style={{ color: isOverGoal ? c.booster : c.inkTertiary }}>
+                      {isOverGoal ? '부스터' : '완료'}
+                    </AppText>
+                    <AppText variant="caption" style={{ fontWeight: '600', color: accent }}>
+                      {isOverGoal ? formatOverElapsed(elapsedMs - goalMs) : end.timeLabel}
+                    </AppText>
+                  </View>
+                </View>
+                <View style={{ height: size.progressBar, backgroundColor: c.surfaceMuted, borderRadius: radius.xs, overflow: 'hidden' }}>
+                  <View
+                    style={{
+                      height: size.progressBar,
+                      width: `${progress * 100}%`,
+                      backgroundColor: accent,
+                      borderRadius: radius.xs,
+                    }}
+                  />
+                </View>
+              </View>
+            );
+          })()}
+
+          <View style={{ gap: spacing.xs, alignItems: 'center', marginTop: spacing.md }}>
+            {phaseMessage && (
+              <AppText variant="caption" tone="secondary" style={{ textAlign: 'center' }}>
+                {phaseMessage}
               </AppText>
-              <AppText variant="caption" style={{ fontWeight: '600', color: accent }}>
-                {isOverGoal ? formatOverElapsed(elapsedMs - goalMs) : end.timeLabel}
+            )}
+            {calories !== null && (
+              <AppText variant="caption" tone="tertiary">
+                약 {calories} kcal 소모
               </AppText>
-            </View>
+            )}
           </View>
-          <View style={{ height: size.progressBar, backgroundColor: c.surfaceMuted, borderRadius: radius.xs, overflow: 'hidden' }}>
-            <View
-              style={{
-                height: size.progressBar,
-                width: `${progress * 100}%`,
-                backgroundColor: accent,
-                borderRadius: radius.xs,
-              }}
-            />
+
+          <View style={{ marginTop: spacing.card }}>
+            {isOverGoal ? (
+              <Pressable
+                onPress={handleComplete}
+                accessibilityRole="button"
+                accessibilityLabel="단식 완료"
+                style={{
+                  backgroundColor: c.ink,
+                  borderRadius: radius.md,
+                  paddingVertical: spacing.item,
+                  alignItems: 'center',
+                }}
+              >
+                <AppText variant="body" style={{ color: c.surface, fontWeight: '700' }}>
+                  단식 완료
+                </AppText>
+              </Pressable>
+            ) : (
+              <HoldToConfirmButton
+                label="단식 포기"
+                subLabel="꾹 눌러서 포기"
+                onConfirm={handleAbandon}
+              />
+            )}
           </View>
-        </View>
+        </>
       )}
+
+      {status === 'idle' && (
+        <>
+          <View style={{ gap: spacing.sm, marginTop: spacing.card }}>
+            <AppText variant="caption" tone="tertiary">목표 시간</AppText>
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              {PRESETS.map((h) => (
+                <Pressable
+                  key={h}
+                  onPress={() => setGoalHours(h)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${h}시간 목표`}
+                  accessibilityState={{ selected: goalHours === h }}
+                  style={{
+                    flex: 1,
+                    paddingVertical: spacing.sm,
+                    borderRadius: radius.sm,
+                    borderWidth: 1,
+                    borderColor: goalHours === h ? c.ink : c.border,
+                    backgroundColor: goalHours === h ? c.surfaceSubtle : 'transparent',
+                    alignItems: 'center',
+                  }}
+                >
+                  <AppText
+                    variant="caption"
+                    tone={goalHours === h ? 'primary' : 'tertiary'}
+                    style={goalHours === h ? { fontWeight: '700' } : {}}
+                  >
+                    {h}h
+                  </AppText>
+                </Pressable>
+              ))}
+              <Pressable
+                onPress={() => setPickerVisible(true)}
+                accessibilityRole="button"
+                accessibilityLabel="직접 입력"
+                accessibilityState={{ selected: isCustomGoal }}
+                style={{
+                  flex: 1,
+                  paddingVertical: spacing.sm,
+                  borderRadius: radius.sm,
+                  borderWidth: 1,
+                  borderColor: isCustomGoal ? c.ink : c.border,
+                  backgroundColor: isCustomGoal ? c.surfaceSubtle : 'transparent',
+                  alignItems: 'center',
+                }}
+              >
+                <AppText variant="caption" tone={isCustomGoal ? 'primary' : 'tertiary'}>
+                  직접
+                </AppText>
+              </Pressable>
+            </View>
+            {isCustomGoal && (
+              <AppText variant="caption" tone="secondary" style={{ textAlign: 'center' }}>
+                목표: {goalHours}시간
+              </AppText>
+            )}
+          </View>
+
+          <Pressable
+            onPress={handleStart}
+            accessibilityRole="button"
+            accessibilityLabel="단식 시작"
+            style={{
+              backgroundColor: c.ink,
+              borderRadius: radius.md,
+              paddingVertical: spacing.item,
+              alignItems: 'center',
+              marginTop: spacing.card,
+            }}
+          >
+            <AppText variant="body" style={{ color: c.surface, fontWeight: '700' }}>
+              단식 시작
+            </AppText>
+          </Pressable>
+        </>
+      )}
+
+      <WheelPicker
+        visible={pickerVisible}
+        title="목표 시간 선택"
+        values={GOAL_HOURS}
+        selectedValue={goalHours}
+        unit="시간"
+        onConfirm={(v) => {
+          setGoalHours(v);
+          setPickerVisible(false);
+        }}
+        onClose={() => setPickerVisible(false)}
+      />
     </Card>
   );
 }

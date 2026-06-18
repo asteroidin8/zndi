@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, TextInput, View } from 'react-native';
 
 import { AppText } from '../AppText';
@@ -219,6 +219,9 @@ export function SettingAccountSection() {
     </StandaloneSettingsCard>
   );
 
+  const hasLoadedRef = useRef(false);
+  if (!loading) hasLoadedRef.current = true;
+
   if (!configured) {
     return (
       <AccountSectionShell>
@@ -231,7 +234,7 @@ export function SettingAccountSection() {
     );
   }
 
-  if (loading) {
+  if (loading && !hasLoadedRef.current) {
     return (
       <AccountSectionShell>
         <StandaloneSettingsCard centered>

@@ -19,7 +19,7 @@ const TABS = [
   { key: 'home', title: TAB_LABELS.home, icon: 'Home' },
   { key: 'routine', title: TAB_LABELS.routine, icon: 'CheckSquare' },
   { key: 'todo', title: TAB_LABELS.todo, icon: 'ListTodo' },
-  { key: 'stats', title: TAB_LABELS.stats, icon: 'BarChart2' },
+  { key: 'stats', title: TAB_LABELS.stats, icon: 'Grid3x3' },
 ] as const;
 
 const HOME_INDEX = 0;

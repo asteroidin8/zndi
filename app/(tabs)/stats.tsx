@@ -360,6 +360,57 @@ export default function StatsScreen() {
         ) : (
           <>
             <View style={{ gap: 12 }}>
+              <AppText variant="caption" tone="tertiary">
+                {L.grassCalendarHint}
+              </AppText>
+
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
+              >
+                <Pressable onPress={prevMonth} hitSlop={8} style={{ padding: 4 }}>
+                  <AppIcon name="ChevronLeft" size={18} color={c.inkSecondary} />
+                </Pressable>
+                <AppText variant="body" style={{ fontWeight: '700', minWidth: 90, textAlign: 'center' }}>
+                  {viewYear}
+                  {L.yearSuffix} {viewMonth + 1}
+                  {L.monthSuffix}
+                </AppText>
+                <Pressable
+                  onPress={nextMonth}
+                  hitSlop={8}
+                  style={{ padding: 4, opacity: isCurrentMonth ? 0.3 : 1 }}
+                  disabled={isCurrentMonth}
+                >
+                  <AppIcon name="ChevronRight" size={18} color={c.inkSecondary} />
+                </Pressable>
+                {!isCurrentMonth && (
+                  <Pressable
+                    onPress={goToday}
+                    style={{
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: c.border,
+                    }}
+                  >
+                    <AppText variant="caption" tone="tertiary">
+                      {L.today}
+                    </AppText>
+                  </Pressable>
+                )}
+              </View>
+
+              <MonthGrid
+                year={viewYear}
+                month={viewMonth}
+                summaries={summaries}
+                grassMap={grassMap}
+                onSelect={setSelected}
+              />
+            </View>
+
+            <View style={{ gap: 12 }}>
               <SectionHeader title={L.sectionFasting} />
               {!hydrated ? (
                 <StatsSummarySkeleton />
@@ -428,66 +479,6 @@ export default function StatsScreen() {
                     value={totalHighPriority > 0 ? `${completedHighPriority}/${totalHighPriority}` : '-'}
                   />
                 </View>
-              )}
-            </View>
-
-            <Divider />
-
-            <View style={{ gap: 12 }}>
-              <SectionHeader title={L.sectionGrass} />
-              <AppText variant="caption" tone="tertiary">
-                {L.grassCalendarHint}
-              </AppText>
-
-              <View
-                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
-              >
-                <Pressable onPress={prevMonth} hitSlop={8} style={{ padding: 4 }}>
-                  <AppIcon name="ChevronLeft" size={18} color={c.inkSecondary} />
-                </Pressable>
-                <AppText variant="body" style={{ fontWeight: '700', minWidth: 90, textAlign: 'center' }}>
-                  {viewYear}
-                  {L.yearSuffix} {viewMonth + 1}
-                  {L.monthSuffix}
-                </AppText>
-                <Pressable
-                  onPress={nextMonth}
-                  hitSlop={8}
-                  style={{ padding: 4, opacity: isCurrentMonth ? 0.3 : 1 }}
-                  disabled={isCurrentMonth}
-                >
-                  <AppIcon name="ChevronRight" size={18} color={c.inkSecondary} />
-                </Pressable>
-                {!isCurrentMonth && (
-                  <Pressable
-                    onPress={goToday}
-                    style={{
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      borderColor: c.border,
-                    }}
-                  >
-                    <AppText variant="caption" tone="tertiary">
-                      {L.today}
-                    </AppText>
-                  </Pressable>
-                )}
-              </View>
-
-              <MonthGrid
-                year={viewYear}
-                month={viewMonth}
-                summaries={summaries}
-                grassMap={grassMap}
-                onSelect={setSelected}
-              />
-
-              {records.length === 0 && (
-                <AppText variant="caption" tone="disabled" style={{ textAlign: 'center' }}>
-                  {L.noFastingThisMonth}
-                </AppText>
               )}
             </View>
           </>

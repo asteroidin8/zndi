@@ -113,9 +113,19 @@ Composer PR body **필수 문구**:
 
 ## Auto-trigger (Cursor hook)
 
-`.cursor/hooks.json` — agent **stop** 시 `handoff.json` 확인.
+`.cursor/hooks.json` — Windows는 **`powershell -File`** 로 실행 (`.ps1` 직접 경로만으로는 실패할 수 있음).
 
-- `READY` → `followup_message`로 Git Manager 자동 실행 (`composer.md`)
-- `loop_limit: 3` (무한 루프 방지)
+| Event | 동작 |
+|-------|------|
+| `sessionStart` | 채팅 시작 시 `READY` → Git Manager 안내 주입 |
+| `postToolUse` (Write) | `handoff.json` 저장 직후 컨텍스트 주입 |
+| `stop` | 턴 종료 시 `READY` → **followup_message**로 Composer 자동 실행 |
+
+**자동 실행이 안 될 때**
+
+1. Cursor **Settings → Hooks** 에서 hook 로드 확인 (저장 후 **Cursor 재시작**)
+2. `stop` hook은 **에이전트 턴이 끝날 때만** 동작 — handoff만 저장하고 채팅을 닫으면 follow-up 없을 수 있음
+3. Implementation이 **다른 채팅/외부**에서 handoff를 쓰면, **새 메시지** 또는 `sessionStart`로 처리
+4. Hooks **Output** 채널에서 스크립트 오류 확인
 
 세션 **시작** 시에도 `handoff.json`을 먼저 읽고, `READY`면 Implementation 생략 → Composer 우선.

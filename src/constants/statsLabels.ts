@@ -4,7 +4,7 @@ export const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as c
 export const WEEKDAY_SHORT = DAY_LABELS;
 
 export const STATS_LABELS = {
-  title: '통계',
+  title: '잔디',
   emptyBodyLine1: '기록이 쌓이면',
   emptyBodyLine2: '나만의 패턴을 볼 수 있어요',
   emptyCaption: '단식을 시작하거나 루틴·할일을 추가해보세요',

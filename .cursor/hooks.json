@@ -1,10 +1,21 @@
 {
   "version": 1,
   "hooks": {
+    "sessionStart": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/check-handoff-session.ps1"
+      }
+    ],
     "stop": [
       {
-        "command": ".cursor/hooks/check-handoff.ps1",
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/check-handoff.ps1",
         "loop_limit": 3
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/check-handoff-on-write.ps1",
+        "matcher": "Write|Edit|StrReplace"
       }
     ]
   }

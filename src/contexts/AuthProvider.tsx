@@ -40,8 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
+      if (event === 'SIGNED_OUT') {
+        setLoading(false);
+      }
     });
 
     const sub = Linking.addEventListener('url', ({ url }) => {
