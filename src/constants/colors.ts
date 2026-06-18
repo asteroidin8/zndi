@@ -1,4 +1,8 @@
-/** zndi (잔디) 브랜드 팔레트 */
+/** zndi (잔디) 브랜드 팔레트
+ *
+ * 다크모드가 히어로 테마 — Deep Matte Black 위에 Neon Grass Green이 빛나는 구조.
+ * Primary (#22C55E) = 성취·완료, Accent (#4ADE80) = 인터랙션·강조.
+ */
 export const colors = {
   light: {
     surface: '#ffffff',
@@ -11,7 +15,7 @@ export const colors = {
     border: '#e5e5e5',
     borderStrong: '#d4d4d4',
     borderNeutral: 'rgba(0, 0, 0, 0.08)',
-    primary: '#16A34A',
+    primary: '#22C55E',
     primaryContainer: '#22C55E',
     accent: '#4ADE80',
     neonGlow: '#4ADE80',
@@ -27,20 +31,20 @@ export const colors = {
   },
   dark: {
     surface: '#121212',
-    surfaceSubtle: '#1E1E1E',
-    surfaceMuted: '#2A2A2A',
+    surfaceSubtle: '#1A1A1A',
+    surfaceMuted: '#262626',
     ink: '#F1F5F9',
     inkSecondary: '#CBD5E1',
     inkTertiary: '#94A3B8',
-    inkDisabled: '#64748B',
-    border: 'rgba(74, 222, 128, 0.2)',
-    borderStrong: 'rgba(74, 222, 128, 0.35)',
-    borderNeutral: 'rgba(255, 255, 255, 0.08)',
+    inkDisabled: '#475569',
+    border: 'rgba(74, 222, 128, 0.15)',
+    borderStrong: 'rgba(74, 222, 128, 0.3)',
+    borderNeutral: 'rgba(255, 255, 255, 0.06)',
     primary: '#22C55E',
     primaryContainer: '#4ADE80',
     accent: '#4ADE80',
     neonGlow: '#86EFAC',
-    surfaceCard: '#252525',
+    surfaceCard: '#1E1E1E',
     onPrimary: '#121212',
     danger: '#F87171',
     warning: '#FBBF24',

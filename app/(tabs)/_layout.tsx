@@ -84,7 +84,7 @@ export default function TabLayout() {
           style={{
             flexDirection: 'row',
             borderTopWidth: 1,
-            borderTopColor: c.border,
+            borderTopColor: c.borderNeutral,
             backgroundColor: c.surface,
             paddingBottom: Math.max(insets.bottom, 6),
             paddingTop: 4,
@@ -106,14 +106,14 @@ export default function TabLayout() {
                   justifyContent: 'center',
                   paddingVertical: 6,
                   borderTopWidth: 2,
-                  borderTopColor: isActive ? c.ink : 'transparent',
+                  borderTopColor: isActive ? c.primary : 'transparent',
                 }}
               >
                 <View style={{ position: 'relative', marginBottom: 2 }}>
                   <TabBarIcon
                     name={tab.icon}
                     size={isHome ? 24 : 22}
-                    color={isActive ? (c.ink as string) : (c.inkDisabled as string)}
+                    color={isActive ? (c.primary as string) : (c.inkDisabled as string)}
                   />
                   {i === TODO_INDEX && activeTodoCount > 0 && (
                     <View
@@ -121,7 +121,7 @@ export default function TabLayout() {
                         position: 'absolute',
                         top: -4,
                         right: -7,
-                        backgroundColor: c.ink,
+                        backgroundColor: c.primary,
                         borderRadius: 8,
                         minWidth: 14,
                         height: 14,
@@ -130,7 +130,7 @@ export default function TabLayout() {
                         justifyContent: 'center',
                       }}
                     >
-                      <AppText style={{ fontSize: 9, fontWeight: '700', color: c.surface }}>
+                      <AppText style={{ fontSize: 9, fontWeight: '700', color: c.onPrimary }}>
                         {activeTodoCount > 99 ? '99+' : String(activeTodoCount)}
                       </AppText>
                     </View>
@@ -142,7 +142,7 @@ export default function TabLayout() {
                     fontSize: 10,
                     lineHeight: 12,
                     fontWeight: isActive ? '700' : '400',
-                    color: isActive ? c.ink : c.inkDisabled,
+                    color: isActive ? c.primary : c.inkDisabled,
                   }}
                 >
                   {tab.title}

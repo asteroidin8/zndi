@@ -28,7 +28,10 @@ export function HomeTopBar() {
           alignItems: 'center',
         }}
       >
-        <AppText variant="body" style={{ fontWeight: '800', letterSpacing: -0.5 }}>
+        <AppText
+          variant="body"
+          style={{ fontWeight: '800', letterSpacing: 1, color: c.primary }}
+        >
           zndi
         </AppText>
       </View>
@@ -44,9 +47,12 @@ export function HomeTopBar() {
         accessibilityLabel={streak > 0 ? `연속 ${streak}일` : '잔디 심볼'}
       >
         {streak > 0 ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-            <AppIcon name="Flame" size={14} color={c.primary} />
-            <AppText variant="caption" tone="secondary" style={{ fontWeight: '700' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+            <AppIcon name="Flame" size={14} color={c.accent} />
+            <AppText
+              variant="caption"
+              style={{ fontWeight: '700', color: c.accent }}
+            >
               {streak}
             </AppText>
           </View>

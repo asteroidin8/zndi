@@ -4,6 +4,7 @@ import { AppText } from '@/components/AppText';
 import { SectionHeader } from '@/components/SectionHeader';
 import { HOME_COPY } from '@/constants/copy';
 import { spacing } from '@/constants/spacing';
+import { grassGlowShadow } from '@/constants/themeEffects';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
@@ -14,7 +15,7 @@ function cellColor(status: DayDotStatus, c: ReturnType<typeof useThemeColors>) {
     case 'full':
       return { bg: c.primary, border: c.primary, glow: true };
     case 'partial':
-      return { bg: c.accent, border: c.accent, glow: false };
+      return { bg: c.primary, border: c.borderStrong, glow: false };
     case 'empty':
       return { bg: c.surfaceSubtle, border: c.borderStrong, glow: false };
     default:
@@ -80,19 +81,11 @@ export function HomeWeeklyGrass() {
                     height: size,
                     borderRadius: 4,
                     backgroundColor: colors.bg,
-                    opacity: partial ? 0.55 : 1,
+                    opacity: partial ? 0.45 : 1,
                     borderWidth: dot.status === 'none' || dot.status === 'empty' ? 1 : 0,
                     borderColor: colors.border,
-                    transform: [{ scale: isToday ? 1.1 : 1 }],
-                    ...(colors.glow
-                      ? {
-                          shadowColor: c.primary,
-                          shadowOpacity: 0.45,
-                          shadowRadius: 4,
-                          shadowOffset: { width: 0, height: 0 },
-                          elevation: 3,
-                        }
-                      : {}),
+                    transform: [{ scale: isToday ? 1.15 : 1 }],
+                    ...(colors.glow ? grassGlowShadow(c) : {}),
                   }}
                 />
                 <AppText

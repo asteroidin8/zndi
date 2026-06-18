@@ -74,8 +74,14 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
             accessibilityRole="button"
             accessibilityLabel="오늘의 루틴 보기"
           >
-            <AppText variant="body" style={{ fontWeight: '600' }}>
-              {allRoutinesDone ? '오늘 잔디 완료' : '오늘의 루틴'}
+            <AppText
+              variant="body"
+              style={{
+                fontWeight: '600',
+                ...(allRoutinesDone ? { color: c.primary } : {}),
+              }}
+            >
+              {allRoutinesDone ? '오늘 잔디 완료 ✓' : '오늘의 루틴'}
             </AppText>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <AppText variant="caption" tone="tertiary">
@@ -111,6 +117,15 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                       backgroundColor: done ? c.primary : 'transparent',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      ...(done
+                        ? {
+                            shadowColor: c.neonGlow,
+                            shadowOpacity: 0.4,
+                            shadowRadius: 4,
+                            shadowOffset: { width: 0, height: 0 },
+                            elevation: 2,
+                          }
+                        : {}),
                     }}
                   >
                     {done && <AppIcon name="Check" size={10} color={c.onPrimary} strokeWidth={3} />}
