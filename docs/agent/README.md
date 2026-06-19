@@ -22,7 +22,9 @@ planner → claude → handoff(READY) → composer → reviewer → squash merge
 
 - 위치: 프로젝트 루트 (Git 제외 — `.gitignore`)
 - status: `READY` · `DONE` · `BLOCKED` · `PARTIAL`
-- **`READY` 갱신 시:** `.cursor/hooks/check-handoff.ps1` → Git Manager 자동 follow-up
+- **형식:** `tasks[]` (기본) — task마다 `id`, `files_changed`, `commit` · batch는 `batch_id`
+- legacy flat (`commit_groups`만) — **단일 task**일 때만
+- **`READY` 갱신 시:** hooks → Git Manager follow-up ([workflow.md](./workflow.md))
 
 ## Project
 
