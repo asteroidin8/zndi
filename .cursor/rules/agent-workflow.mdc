@@ -33,16 +33,16 @@ alwaysApply: true
 
 | status | 행동 |
 |--------|------|
-| `READY` | Composer: 검증 → 커밋 분리 → PR → Reviewer → **squash merge** |
+| `READY` | Composer: 검증 → **tasks[] 순 커밋** → PR → Reviewer → **squash merge** |
 | `DONE` | 없음 |
 | `BLOCKED` | Implementation 수정 후 다시 `READY` |
-| `PARTIAL` | 남은 work 새 handoff |
+| `PARTIAL` | `pending` task 수정 또는 새 handoff |
 
 ## 필수 규칙
 
-- **Implementation:** commit/push/merge 금지 · `task.md` 갱신 · `commit_groups` (관심사 2+)
-- **Composer:** pre-merge validation · 최소 단위 커밋 · 무관 파일 제외 · **squash merge**
-- **Reviewer:** read-only · FAIL → `BLOCKED`
+- **Implementation:** commit/push/merge 금지 · `task.md` 갱신 · handoff는 **`tasks[]`** (2+ 관심사) · task마다 `files_changed`+`commit`
+- **Composer:** pre-merge validation · **1 task = 1 commit** · 무관 파일 제외 · **squash merge**
+- **Reviewer:** read-only · FAIL → `BLOCKED` (task id)
 - **`handoff_type: native`:** PR에 기기 재설치 체크리스트
 
-상세: `docs/agent/workflow.md`
+상세 스키마: `docs/agent/workflow.md`
