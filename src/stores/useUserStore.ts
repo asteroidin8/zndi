@@ -8,6 +8,7 @@ export type UserProfile = {
   targetWeightKg: number | null;
   ageYears: number | null;
   isMale: boolean | null;
+  nickname: string | null;
 };
 
 type UserStore = {
@@ -17,6 +18,7 @@ type UserStore = {
   setTargetWeight: (kg: number) => void;
   setAge: (years: number) => void;
   setIsMale: (isMale: boolean | null) => void;
+  setNickname: (name: string | null) => void;
 };
 
 export const useUserStore = create<UserStore>()(
@@ -28,12 +30,14 @@ export const useUserStore = create<UserStore>()(
         targetWeightKg: null,
         ageYears: null,
         isMale: null,
+        nickname: null,
       },
       setHeight: (cm) => set((s) => ({ profile: { ...s.profile, heightCm: cm } })),
       setWeight: (kg) => set((s) => ({ profile: { ...s.profile, weightKg: kg } })),
       setTargetWeight: (kg) => set((s) => ({ profile: { ...s.profile, targetWeightKg: kg } })),
       setAge: (years) => set((s) => ({ profile: { ...s.profile, ageYears: years } })),
       setIsMale: (isMale) => set((s) => ({ profile: { ...s.profile, isMale } })),
+      setNickname: (name) => set((s) => ({ profile: { ...s.profile, nickname: name } })),
     }),
     {
       name: 'user-store',

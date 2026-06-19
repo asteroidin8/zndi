@@ -127,6 +127,7 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
         targetWeightKg: profileRes.data.target_weight_kg,
         ageYears: profileRes.data.age_years,
         isMale: profileRes.data.is_male,
+        nickname: (profileRes.data as { nickname?: string | null }).nickname ?? null,
       },
     });
   }
