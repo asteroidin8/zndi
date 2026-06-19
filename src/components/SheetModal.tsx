@@ -4,6 +4,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -25,9 +26,11 @@ type SheetModalProps = {
   headerRight?: React.ReactNode;
   footer?: React.ReactNode;
   children: React.ReactNode;
+  /** true면 children을 ScrollView로 감싸지 않음 (DatePicker 등 자체 스크롤 컴포넌트용) */
+  scrollable?: boolean;
 };
 
-export function SheetModal({ visible, onClose, title, headerRight, footer, children }: SheetModalProps) {
+export function SheetModal({ visible, onClose, title, headerRight, footer, children, scrollable = true }: SheetModalProps) {
   const c = useThemeColors();
   const insets = useSafeAreaInsets();
   const backdropOpacity = useSharedValue(0);
@@ -99,7 +102,18 @@ export function SheetModal({ visible, onClose, title, headerRight, footer, child
               </View>
             ) : null}
 
-            <View style={{ paddingHorizontal: spacing.screen }}>{children}</View>
+            {scrollable ? (
+              <ScrollView
+                style={{ maxHeight: '60%' }}
+                contentContainerStyle={{ paddingHorizontal: spacing.screen }}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+                {children}
+              </ScrollView>
+            ) : (
+              <View style={{ paddingHorizontal: spacing.screen }}>{children}</View>
+            )}
 
             {footer ? (
               <View
