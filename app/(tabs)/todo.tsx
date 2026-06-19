@@ -71,6 +71,38 @@ function PrioritySectionHeader({ label, priority, count }: { label: string; prio
   );
 }
 
+function GrassBar({ completed, total }: { completed: number; total: number }) {
+  const c = useThemeColors();
+  if (total === 0) return null;
+
+  const cells = Array.from({ length: total }, (_, i) => i < completed);
+
+  return (
+    <View style={{ flexDirection: 'row', gap: 3, marginTop: spacing.xs }}>
+      {cells.map((filled, i) => (
+        <View
+          key={i}
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 2,
+            backgroundColor: filled ? c.primary : c.surfaceMuted,
+            ...(filled
+              ? {
+                  shadowColor: c.neonGlow,
+                  shadowOpacity: 0.3,
+                  shadowRadius: 2,
+                  shadowOffset: { width: 0, height: 0 },
+                  elevation: 1,
+                }
+              : {}),
+          }}
+        />
+      ))}
+    </View>
+  );
+}
+
 function GroupHeader({
   group,
   completedCount,
@@ -95,25 +127,30 @@ function GroupHeader({
       accessibilityRole="button"
       accessibilityLabel={`${group.name} 그룹, ${completedCount}/${totalCount} 완료`}
       style={{
-        flexDirection: 'row',
-        alignItems: 'center',
         paddingVertical: spacing.sm + 2,
         paddingHorizontal: spacing.screen,
         backgroundColor: c.surface,
-        gap: spacing.sm,
+        gap: spacing.xs,
       }}
     >
-      <AppIcon
-        name={group.collapsed ? 'ChevronRight' : 'ChevronDown'}
-        size={14}
-        color={c.inkTertiary}
-      />
-      <AppText variant="body" style={{ fontWeight: '600', flex: 1 }}>
-        {group.name}
-      </AppText>
-      <AppText variant="caption" tone="tertiary">
-        {completedCount}/{totalCount}
-      </AppText>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+        <AppIcon
+          name={group.collapsed ? 'ChevronRight' : 'ChevronDown'}
+          size={14}
+          color={c.inkTertiary}
+        />
+        <AppText variant="body" style={{ fontWeight: '600', flex: 1 }}>
+          {group.name}
+        </AppText>
+        <AppText variant="caption" tone="tertiary">
+          {completedCount}/{totalCount}
+        </AppText>
+      </View>
+      {!group.collapsed && totalCount > 0 && (
+        <View style={{ paddingLeft: 22 }}>
+          <GrassBar completed={completedCount} total={totalCount} />
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -136,6 +173,7 @@ export default function TodoScreen() {
     updateGroup,
     removeGroup,
     toggleGroupCollapsed,
+    reorderGroupTodos,
   } = useTodoStore();
   const { seenHints, markHintSeen } = useSettingsStore();
 
@@ -350,23 +388,16 @@ export default function TodoScreen() {
                 />
                 {!group.collapsed && groupTodos.length > 0 && (
                   <View style={{ paddingHorizontal: spacing.screen }}>
-                    {groupTodos.map((todo, i) => (
-                      <View key={todo.id}>
-                        <SwipeActions
-                          onDelete={() => { setUndoTarget(todo); removeTodo(todo.id); }}
-                          onComplete={() => completeTodo(todo.id)}
-                        >
-                          <View>
-                            <TodoItem
-                              todo={todo}
-                              onToggle={() => completeTodo(todo.id)}
-                              onPress={() => setEditTarget(todo)}
-                            />
-                            {i < groupTodos.length - 1 && <Divider />}
-                          </View>
-                        </SwipeActions>
-                      </View>
-                    ))}
+                    <DraggableFlatList
+                      data={groupTodos}
+                      keyExtractor={(item) => item.id}
+                      onDragEnd={({ data }) =>
+                        runAfterDragAnimation(() => reorderGroupTodos(group.id, data))
+                      }
+                      renderItem={renderTodoItem}
+                      scrollEnabled={false}
+                      activationDistance={4}
+                    />
                   </View>
                 )}
                 {!group.collapsed && groupTodos.length === 0 && groupCompleted.length === 0 && (

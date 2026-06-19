@@ -44,6 +44,7 @@ type TodoStore = {
   reorderGroups: (ordered: TodoGroup[]) => void;
   toggleGroupCollapsed: (id: string) => void;
   moveTodoToGroup: (todoId: string, groupId: string | null) => void;
+  reorderGroupTodos: (groupId: string, ordered: Todo[]) => void;
 };
 
 export const useTodoStore = create<TodoStore>()(
@@ -147,6 +148,12 @@ export const useTodoStore = create<TodoStore>()(
         set((state) => ({
           todos: state.todos.map((t) => (t.id === todoId ? { ...t, groupId } : t)),
         })),
+      reorderGroupTodos: (groupId, ordered) =>
+        set((state) => {
+          const others = state.todos.filter((t) => t.groupId !== groupId);
+          const updated = ordered.map((t, i) => ({ ...t, order: i }));
+          return { todos: [...others, ...updated] };
+        }),
     }),
     {
       name: 'todo-store',
