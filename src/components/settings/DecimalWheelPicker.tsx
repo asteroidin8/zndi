@@ -262,6 +262,7 @@ export function DecimalWheelPicker({
       onClose={onClose}
       title={title}
       footer={<SheetPrimaryButton label="확인" onPress={handleConfirm} />}
+      scrollable={false}
     >
       <AppText variant="caption" tone="tertiary" style={{ textAlign: 'center', marginBottom: 8 }}>
         숫자를 터치하면 직접 입력할 수 있어요

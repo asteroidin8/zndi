@@ -191,7 +191,7 @@ export default function TodoScreen() {
   const sortedGroups = [...groups].sort((a, b) => a.order - b.order);
   const ungroupedActive = activeTodos.filter((t) => !t.groupId);
 
-  function handleAdd({ title, priority, dueDate, pinnedToHome }: TodoCreatePayload) {
+  function handleAdd({ title, priority, dueDate, pinnedToHome, groupId }: TodoCreatePayload) {
     const samePriorityCount = todos.filter((t) => t.priority === priority && !t.completedAt).length;
     const maxPinOrder = todos.reduce(
       (max, t) => (t.pinnedToHome ? Math.max(max, t.pinOrder) : max),
@@ -208,12 +208,12 @@ export default function TodoScreen() {
       order: samePriorityCount,
       pinnedToHome,
       pinOrder: pinnedToHome ? maxPinOrder + 1 : 0,
-      groupId: null,
+      groupId,
     });
     setAddModalVisible(false);
   }
 
-  function handleEditSave(updates: Pick<Todo, 'title' | 'priority' | 'dueDate' | 'pinnedToHome'>) {
+  function handleEditSave(updates: Pick<Todo, 'title' | 'priority' | 'dueDate' | 'pinnedToHome' | 'groupId'>) {
     if (!editTarget) return;
     updateTodo(editTarget.id, updates);
     setEditTarget(null);

@@ -128,6 +128,7 @@ export function WheelPicker({
       onClose={onClose}
       title={title}
       footer={<SheetPrimaryButton label="확인" onPress={handleConfirm} />}
+      scrollable={false}
     >
       <View style={{ position: 'relative', height: ITEM_HEIGHT * VISIBLE_ITEMS, marginHorizontal: -4 }}>
         <View

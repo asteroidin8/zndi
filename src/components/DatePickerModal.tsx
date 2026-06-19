@@ -182,6 +182,7 @@ export function DatePickerModal({ visible, value, minimumDate, onConfirm, onClos
       onClose={onClose}
       title="날짜 선택"
       footer={<SheetPrimaryButton label="확인" onPress={handleConfirm} />}
+      scrollable={false}
     >
       <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 4 }}>
         <Drum items={years} selected={year} onSelect={setYear} width={90} />
