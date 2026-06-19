@@ -18,6 +18,7 @@ import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
 import { getRoutineStreakDays } from '@/utils/homeDailyBoard';
+import { getGrassLevel } from '@/utils/grassLevel';
 
 const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
   { value: 'system', label: '시스템' },
@@ -91,6 +92,7 @@ export default function MyScreen() {
   const { isCompleted, completions } = useRoutineCompletionStore();
   const streak = getRoutineStreakDays(routines, isCompleted);
   const totalGrass = Object.keys(completions).length;
+  const grassLevel = getGrassLevel(totalGrass);
 
   const [busy, setBusy] = useState(false);
   const [editingNickname, setEditingNickname] = useState(false);
@@ -228,20 +230,20 @@ export default function MyScreen() {
               <AppText variant="caption" tone="tertiary">{user.email}</AppText>
             )}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+              <AppText variant="caption" style={{ fontWeight: '600', color: c.primary }}>
+                Lv.{grassLevel.level} {grassLevel.name}
+              </AppText>
               {streak > 0 && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
                   <AppIcon name="Flame" size={14} color={c.accent} />
                   <AppText variant="caption" style={{ fontWeight: '600', color: c.accent }}>
-                    {streak}일 연속
+                    {streak}일
                   </AppText>
                 </View>
               )}
-              {totalGrass > 0 && (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-                  <AppText variant="caption" tone="tertiary">🌱</AppText>
-                  <AppText variant="caption" tone="tertiary">{totalGrass}잔디</AppText>
-                </View>
-              )}
+              <AppText variant="caption" tone="tertiary">
+                {totalGrass}잔디
+              </AppText>
             </View>
           </View>
         ) : configured && !loading && !user ? (
