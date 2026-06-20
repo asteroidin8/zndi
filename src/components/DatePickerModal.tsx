@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from 'react';
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Pressable,
   ScrollView,
   View,
 } from 'react-native';
