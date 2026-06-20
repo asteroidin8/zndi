@@ -35,9 +35,10 @@ export function getDueDateColor(urgency: DueUrgency, c: ThemeColors): string | u
 
 export function getTimeGreeting(): string {
   const hour = new Date().getHours();
+  if (hour < 6) return '늦은 밤이에요';
   if (hour < 12) return '좋은 아침이에요';
   if (hour < 18) return '좋은 오후예요';
-  return '좋은 저녁이에요';
+  return '오늘도 수고했어요';
 }
 
 export function getPriorityColor(

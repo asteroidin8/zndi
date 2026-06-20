@@ -14,6 +14,7 @@ type FastingStore = {
   startFasting: () => void;
   stopFasting: (result: FastingResult) => void;
   setGoalHours: (hours: number) => void;
+  updateStartTime: (timestamp: number) => void;
   removeRecord: (id: string) => void;
   updateRecord: (id: string, updates: Partial<FastingRecord>) => void;
 };
@@ -39,6 +40,9 @@ export const useFastingStore = create<FastingStore>()(
         set({ status: 'idle', startedAt: null, records: [...records, newRecord] });
       },
       setGoalHours: (hours) => set({ goalHours: hours }),
+      updateStartTime: (timestamp) => {
+        if (get().status === 'fasting') set({ startedAt: timestamp });
+      },
       removeRecord: (id) =>
         set((s) => ({ records: s.records.filter((r) => r.id !== id) })),
       updateRecord: (id, updates) =>

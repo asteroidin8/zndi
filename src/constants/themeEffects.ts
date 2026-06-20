@@ -36,6 +36,22 @@ export function grassGlowShadow(c: ThemeColors): ViewStyle {
   };
 }
 
+export function elevationShadow(level: 1 | 2 | 3): ViewStyle {
+  const configs = {
+    1: { shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 },
+    2: { shadowOpacity: 0.12, shadowRadius: 8, elevation: 4 },
+    3: { shadowOpacity: 0.18, shadowRadius: 16, elevation: 8 },
+  } as const;
+  const cfg = configs[level];
+  return {
+    shadowColor: '#000',
+    shadowOpacity: cfg.shadowOpacity,
+    shadowRadius: cfg.shadowRadius,
+    shadowOffset: { width: 0, height: level },
+    elevation: cfg.elevation,
+  };
+}
+
 export function completionCheckboxStyle(
   c: ThemeColors,
   checked: boolean,

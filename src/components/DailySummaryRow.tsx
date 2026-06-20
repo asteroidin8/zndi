@@ -6,6 +6,7 @@ import { CompletionCheckbox } from './CompletionCheckbox';
 import { TodoPriorityBadge } from './TodoPriorityBadge';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { radius, size, spacing } from '@/constants/spacing';
+import { neonGlowShadow } from '@/constants/themeEffects';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
@@ -83,24 +84,27 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
   const hiddenTodoCount = Math.max(activeTodos.length - MAX_TODOS, 0);
 
   return (
-    <View style={{ gap: spacing.md }}>
+    <View style={{ gap: spacing.section }}>
       {hasRoutines && (
-        <View style={cardStyle}>
+        <View style={{ ...cardStyle, ...(allRoutinesDone ? neonGlowShadow(c, 'soft') : {}) }}>
           <Pressable
             onPress={onRoutinePress}
             style={headerRowStyle}
             accessibilityRole="button"
             accessibilityLabel="루틴 탭으로 이동"
           >
-            <AppText
-              variant="body"
-              style={{
-                fontWeight: '600',
-                ...(allRoutinesDone ? { color: c.primary } : {}),
-              }}
-            >
-              {allRoutinesDone ? '오늘 잔디 완료 ✓' : '오늘의 루틴'}
-            </AppText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+              <AppIcon name="CheckSquare" size={size.iconSm} color={allRoutinesDone ? c.primary : c.inkTertiary} />
+              <AppText
+                variant="body"
+                style={{
+                  fontWeight: '600',
+                  ...(allRoutinesDone ? { color: c.primary } : {}),
+                }}
+              >
+                {allRoutinesDone ? '오늘 잔디 완료 ✓' : '오늘의 루틴'}
+              </AppText>
+            </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
               <AppText variant="caption" tone="tertiary">
                 {completedCount}/{todayRoutines.length}
@@ -161,9 +165,12 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
             accessibilityRole="button"
             accessibilityLabel="할일 탭으로 이동"
           >
-            <AppText variant="body" style={{ fontWeight: '600' }}>
-              오늘의 할 일
-            </AppText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+              <AppIcon name="ListTodo" size={size.iconSm} color={c.inkTertiary} />
+              <AppText variant="body" style={{ fontWeight: '600' }}>
+                오늘의 할 일
+              </AppText>
+            </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
               <AppText variant="caption" tone="tertiary">
                 {activeTodos.length}개

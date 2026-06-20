@@ -8,6 +8,7 @@ import { grassGlowShadow } from '@/constants/themeEffects';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
+import { getTimeGreeting } from '@/utils/dateFormat';
 import { getWeekDayDots, toDateStr, type DayDotStatus } from '@/utils/homeDailyBoard';
 
 const CELL_SIZE = 14;
@@ -40,8 +41,11 @@ export function HomeWeeklyGrass() {
   const weekSummary =
     activeDays.length > 0 ? `${fullDays}/${activeDays.length}일` : '이번 주 기록 없음';
 
+  const greeting = getTimeGreeting();
+
   return (
     <View style={{ gap: spacing.sm }}>
+      <AppText variant="caption" tone="tertiary">{greeting}</AppText>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <SectionHeader title={HOME_COPY.weekSection} />
         <AppText variant="caption" tone="tertiary">

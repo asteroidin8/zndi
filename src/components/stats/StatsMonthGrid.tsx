@@ -30,6 +30,8 @@ export function StatsMonthGrid({ year, month, summaries, grassMap, onSelect }: P
     ...Array.from({ length: daysInMonth }, (_, i) => toDateStr(new Date(year, month, i + 1))),
   ];
 
+  const LEGEND_LEVELS = [0, 1, 2, 3, 4] as const;
+
   return (
     <View style={{ alignItems: 'center' }}>
       <View style={{ flexDirection: 'row', gap: 6, marginBottom: spacing.xs }}>
@@ -114,6 +116,28 @@ export function StatsMonthGrid({ year, month, summaries, grassMap, onSelect }: P
             </Pressable>
           );
         })}
+      </View>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: spacing.md, alignSelf: 'flex-end' }}>
+        <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>적음</AppText>
+        {LEGEND_LEVELS.map((level) => {
+          const legendColors = grassCellColors(level, c, false, false);
+          return (
+            <View
+              key={level}
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 3,
+                backgroundColor: level === 0 ? c.surfaceMuted : legendColors.fill,
+                opacity: level === 0 ? 1 : legendColors.fillOpacity,
+                borderWidth: level === 0 ? 1 : 0,
+                borderColor: c.border,
+              }}
+            />
+          );
+        })}
+        <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>많음</AppText>
       </View>
     </View>
   );

@@ -1,8 +1,9 @@
 import { Pressable, View } from 'react-native';
 
+import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { HoldToConfirmButton } from '@/components/HoldToConfirmButton';
-import { radius, size, spacing } from '@/constants/spacing';
+import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { formatElapsed, formatOverElapsed, formatRelativeDate } from '@/utils/fastingFormat';
 
@@ -17,6 +18,7 @@ type Props = {
   calories: number | null;
   onComplete: () => void;
   onAbandon: () => void;
+  onEditStartTime?: () => void;
 };
 
 export function FastingTimer({
@@ -30,6 +32,7 @@ export function FastingTimer({
   calories,
   onComplete,
   onAbandon,
+  onEditStartTime,
 }: Props) {
   const c = useThemeColors();
   const accent = isOverGoal ? c.booster : c.primary;
@@ -57,7 +60,19 @@ export function FastingTimer({
       <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={{ gap: 2 }}>
-            <AppText variant="caption" tone="tertiary">시작</AppText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+              <AppText variant="caption" tone="tertiary">시작</AppText>
+              {onEditStartTime && (
+                <Pressable
+                  onPress={onEditStartTime}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="시작 시간 수정"
+                >
+                  <AppIcon name="Pencil" size={10} color={c.inkTertiary} />
+                </Pressable>
+              )}
+            </View>
             <AppText variant="caption" style={{ fontWeight: '600' }}>
               {start.timeLabel}
             </AppText>
@@ -71,13 +86,30 @@ export function FastingTimer({
             </AppText>
           </View>
         </View>
-        <View style={{ height: size.progressBar, backgroundColor: c.surfaceMuted, borderRadius: radius.xs, overflow: 'hidden' }}>
+        <View style={{ height: 6, backgroundColor: c.surfaceMuted, borderRadius: 3, overflow: 'visible' }}>
           <View
             style={{
-              height: size.progressBar,
+              height: 6,
               width: `${progress * 100}%`,
               backgroundColor: accent,
-              borderRadius: radius.xs,
+              borderRadius: 3,
+            }}
+          />
+          <View
+            style={{
+              position: 'absolute',
+              top: -3,
+              left: `${progress * 100}%`,
+              width: 12,
+              height: 12,
+              borderRadius: 6,
+              backgroundColor: accent,
+              marginLeft: -6,
+              shadowColor: accent,
+              shadowOpacity: 0.7,
+              shadowRadius: 6,
+              shadowOffset: { width: 0, height: 0 },
+              elevation: 4,
             }}
           />
         </View>
