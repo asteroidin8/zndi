@@ -2,9 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type ThemeMode = 'system' | 'light' | 'dark';
+import type { HintKey, ThemeMode } from '@/types';
 
-type HintKey = 'swipeActions' | 'longPressEdit';
+export type { HintKey, ThemeMode } from '@/types';
 
 type SettingsStore = {
   foregroundServiceEnabled: boolean;

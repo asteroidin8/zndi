@@ -2,6 +2,7 @@ export { AppIcon } from './AppIcon';
 export { AppText } from './AppText';
 export { DailySummaryRow } from './DailySummaryRow';
 export { Divider } from './Divider';
+export { EmptyState } from './EmptyState';
 export { FastingCard } from './FastingCard';
 export { InfoBanner } from './InfoBanner';
 export { RoutineItem } from './RoutineItem';

@@ -2,20 +2,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-type RoutineCompletionStore = {
-  // key: 'YYYY-MM-DD:routineId' → completed timestamp
-  completions: Record<string, number>;
-  toggleCompletion: (routineId: string, date: string) => void;
-  isCompleted: (routineId: string, date: string) => boolean;
-  getCompletedIds: (date: string) => string[];
-  /** 특정 루틴의 연속 달성 일수 (오늘 기준 역방향) */
-  getStreak: (routineId: string, repeatDays: number[]) => number;
-  clearOldCompletions: () => void;
-};
+import type { Weekday } from '@/types';
+import { toDateStr } from '@/utils/homeDailyBoard';
+
+const MAX_STREAK_DAYS = 365;
+const COMPLETION_RETENTION_DAYS = 30;
 
 function makeKey(routineId: string, date: string) {
   return `${date}:${routineId}`;
 }
+
+type RoutineCompletionStore = {
+  completions: Record<string, number>;
+  toggleCompletion: (routineId: string, date: string) => void;
+  isCompleted: (routineId: string, date: string) => boolean;
+  getCompletedIds: (date: string) => string[];
+  getStreak: (routineId: string, repeatDays: Weekday[]) => number;
+  clearOldCompletions: () => void;
+};
 
 export const useRoutineCompletionStore = create<RoutineCompletionStore>()(
   persist(
@@ -24,8 +28,8 @@ export const useRoutineCompletionStore = create<RoutineCompletionStore>()(
 
       toggleCompletion: (routineId, date) => {
         const key = makeKey(routineId, date);
-        set((state) => {
-          const next = { ...state.completions };
+        set((s) => {
+          const next = { ...s.completions };
           if (next[key]) {
             delete next[key];
           } else {
@@ -51,19 +55,17 @@ export const useRoutineCompletionStore = create<RoutineCompletionStore>()(
         let streak = 0;
         const cursor = new Date();
         cursor.setHours(0, 0, 0, 0);
-        // 최대 365일 역방향으로 탐색
-        for (let i = 0; i < 365; i++) {
+
+        for (let i = 0; i < MAX_STREAK_DAYS; i++) {
           const dayOfWeek = cursor.getDay();
-          if (repeatDays.includes(dayOfWeek)) {
-            const dateStr = cursor.toISOString().slice(0, 10);
-            if (completions[`${dateStr}:${routineId}`]) {
+          if (repeatDays.includes(dayOfWeek as Weekday)) {
+            const dateStr = toDateStr(cursor);
+            if (completions[makeKey(routineId, dateStr)]) {
               streak++;
+            } else if (i === 0) {
+              cursor.setDate(cursor.getDate() - 1);
+              continue;
             } else {
-              // 오늘이면 아직 미완료일 수 있으므로 건너뜀
-              if (i === 0) {
-                cursor.setDate(cursor.getDate() - 1);
-                continue;
-              }
               break;
             }
           }
@@ -72,16 +74,14 @@ export const useRoutineCompletionStore = create<RoutineCompletionStore>()(
         return streak;
       },
 
-      // 30일 이상 지난 완료 기록 정리
       clearOldCompletions: () => {
         const cutoff = new Date();
-        cutoff.setDate(cutoff.getDate() - 30);
-        const cutoffStr = cutoff.toISOString().slice(0, 10);
-        set((state) => {
+        cutoff.setDate(cutoff.getDate() - COMPLETION_RETENTION_DAYS);
+        const cutoffStr = toDateStr(cutoff);
+        set((s) => {
           const next: Record<string, number> = {};
-          for (const [key, ts] of Object.entries(state.completions)) {
-            const date = key.slice(0, 10);
-            if (date >= cutoffStr) {
+          for (const [key, ts] of Object.entries(s.completions)) {
+            if (key.slice(0, 10) >= cutoffStr) {
               next[key] = ts;
             }
           }

@@ -1,3 +1,4 @@
+import { DAY_LABELS } from '@/constants/statsLabels';
 import type { Routine } from '@/stores/useRoutineStore';
 import type { Todo } from '@/stores/useTodoStore';
 
@@ -10,8 +11,6 @@ export type WeekDayDot = {
   routineCompleted: number;
   routineTotal: number;
 };
-
-const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'] as const;
 
 export function toDateStr(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -56,7 +55,7 @@ export function getWeekDayDots(
 
     dots.push({
       dateStr,
-      weekdayLabel: WEEKDAYS[dayOfWeek],
+      weekdayLabel: DAY_LABELS[dayOfWeek],
       status: getDayDotStatus(completed, total),
       routineCompleted: completed,
       routineTotal: total,

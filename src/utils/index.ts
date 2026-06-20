@@ -1,2 +1,9 @@
 export { groupFastingByDay, formatMinutes, formatHHMM } from './statsHelper';
-export type { FastingRecord, DailyFastingSummary } from './statsHelper';
+export type { CompletedFastingRecord, DailyFastingSummary } from './statsHelper';
+export { toDateStr } from './homeDailyBoard';
+export { formatDueDate, getDueDateColor, getTimeGreeting, getPriorityColor } from './dateFormat';
+export { formatMetric } from './formatMetric';
+export { isProfileIncomplete } from './profile';
+export { runAfterDragAnimation } from './deferredReorder';
+export { getGrassLevel } from './grassLevel';
+export type { GrassLevelInfo } from './grassLevel';

@@ -2,28 +2,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type TodoPriority = 'high' | 'mid' | 'low';
+import type { Todo, TodoGroup, TodoPriority } from '@/types';
 
-export type TodoGroup = {
-  id: string;
-  name: string;
-  order: number;
-  collapsed: boolean;
-};
+export type { Todo, TodoGroup, TodoPriority } from '@/types';
 
-export type Todo = {
-  id: string;
-  title: string;
-  priority: TodoPriority;
-  dueDate: string | null;
-  completedAt: number | null;
-  archivedDate: string | null;
-  createdAt: number;
-  order: number;
-  pinnedToHome: boolean;
-  pinOrder: number;
-  groupId: string | null;
-};
+function nextPinOrder(todos: Todo[]): number {
+  return todos.reduce((max, t) => (t.pinnedToHome ? Math.max(max, t.pinOrder) : max), -1) + 1;
+}
 
 type TodoStore = {
   todos: Todo[];
@@ -53,107 +38,100 @@ export const useTodoStore = create<TodoStore>()(
       todos: [],
       groups: [],
       lastArchiveDate: null,
-      addTodo: (todo) => set((state) => ({ todos: [...state.todos, todo] })),
+
+      addTodo: (todo) => set((s) => ({ todos: [...s.todos, todo] })),
+
       updateTodo: (id, updates) =>
-        set((state) => ({
-          todos: state.todos.map((t) => {
+        set((s) => ({
+          todos: s.todos.map((t) => {
             if (t.id !== id) return t;
-
             const next = { ...t, ...updates };
-
             if ('pinnedToHome' in updates) {
               if (updates.pinnedToHome && !t.pinnedToHome) {
-                const maxPinOrder = state.todos.reduce(
-                  (max, item) => (item.pinnedToHome ? Math.max(max, item.pinOrder) : max),
-                  -1,
-                );
-                next.pinOrder = maxPinOrder + 1;
+                next.pinOrder = nextPinOrder(s.todos);
               } else if (updates.pinnedToHome === false) {
                 next.pinOrder = 0;
               }
             }
-
             return next;
           }),
         })),
+
       completeTodo: (id) =>
-        set((state) => ({
-          todos: state.todos.map((t) =>
-            t.id === id ? { ...t, completedAt: Date.now() } : t,
-          ),
+        set((s) => ({
+          todos: s.todos.map((t) => (t.id === id ? { ...t, completedAt: Date.now() } : t)),
         })),
+
       uncompleteTodo: (id) =>
-        set((state) => ({
-          todos: state.todos.map((t) => (t.id === id ? { ...t, completedAt: null } : t)),
+        set((s) => ({
+          todos: s.todos.map((t) => (t.id === id ? { ...t, completedAt: null } : t)),
         })),
-      removeTodo: (id) => set((state) => ({ todos: state.todos.filter((t) => t.id !== id) })),
+
+      removeTodo: (id) => set((s) => ({ todos: s.todos.filter((t) => t.id !== id) })),
+
       reorderTodos: (priority, ordered) =>
-        set((state) => {
-          const others = state.todos.filter((t) => t.priority !== priority);
-          const updated = ordered.map((t, i) => ({ ...t, order: i }));
-          return { todos: [...others, ...updated] };
-        }),
+        set((s) => ({
+          todos: [
+            ...s.todos.filter((t) => t.priority !== priority),
+            ...ordered.map((t, i) => ({ ...t, order: i })),
+          ],
+        })),
+
       toggleTodoHomePin: (id) =>
-        set((state) => {
-          const target = state.todos.find((t) => t.id === id);
-          if (!target) return state;
-
-          if (target.pinnedToHome) {
-            return {
-              todos: state.todos.map((t) =>
-                t.id === id ? { ...t, pinnedToHome: false, pinOrder: 0 } : t,
-              ),
-            };
-          }
-
-          const maxPinOrder = state.todos.reduce(
-            (max, t) => (t.pinnedToHome ? Math.max(max, t.pinOrder) : max),
-            -1,
-          );
-
+        set((s) => {
+          const target = s.todos.find((t) => t.id === id);
+          if (!target) return s;
+          const pinOrder = target.pinnedToHome ? 0 : nextPinOrder(s.todos);
           return {
-            todos: state.todos.map((t) =>
-              t.id === id ? { ...t, pinnedToHome: true, pinOrder: maxPinOrder + 1 } : t,
+            todos: s.todos.map((t) =>
+              t.id === id ? { ...t, pinnedToHome: !target.pinnedToHome, pinOrder } : t,
             ),
           };
         }),
+
       archiveCompletedTodos: (date) =>
-        set((state) => ({
-          todos: state.todos.map((t) =>
+        set((s) => ({
+          todos: s.todos.map((t) =>
             t.completedAt && !t.archivedDate ? { ...t, archivedDate: date } : t,
           ),
           lastArchiveDate: date,
         })),
+
       setLastArchiveDate: (date) => set({ lastArchiveDate: date }),
 
-      addGroup: (group) => set((state) => ({ groups: [...state.groups, group] })),
+      addGroup: (group) => set((s) => ({ groups: [...s.groups, group] })),
+
       updateGroup: (id, updates) =>
-        set((state) => ({
-          groups: state.groups.map((g) => (g.id === id ? { ...g, ...updates } : g)),
+        set((s) => ({
+          groups: s.groups.map((g) => (g.id === id ? { ...g, ...updates } : g)),
         })),
+
       removeGroup: (id) =>
-        set((state) => ({
-          groups: state.groups.filter((g) => g.id !== id),
-          todos: state.todos.map((t) => (t.groupId === id ? { ...t, groupId: null } : t)),
+        set((s) => ({
+          groups: s.groups.filter((g) => g.id !== id),
+          todos: s.todos.map((t) => (t.groupId === id ? { ...t, groupId: null } : t)),
         })),
+
       reorderGroups: (ordered) =>
         set({ groups: ordered.map((g, i) => ({ ...g, order: i })) }),
+
       toggleGroupCollapsed: (id) =>
-        set((state) => ({
-          groups: state.groups.map((g) =>
-            g.id === id ? { ...g, collapsed: !g.collapsed } : g,
-          ),
+        set((s) => ({
+          groups: s.groups.map((g) => (g.id === id ? { ...g, collapsed: !g.collapsed } : g)),
         })),
+
       moveTodoToGroup: (todoId, groupId) =>
-        set((state) => ({
-          todos: state.todos.map((t) => (t.id === todoId ? { ...t, groupId } : t)),
+        set((s) => ({
+          todos: s.todos.map((t) => (t.id === todoId ? { ...t, groupId } : t)),
         })),
+
       reorderGroupTodos: (groupId, ordered) =>
-        set((state) => {
-          const others = state.todos.filter((t) => t.groupId !== groupId);
-          const updated = ordered.map((t, i) => ({ ...t, order: i }));
-          return { todos: [...others, ...updated] };
-        }),
+        set((s) => ({
+          todos: [
+            ...s.todos.filter((t) => t.groupId !== groupId),
+            ...ordered.map((t, i) => ({ ...t, order: i })),
+          ],
+        })),
     }),
     {
       name: 'todo-store',

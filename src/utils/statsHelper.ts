@@ -1,19 +1,21 @@
-export type FastingRecord = {
+import type { FastingResult } from '@/types';
+
+export type CompletedFastingRecord = {
   id: string;
   startedAt: number;
   endedAt: number;
   goalHours: number;
-  result: 'completed' | 'abandoned';
+  result: FastingResult;
 };
 
 export type DailyFastingSummary = {
   date: string;
   totalMinutes: number;
   count: number;
-  records: FastingRecord[];
+  records: CompletedFastingRecord[];
 };
 
-export function groupFastingByDay(records: FastingRecord[]): DailyFastingSummary[] {
+export function groupFastingByDay(records: CompletedFastingRecord[]): DailyFastingSummary[] {
   const map: Record<string, DailyFastingSummary> = {};
 
   for (const r of records) {
