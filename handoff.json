@@ -1,0 +1,255 @@
+{
+  "status": "READY",
+  "handoff_type": "app",
+  "batch_id": "refactor-qa",
+  "branch_hint": "refactor/code-quality-qa",
+  "tests": [
+    "tsc --noEmit: 통과",
+    "expo lint: 에러 0 (기존 경고 2개: DatePickerModal, UndoSnackbar exhaustive-deps — 의도적 제외)",
+    "jest: 12 suites, 84 tests 전부 통과"
+  ],
+  "tasks": [
+    {
+      "id": "R0",
+      "title": "타입 중앙화 + 배럴 익스포트 + 스토어 정리",
+      "summary": "공유 타입을 src/types/index.ts에 집중. 6개 스토어에서 중복 타입 제거 후 @/types import. 배럴 익스포트(components, constants, hooks, stores, utils) 보강. useUserStore.updateProfile 추가. useRoutineCompletionStore 매직넘버 상수화. useTodoStore.nextPinOrder 헬퍼 추출. homeDailyBoard DAY_LABELS 통일. microFeedback 중복 제거. statsHelper CompletedFastingRecord 도입. EmptyState 공용 컴포넌트 추출. 미사용 import 정리.",
+      "task_md": "R0: 타입 중앙화 + 배럴 익스포트 + 스토어 정리 [x]",
+      "files_changed": [
+        "src/types/index.ts",
+        "src/stores/useTodoStore.ts",
+        "src/stores/useRoutineStore.ts",
+        "src/stores/useFastingStore.ts",
+        "src/stores/useUserStore.ts",
+        "src/stores/useSettingsStore.ts",
+        "src/stores/useRoutineCompletionStore.ts",
+        "src/stores/index.ts",
+        "src/utils/statsHelper.ts",
+        "src/utils/microFeedback.ts",
+        "src/utils/homeDailyBoard.ts",
+        "src/constants/index.ts",
+        "src/hooks/index.ts",
+        "src/components/EmptyState.tsx",
+        "src/components/UndoSnackbar.tsx",
+        "app/(tabs)/todo.tsx",
+        "app/(tabs)/routine.tsx",
+        "src/screens/index.ts"
+      ],
+      "commit": {
+        "message": "refactor: 타입 중앙화, 배럴 익스포트 보강, 스토어 정리, EmptyState 공용 추출",
+        "files": [
+          "src/types/index.ts",
+          "src/stores/useTodoStore.ts",
+          "src/stores/useRoutineStore.ts",
+          "src/stores/useFastingStore.ts",
+          "src/stores/useUserStore.ts",
+          "src/stores/useSettingsStore.ts",
+          "src/stores/useRoutineCompletionStore.ts",
+          "src/stores/index.ts",
+          "src/utils/statsHelper.ts",
+          "src/utils/microFeedback.ts",
+          "src/utils/homeDailyBoard.ts",
+          "src/constants/index.ts",
+          "src/hooks/index.ts",
+          "src/components/EmptyState.tsx",
+          "src/components/UndoSnackbar.tsx",
+          "app/(tabs)/todo.tsx",
+          "app/(tabs)/routine.tsx",
+          "src/screens/index.ts"
+        ]
+      }
+    },
+    {
+      "id": "R1",
+      "title": "Stats 화면 분할",
+      "summary": "stats.tsx에서 StatsMonthGrid, StatsDayDetailModal, StatsSummaryCard 3개 컴포넌트 추출. 524→280줄 축소.",
+      "task_md": "R1: Stats 화면 분할 (StatsMonthGrid, StatsDayDetailModal, StatsSummaryCard) [x]",
+      "files_changed": [
+        "app/(tabs)/stats.tsx",
+        "src/components/stats/StatsMonthGrid.tsx",
+        "src/components/stats/StatsDayDetailModal.tsx",
+        "src/components/stats/StatsSummaryCard.tsx"
+      ],
+      "commit": {
+        "message": "refactor(stats): 잔디 탭 컴포넌트 분할 — MonthGrid, DayDetailModal, SummaryCard 추출",
+        "files": [
+          "app/(tabs)/stats.tsx",
+          "src/components/stats/StatsMonthGrid.tsx",
+          "src/components/stats/StatsDayDetailModal.tsx",
+          "src/components/stats/StatsSummaryCard.tsx"
+        ]
+      },
+      "depends_on": ["R0"]
+    },
+    {
+      "id": "R2",
+      "title": "FastingCard 분할",
+      "summary": "FastingCard.tsx(397줄)에서 FastingCardCollapsed, FastingTimer, FastingGoalPicker 추출. 포맷팅 유틸을 fastingFormat.ts로 분리.",
+      "task_md": "R2: FastingCard 분할 (FastingCardCollapsed, FastingTimer, FastingGoalPicker, fastingFormat) [x]",
+      "files_changed": [
+        "src/components/FastingCard.tsx",
+        "src/components/fasting/FastingCardCollapsed.tsx",
+        "src/components/fasting/FastingTimer.tsx",
+        "src/components/fasting/FastingGoalPicker.tsx",
+        "src/utils/fastingFormat.ts",
+        "src/utils/index.ts"
+      ],
+      "commit": {
+        "message": "refactor(fasting): FastingCard 컴포넌트 분할 — Collapsed, Timer, GoalPicker 추출 + 포맷 유틸 분리",
+        "files": [
+          "src/components/FastingCard.tsx",
+          "src/components/fasting/FastingCardCollapsed.tsx",
+          "src/components/fasting/FastingTimer.tsx",
+          "src/components/fasting/FastingGoalPicker.tsx",
+          "src/utils/fastingFormat.ts",
+          "src/utils/index.ts"
+        ]
+      },
+      "depends_on": ["R0"]
+    },
+    {
+      "id": "R3",
+      "title": "Picker 공용 DrumPicker 추출",
+      "summary": "DatePickerModal과 TimePickerModal의 중복 Drum 컴포넌트를 DrumPicker로 통합.",
+      "task_md": "R3: Picker 통합 (DrumPicker 공용 컴포넌트 추출) [x]",
+      "files_changed": [
+        "src/components/DrumPicker.tsx",
+        "src/components/DatePickerModal.tsx",
+        "src/components/TimePickerModal.tsx",
+        "src/components/index.ts"
+      ],
+      "commit": {
+        "message": "refactor(picker): DrumPicker 공용 추출 — DatePicker, TimePicker 중복 Drum 제거",
+        "files": [
+          "src/components/DrumPicker.tsx",
+          "src/components/DatePickerModal.tsx",
+          "src/components/TimePickerModal.tsx",
+          "src/components/index.ts"
+        ]
+      },
+      "depends_on": ["R0"]
+    },
+    {
+      "id": "R4",
+      "title": "SpringModal → SheetModal 통합",
+      "summary": "SpringModal 사용처(StatsDayDetailModal)를 SheetModal로 마이그레이션. SpringModal.tsx 삭제.",
+      "task_md": "R4: SpringModal → SheetModal 통합 [x]",
+      "files_changed": [
+        "src/components/stats/StatsDayDetailModal.tsx",
+        "src/components/SpringModal.tsx"
+      ],
+      "commit": {
+        "message": "refactor(modal): SpringModal → SheetModal 통합, SpringModal 삭제",
+        "files": [
+          "src/components/stats/StatsDayDetailModal.tsx",
+          "src/components/SpringModal.tsx"
+        ]
+      },
+      "depends_on": ["R1"]
+    },
+    {
+      "id": "Q1",
+      "title": "유틸 단위 테스트 도입",
+      "summary": "Jest + jest-expo 설정. src/utils 7개 모듈 테스트 (statsHelper, fastingFormat, formatMetric, grassLevel, dateFormat, homeDailyBoard, profile). 59 tests.",
+      "task_md": "Q1: 유틸 단위 테스트 (jest + jest-expo, 7 suites) [x]",
+      "files_changed": [
+        "package.json",
+        "package-lock.json",
+        "jest.config.js",
+        "jest.setup.ts",
+        "tsconfig.json",
+        "tsconfig.test.json",
+        "src/__tests__/utils/statsHelper.test.ts",
+        "src/__tests__/utils/fastingFormat.test.ts",
+        "src/__tests__/utils/formatMetric.test.ts",
+        "src/__tests__/utils/grassLevel.test.ts",
+        "src/__tests__/utils/dateFormat.test.ts",
+        "src/__tests__/utils/homeDailyBoard.test.ts",
+        "src/__tests__/utils/profile.test.ts"
+      ],
+      "commit": {
+        "message": "test(utils): Jest 설정 + 유틸 단위 테스트 7 suites 59 tests",
+        "files": [
+          "package.json",
+          "package-lock.json",
+          "jest.config.js",
+          "jest.setup.ts",
+          "tsconfig.json",
+          "tsconfig.test.json",
+          "src/__tests__/utils/statsHelper.test.ts",
+          "src/__tests__/utils/fastingFormat.test.ts",
+          "src/__tests__/utils/formatMetric.test.ts",
+          "src/__tests__/utils/grassLevel.test.ts",
+          "src/__tests__/utils/dateFormat.test.ts",
+          "src/__tests__/utils/homeDailyBoard.test.ts",
+          "src/__tests__/utils/profile.test.ts"
+        ]
+      },
+      "depends_on": ["R2"]
+    },
+    {
+      "id": "Q2",
+      "title": "Zustand 스토어 테스트",
+      "summary": "useTodoStore (addTodo, completeTodo, removeTodo, groups, archive) + useRoutineCompletionStore (toggle, streak, clearOld) 테스트. 17 tests.",
+      "task_md": "Q2: Zustand 스토어 테스트 (useTodoStore, useRoutineCompletionStore) [x]",
+      "files_changed": [
+        "src/__tests__/stores/useTodoStore.test.ts",
+        "src/__tests__/stores/useRoutineCompletionStore.test.ts"
+      ],
+      "commit": {
+        "message": "test(stores): useTodoStore + useRoutineCompletionStore 테스트 17 tests",
+        "files": [
+          "src/__tests__/stores/useTodoStore.test.ts",
+          "src/__tests__/stores/useRoutineCompletionStore.test.ts"
+        ]
+      },
+      "depends_on": ["Q1"]
+    },
+    {
+      "id": "Q3",
+      "title": "컴포넌트 렌더 테스트",
+      "summary": "@testing-library/react-native로 AppText, EmptyState, StatsSummaryCard 렌더 + 인터랙션 테스트. 8 tests.",
+      "task_md": "Q3: 컴포넌트 테스트 (@testing-library/react-native, 3 suites) [x]",
+      "files_changed": [
+        "src/__tests__/components/AppText.test.tsx",
+        "src/__tests__/components/EmptyState.test.tsx",
+        "src/__tests__/components/StatsSummaryCard.test.tsx"
+      ],
+      "commit": {
+        "message": "test(components): AppText, EmptyState, StatsSummaryCard 렌더 테스트 8 tests",
+        "files": [
+          "src/__tests__/components/AppText.test.tsx",
+          "src/__tests__/components/EmptyState.test.tsx",
+          "src/__tests__/components/StatsSummaryCard.test.tsx"
+        ]
+      },
+      "depends_on": ["Q2"]
+    },
+    {
+      "id": "Q4",
+      "title": "E2E 테스트 보일러플레이트 (Maestro)",
+      "summary": "Maestro YAML 플로우 5개 생성 (홈 탭, 단식 플로우, 루틴, 할일, 잔디 탭). 실기기/에뮬레이터에서 실행 필요.",
+      "task_md": "Q4: E2E 테스트 보일러플레이트 (Maestro YAML flows) [x]",
+      "files_changed": [
+        "e2e/maestro/01-home-tab.yaml",
+        "e2e/maestro/02-fasting-flow.yaml",
+        "e2e/maestro/03-routine-check.yaml",
+        "e2e/maestro/04-todo-crud.yaml",
+        "e2e/maestro/05-stats-calendar.yaml"
+      ],
+      "commit": {
+        "message": "test(e2e): Maestro E2E 플로우 보일러플레이트 5개 (홈/단식/루틴/할일/잔디)",
+        "files": [
+          "e2e/maestro/01-home-tab.yaml",
+          "e2e/maestro/02-fasting-flow.yaml",
+          "e2e/maestro/03-routine-check.yaml",
+          "e2e/maestro/04-todo-crud.yaml",
+          "e2e/maestro/05-stats-calendar.yaml"
+        ]
+      }
+    }
+  ],
+  "shared_files": {
+    "task.md": "코드 품질 — 리팩토링 + QA 섹션 추가, R0-R4 + Q1-Q4 [x] 반영",
+    "handoff.json": "이 파일"
+  }
+}
