@@ -8,7 +8,7 @@ import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { Coachmark } from '@/components/Coachmark';
 import { Divider } from '@/components/Divider';
-import { EmptyIllustration } from '@/components/EmptyIllustration';
+import { EmptyState } from '@/components/EmptyState';
 import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { SwipeActions } from '@/components/SwipeActions';
 import { TodoEditModal } from '@/components/TodoEditModal';
@@ -536,30 +536,3 @@ function Header({
   );
 }
 
-function EmptyState({
-  message,
-  actionLabel,
-  onAction,
-  variant = 'todo',
-}: {
-  message: string;
-  actionLabel?: string;
-  onAction?: () => void;
-  variant?: 'todo' | 'routine';
-}) {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12, paddingHorizontal: 40 }}>
-      <EmptyIllustration variant={variant} />
-      <AppText variant="body" tone="tertiary" style={{ textAlign: 'center', lineHeight: 22 }}>
-        {message}
-      </AppText>
-      {actionLabel && onAction && (
-        <Pressable onPress={onAction} accessibilityRole="button" accessibilityLabel={actionLabel}>
-          <AppText variant="caption" tone="secondary" style={{ textDecorationLine: 'underline' }}>
-            {actionLabel}
-          </AppText>
-        </Pressable>
-      )}
-    </View>
-  );
-}

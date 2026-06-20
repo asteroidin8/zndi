@@ -18,7 +18,8 @@ import { spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useAppHydrated } from '@/hooks/useAppHydrated';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { type FastingRecord, useFastingStore } from '@/stores/useFastingStore';
+import type { FastingRecord } from '@/types';
+import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
@@ -36,18 +37,12 @@ import {
   type DailyGrassActivity,
 } from '@/utils/calendarGrass';
 
+import { toDateStr } from '@/utils/homeDailyBoard';
+
 const TAB_INDEX = 3 as const;
 const L = STATS_LABELS;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CELL_SIZE = Math.floor((SCREEN_WIDTH - 40 - 6 * 6) / 7);
-
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function dateStr(year: number, month: number, day: number) {
-  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-}
 
 function MonthGrid({
   year,
@@ -64,12 +59,12 @@ function MonthGrid({
 }) {
   const c = useThemeColors();
   const dateMap = new Map(summaries.map((s) => [s.date, s]));
-  const today = todayStr();
+  const today = toDateStr(new Date());
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const cells: (string | null)[] = [
     ...Array(firstDay).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => dateStr(year, month, i + 1)),
+    ...Array.from({ length: daysInMonth }, (_, i) => toDateStr(new Date(year, month, i + 1))),
   ];
 
   return (
@@ -290,7 +285,7 @@ export default function StatsScreen() {
   const completedHighPriority = todos.filter((t) => t.priority === 'high' && !!t.completedAt).length;
   const completionRate = todos.length > 0 ? Math.round((completedTodos / todos.length) * 100) : 0;
 
-  const todayDateStr = todayStr();
+  const todayDateStr = toDateStr(new Date());
   const last7Days: BarChartItem[] = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
