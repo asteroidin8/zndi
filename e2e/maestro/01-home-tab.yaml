@@ -1,0 +1,7 @@
+appId: com.asteroidin8.zndi
+---
+- launchApp
+- assertVisible: "오늘"
+- assertVisible: "루틴"
+- assertVisible: "할일"
+- assertVisible: "잔디"
