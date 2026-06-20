@@ -1,18 +1,19 @@
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/AppText';
 import { Coachmark } from '@/components/Coachmark';
 import { Divider } from '@/components/Divider';
-import { EmptyIllustration } from '@/components/EmptyIllustration';
+import { EmptyState } from '@/components/EmptyState';
 import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { RoutineItem } from '@/components/RoutineItem';
 import { RoutineModal } from '@/components/RoutineModal';
 import { SwipeActions } from '@/components/SwipeActions';
 import { UndoSnackbar } from '@/components/UndoSnackbar';
 import { radius, spacing } from '@/constants/spacing';
+import { DAY_LABELS } from '@/constants/statsLabels';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useSettingsStore } from '@/stores/useSettingsStore';
@@ -20,7 +21,6 @@ import { type Routine, type Weekday, useRoutineStore } from '@/stores/useRoutine
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
 
-const WEEKDAYS_KO = ['일', '월', '화', '수', '목', '금', '토'];
 const TAB_INDEX = 1 as const;
 
 function getTodayDay(): Weekday {
@@ -147,17 +147,12 @@ export default function RoutineScreen() {
       </View>
 
       {isEmpty ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12, paddingHorizontal: 40 }}>
-          <EmptyIllustration variant="routine" />
-          <AppText variant="body" tone="tertiary" style={{ textAlign: 'center' }}>
-            되고 싶은 내 모습을 추가해보세요
-          </AppText>
-          <Pressable onPress={openAdd} accessibilityRole="button" accessibilityLabel="루틴 추가하기">
-            <AppText variant="caption" tone="secondary" style={{ textDecorationLine: 'underline' }}>
-              루틴 추가하기
-            </AppText>
-          </Pressable>
-        </View>
+        <EmptyState
+          message="되고 싶은 내 모습을 추가해보세요"
+          variant="routine"
+          actionLabel="루틴 추가하기"
+          onAction={openAdd}
+        />
       ) : (
         <ScrollView
           ref={scrollRef}
@@ -194,7 +189,7 @@ export default function RoutineScreen() {
                 tone="tertiary"
                 style={{ marginTop: spacing.card, marginBottom: spacing.xs, paddingHorizontal: spacing.screen }}
               >
-                오늘 · {WEEKDAYS_KO[today]}요일
+                오늘 · {DAY_LABELS[today]}요일
               </AppText>
               <View style={{ paddingHorizontal: spacing.screen }}>
                 <DraggableFlatList

@@ -2,16 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type FastingStatus = 'idle' | 'fasting';
-export type FastingResult = 'completed' | 'abandoned';
+import type { FastingRecord, FastingResult, FastingStatus } from '@/types';
 
-export type FastingRecord = {
-  id: string;
-  startedAt: number;
-  endedAt: number | null;
-  goalHours: number;
-  result: FastingResult | null;
-};
+export type { FastingRecord, FastingResult, FastingStatus } from '@/types';
 
 type FastingStore = {
   status: FastingStatus;
@@ -47,10 +40,10 @@ export const useFastingStore = create<FastingStore>()(
       },
       setGoalHours: (hours) => set({ goalHours: hours }),
       removeRecord: (id) =>
-        set((state) => ({ records: state.records.filter((r) => r.id !== id) })),
+        set((s) => ({ records: s.records.filter((r) => r.id !== id) })),
       updateRecord: (id, updates) =>
-        set((state) => ({
-          records: state.records.map((r) => (r.id === id ? { ...r, ...updates } : r)),
+        set((s) => ({
+          records: s.records.map((r) => (r.id === id ? { ...r, ...updates } : r)),
         })),
     }),
     {

@@ -1,25 +1,17 @@
 import * as Haptics from 'expo-haptics';
 
-export function feedbackComplete() {
-  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-}
+const { Light, Medium } = Haptics.ImpactFeedbackStyle;
+const { Success, Warning } = Haptics.NotificationFeedbackType;
 
-export function feedbackUncomplete() {
-  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-}
+const impact = (style: Haptics.ImpactFeedbackStyle) =>
+  Haptics.impactAsync(style).catch(() => {});
 
-export function feedbackDelete() {
-  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-}
+const notify = (type: Haptics.NotificationFeedbackType) =>
+  Haptics.notificationAsync(type).catch(() => {});
 
-export function feedbackSuccess() {
-  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-}
-
-export function feedbackBooster() {
-  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-}
-
-export function feedbackTabSwitch() {
-  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-}
+export const feedbackComplete = () => impact(Medium);
+export const feedbackUncomplete = () => impact(Light);
+export const feedbackDelete = feedbackComplete;
+export const feedbackSuccess = () => notify(Success);
+export const feedbackBooster = () => notify(Warning);
+export const feedbackTabSwitch = () => impact(Light);

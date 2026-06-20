@@ -2,17 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type UserProfile = {
-  heightCm: number | null;
-  weightKg: number | null;
-  targetWeightKg: number | null;
-  ageYears: number | null;
-  isMale: boolean | null;
-  nickname: string | null;
-};
+import type { UserProfile } from '@/types';
+
+export type { UserProfile } from '@/types';
 
 type UserStore = {
   profile: UserProfile;
+  updateProfile: (updates: Partial<UserProfile>) => void;
+  /** @deprecated 개별 setter 대신 updateProfile 사용 */
   setHeight: (cm: number) => void;
   setWeight: (kg: number) => void;
   setTargetWeight: (kg: number) => void;
@@ -23,22 +20,28 @@ type UserStore = {
 
 export const useUserStore = create<UserStore>()(
   persist(
-    (set) => ({
-      profile: {
-        heightCm: null,
-        weightKg: null,
-        targetWeightKg: null,
-        ageYears: null,
-        isMale: null,
-        nickname: null,
-      },
-      setHeight: (cm) => set((s) => ({ profile: { ...s.profile, heightCm: cm } })),
-      setWeight: (kg) => set((s) => ({ profile: { ...s.profile, weightKg: kg } })),
-      setTargetWeight: (kg) => set((s) => ({ profile: { ...s.profile, targetWeightKg: kg } })),
-      setAge: (years) => set((s) => ({ profile: { ...s.profile, ageYears: years } })),
-      setIsMale: (isMale) => set((s) => ({ profile: { ...s.profile, isMale } })),
-      setNickname: (name) => set((s) => ({ profile: { ...s.profile, nickname: name } })),
-    }),
+    (set) => {
+      const updateProfile = (updates: Partial<UserProfile>) =>
+        set((s) => ({ profile: { ...s.profile, ...updates } }));
+
+      return {
+        profile: {
+          heightCm: null,
+          weightKg: null,
+          targetWeightKg: null,
+          ageYears: null,
+          isMale: null,
+          nickname: null,
+        },
+        updateProfile,
+        setHeight: (cm) => updateProfile({ heightCm: cm }),
+        setWeight: (kg) => updateProfile({ weightKg: kg }),
+        setTargetWeight: (kg) => updateProfile({ targetWeightKg: kg }),
+        setAge: (years) => updateProfile({ ageYears: years }),
+        setIsMale: (isMale) => updateProfile({ isMale }),
+        setNickname: (name) => updateProfile({ nickname: name }),
+      };
+    },
     {
       name: 'user-store',
       storage: createJSONStorage(() => AsyncStorage),

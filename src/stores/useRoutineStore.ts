@@ -2,16 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = 일요일
+import type { Routine } from '@/types';
 
-export type Routine = {
-  id: string;
-  name: string;
-  repeatDays: Weekday[];
-  reminderTime: string | null; // 'HH:mm' 형식, null이면 알림 없음
-  createdAt: number;
-  order: number;
-};
+export type { Routine, Weekday } from '@/types';
 
 type RoutineStore = {
   routines: Routine[];
@@ -26,13 +19,13 @@ export const useRoutineStore = create<RoutineStore>()(
     (set) => ({
       routines: [],
       addRoutine: (routine) =>
-        set((state) => ({ routines: [...state.routines, routine] })),
+        set((s) => ({ routines: [...s.routines, routine] })),
       updateRoutine: (id, updates) =>
-        set((state) => ({
-          routines: state.routines.map((r) => (r.id === id ? { ...r, ...updates } : r)),
+        set((s) => ({
+          routines: s.routines.map((r) => (r.id === id ? { ...r, ...updates } : r)),
         })),
       removeRoutine: (id) =>
-        set((state) => ({ routines: state.routines.filter((r) => r.id !== id) })),
+        set((s) => ({ routines: s.routines.filter((r) => r.id !== id) })),
       reorderRoutines: (ordered) =>
         set({ routines: ordered.map((r, i) => ({ ...r, order: i })) }),
     }),
