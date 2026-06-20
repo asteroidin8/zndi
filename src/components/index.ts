@@ -11,3 +11,5 @@ export { TodoItem } from './TodoItem';
 export { TodoModal } from './TodoModal';
 export { TabBarIcon } from './TabBarIcon';
 export { WheelPicker } from './WheelPicker';
+export { DrumPicker } from './DrumPicker';
+export type { DrumItem } from './DrumPicker';

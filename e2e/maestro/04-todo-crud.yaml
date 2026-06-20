@@ -1,0 +1,5 @@
+appId: com.asteroidin8.zndi
+---
+- launchApp
+- tapOn: "할일"
+- assertVisible: "할일"

@@ -5,15 +5,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { BarChart, type BarChartItem } from '@/components/BarChart';
-import { StatsBentoStats } from '@/components/stats/StatsBentoStats';
 import { Card } from '@/components/Card';
-import { Divider } from '@/components/Divider';
 import { EmptyIllustration } from '@/components/EmptyIllustration';
 import { FastingRecordEditModal } from '@/components/FastingRecordEditModal';
 import { SectionHeader } from '@/components/SectionHeader';
 import { StatsSummarySkeleton } from '@/components/Skeleton';
-import { SpringModal } from '@/components/SpringModal';
-import { DAY_LABELS, STATS_LABELS, WEEKDAY_SHORT } from '@/constants/statsLabels';
+import { StatsBentoStats } from '@/components/stats/StatsBentoStats';
+import { StatsDayDetailModal } from '@/components/stats/StatsDayDetailModal';
+import { StatsMonthGrid } from '@/components/stats/StatsMonthGrid';
+import { StatsSummaryCard } from '@/components/stats/StatsSummaryCard';
+import { STATS_LABELS, WEEKDAY_SHORT } from '@/constants/statsLabels';
 import { spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useAppHydrated } from '@/hooks/useAppHydrated';
@@ -24,217 +25,14 @@ import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
-import {
-  type DailyFastingSummary,
-  formatHHMM,
-  formatMinutes,
-  groupFastingByDay,
-} from '@/utils/statsHelper';
+import { buildMonthGrassMap } from '@/utils/calendarGrass';
 import { formatMetric } from '@/utils/formatMetric';
-import {
-  buildMonthGrassMap,
-  grassCellColors,
-  type DailyGrassActivity,
-} from '@/utils/calendarGrass';
-
 import { toDateStr } from '@/utils/homeDailyBoard';
+import { type DailyFastingSummary, formatMinutes, groupFastingByDay } from '@/utils/statsHelper';
 
 const TAB_INDEX = 3 as const;
 const L = STATS_LABELS;
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const CELL_SIZE = Math.floor((SCREEN_WIDTH - 40 - 6 * 6) / 7);
-
-function MonthGrid({
-  year,
-  month,
-  summaries,
-  grassMap,
-  onSelect,
-}: {
-  year: number;
-  month: number;
-  summaries: DailyFastingSummary[];
-  grassMap: Map<string, DailyGrassActivity>;
-  onSelect: (s: DailyFastingSummary) => void;
-}) {
-  const c = useThemeColors();
-  const dateMap = new Map(summaries.map((s) => [s.date, s]));
-  const today = toDateStr(new Date());
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cells: (string | null)[] = [
-    ...Array(firstDay).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => toDateStr(new Date(year, month, i + 1))),
-  ];
-
-  return (
-    <View style={{ alignItems: 'center' }}>
-      <View style={{ flexDirection: 'row', gap: 6, marginBottom: spacing.xs }}>
-        {DAY_LABELS.map((d) => (
-          <View key={d} style={{ width: CELL_SIZE, alignItems: 'center' }}>
-            <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>
-              {d}
-            </AppText>
-          </View>
-        ))}
-      </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-        {cells.map((date, i) => {
-          if (!date) return <View key={`empty-${i}`} style={{ width: CELL_SIZE, height: CELL_SIZE }} />;
-          const summary = dateMap.get(date);
-          const isToday = date === today;
-          const hasFasting = !!summary;
-          const grass = grassMap.get(date);
-          const level = grass?.level ?? 0;
-          const colors = grassCellColors(level, c, isToday, hasFasting);
-          const a11yParts = [
-            `${new Date(`${date}T00:00:00`).getDate()}일`,
-            grass && grass.routineTotal > 0
-              ? `루틴 ${grass.routineCompleted}/${grass.routineTotal}`
-              : null,
-            grass && grass.todosCompleted > 0 ? `할일 ${grass.todosCompleted}개 완료` : null,
-            hasFasting ? '단식 기록 있음' : null,
-          ]
-            .filter(Boolean)
-            .join(', ');
-
-          return (
-            <Pressable
-              key={date}
-              onPress={() => summary && onSelect(summary)}
-              accessibilityRole="button"
-              accessibilityLabel={a11yParts}
-              style={{
-                width: CELL_SIZE,
-                height: CELL_SIZE,
-                borderRadius: CELL_SIZE / 4,
-                borderWidth: isToday ? 1.5 : 1,
-                borderColor: colors.borderColor,
-                overflow: 'hidden',
-                alignItems: 'center',
-                justifyContent: 'center',
-                ...(colors.glow
-                  ? {
-                      shadowColor: c.neonGlow,
-                      shadowOpacity: 0.5,
-                      shadowRadius: 5,
-                      shadowOffset: { width: 0, height: 0 },
-                      elevation: 4,
-                    }
-                  : {}),
-              }}
-            >
-              {colors.fill !== 'transparent' && (
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: colors.fill,
-                    opacity: colors.fillOpacity,
-                  }}
-                />
-              )}
-              <AppText
-                variant="caption"
-                tone={isToday ? 'primary' : level > 0 ? 'secondary' : hasFasting ? 'secondary' : 'disabled'}
-                style={{
-                  fontSize: 11,
-                  fontWeight: isToday ? '700' : level >= 3 ? '600' : '400',
-                  zIndex: 1,
-                }}
-              >
-                {new Date(`${date}T00:00:00`).getDate()}
-              </AppText>
-            </Pressable>
-          );
-        })}
-      </View>
-    </View>
-  );
-}
-
-function DayDetailModal({
-  summary,
-  onEditRecord,
-  onClose,
-}: {
-  summary: DailyFastingSummary;
-  onEditRecord: (record: FastingRecord) => void;
-  onClose: () => void;
-}) {
-  const c = useThemeColors();
-  return (
-    <SpringModal visible onClose={onClose}>
-        <View
-          style={{
-            backgroundColor: c.surface,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            paddingHorizontal: spacing.screen,
-            paddingTop: 16,
-            paddingBottom: 34,
-            maxHeight: '60%',
-          }}
-        >
-          <AppText variant="title">{summary.date}</AppText>
-        <AppText variant="caption" tone="tertiary" style={{ marginBottom: 20, marginTop: 4 }}>
-          {L.summaryPrefix} {formatMinutes(summary.totalMinutes)} {L.summarySeparator} {summary.count}
-          {L.summarySuffix}
-        </AppText>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {summary.records.map((r, i) => (
-            <View key={r.id}>
-              <Pressable
-                onPress={() =>
-                  onEditRecord({
-                    id: r.id,
-                    startedAt: r.startedAt,
-                    endedAt: r.endedAt,
-                    goalHours: r.goalHours,
-                    result: r.result,
-                  })
-                }
-                style={{ paddingVertical: 12, gap: 4 }}
-              >
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <AppText variant="body">
-                    {formatMinutes(Math.floor((r.endedAt - r.startedAt) / 60_000))}
-                  </AppText>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <AppText variant="caption" tone={r.result === 'completed' ? 'secondary' : 'tertiary'}>
-                      {r.result === 'completed' ? L.resultCompleted : L.resultAbandoned}
-                    </AppText>
-                    <AppIcon name="ChevronRight" size={14} color={c.inkDisabled} />
-                  </View>
-                </View>
-                <AppText variant="caption" tone="tertiary">
-                  {formatHHMM(r.startedAt)} {L.timeRangeSeparator} {formatHHMM(r.endedAt)}
-                </AppText>
-              </Pressable>
-              {i < summary.records.length - 1 && <Divider />}
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    </SpringModal>
-  );
-}
-
-function SummaryCard({ label, value }: { label: string; value: string }) {
-  return (
-    <Card style={{ flex: 1, minHeight: 72, justifyContent: 'space-between', gap: 6 }}>
-      <AppText variant="caption" tone="tertiary">
-        {label}
-      </AppText>
-      <AppText variant="title" style={{ fontSize: 20, fontWeight: '700' }}>
-        {value}
-      </AppText>
-    </Card>
-  );
-}
 
 export default function StatsScreen() {
   const c = useThemeColors();
@@ -396,7 +194,7 @@ export default function StatsScreen() {
                 )}
               </View>
 
-              <MonthGrid
+              <StatsMonthGrid
                 year={viewYear}
                 month={viewMonth}
                 summaries={summaries}
@@ -411,9 +209,9 @@ export default function StatsScreen() {
                 <StatsSummarySkeleton />
               ) : (
                 <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <SummaryCard label={L.totalRecords} value={`${records.length}${L.timesUnit}`} />
-                  <SummaryCard label={L.completed} value={`${completedFasts}${L.timesUnit}`} />
-                  <SummaryCard label={L.avgDuration} value={formatMinutes(avgFastMinutes)} />
+                  <StatsSummaryCard label={L.totalRecords} value={`${records.length}${L.timesUnit}`} />
+                  <StatsSummaryCard label={L.completed} value={`${completedFasts}${L.timesUnit}`} />
+                  <StatsSummaryCard label={L.avgDuration} value={formatMinutes(avgFastMinutes)} />
                 </View>
               )}
             </View>
@@ -452,9 +250,9 @@ export default function StatsScreen() {
                 <StatsSummarySkeleton />
               ) : (
                 <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <SummaryCard label={L.totalRoutines} value={`${routines.length}${L.countUnit}`} />
-                  <SummaryCard label={L.todayRoutines} value={`${todayRoutines.length}${L.countUnit}`} />
-                  <SummaryCard
+                  <StatsSummaryCard label={L.totalRoutines} value={`${routines.length}${L.countUnit}`} />
+                  <StatsSummaryCard label={L.todayRoutines} value={`${todayRoutines.length}${L.countUnit}`} />
+                  <StatsSummaryCard
                     label={L.maxStreak}
                     value={maxStreak > 0 ? `${maxStreak}${L.dayUnit}` : '-'}
                   />
@@ -468,8 +266,8 @@ export default function StatsScreen() {
                 <StatsSummarySkeleton />
               ) : (
                 <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <SummaryCard label={L.completionRate} value={`${completionRate}%`} />
-                  <SummaryCard
+                  <StatsSummaryCard label={L.completionRate} value={`${completionRate}%`} />
+                  <StatsSummaryCard
                     label={L.importantTodos}
                     value={totalHighPriority > 0 ? `${completedHighPriority}/${totalHighPriority}` : '-'}
                   />
@@ -481,7 +279,7 @@ export default function StatsScreen() {
       </ScrollView>
 
       {selected && (
-        <DayDetailModal
+        <StatsDayDetailModal
           summary={selected}
           onEditRecord={(r) => {
             setEditingRecord(r);

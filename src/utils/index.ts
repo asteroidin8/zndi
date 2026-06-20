@@ -7,3 +7,4 @@ export { isProfileIncomplete } from './profile';
 export { runAfterDragAnimation } from './deferredReorder';
 export { getGrassLevel } from './grassLevel';
 export type { GrassLevelInfo } from './grassLevel';
+export { formatElapsed, formatOverElapsed, formatRelativeDate } from './fastingFormat';

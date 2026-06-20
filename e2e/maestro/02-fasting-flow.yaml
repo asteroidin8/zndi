@@ -1,0 +1,9 @@
+appId: com.asteroidin8.zndi
+---
+- launchApp
+- tapOn: "도전하기"
+- assertVisible: "목표 시간"
+- tapOn: "16h"
+- tapOn: "단식 시작"
+- assertVisible:
+    id: "timer"

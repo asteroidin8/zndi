@@ -19,4 +19,11 @@ module.exports = defineConfig([
       'import/namespace': 'off',
     },
   },
+  {
+    files: ['src/__tests__/**/*.{ts,tsx}'],
+    rules: {
+      // react-native testing-library 패키지 export를 import/no-unresolved가 오탐지
+      'import/no-unresolved': 'off',
+    },
+  },
 ]);

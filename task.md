@@ -243,6 +243,22 @@ Lv.6  생태계    (1501+)
 
 ---
 
+## 코드 품질 — 리팩토링 + QA
+
+| # | 작업 | 상태 |
+|---|------|------|
+| R0 | 타입 중앙화 + 배럴 익스포트 + 스토어 정리 | [x] |
+| R1 | Stats 화면 분할 (StatsMonthGrid, StatsDayDetailModal, StatsSummaryCard) | [x] |
+| R2 | FastingCard 분할 (FastingCardCollapsed, FastingTimer, FastingGoalPicker, fastingFormat) | [x] |
+| R3 | Picker 통합 (DrumPicker 공용 컴포넌트 추출) | [x] |
+| R4 | SpringModal → SheetModal 통합 | [x] |
+| Q1 | 유틸 단위 테스트 (jest + jest-expo, 7 suites) | [x] |
+| Q2 | Zustand 스토어 테스트 (useTodoStore, useRoutineCompletionStore) | [x] |
+| Q3 | 컴포넌트 테스트 (@testing-library/react-native, 3 suites) | [x] |
+| Q4 | E2E 테스트 보일러플레이트 (Maestro YAML flows) | [x] |
+
+---
+
 ## v2 — 소셜
 
 | # | 작업 | 상태 |
