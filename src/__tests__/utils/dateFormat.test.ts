@@ -63,6 +63,6 @@ describe('getTimeGreeting', () => {
   it('returns evening greeting after 18', () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-06-20T20:00:00'));
-    expect(getTimeGreeting()).toBe('좋은 저녁이에요');
+    expect(getTimeGreeting()).toBe('오늘도 수고했어요');
   });
 });

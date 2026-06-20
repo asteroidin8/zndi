@@ -30,10 +30,10 @@ export function SwipeActions({
       <Animated.View
         style={[
           styles.actionContainer,
-          { backgroundColor: c.ink, transform: [{ translateX }] },
+          { backgroundColor: c.danger, transform: [{ translateX }] },
         ]}
       >
-        <Text style={{ color: c.surface, fontSize: 13, fontWeight: '600' }}>삭제</Text>
+        <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>삭제</Text>
       </Animated.View>
     );
   }

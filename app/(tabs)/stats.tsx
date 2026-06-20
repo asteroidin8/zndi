@@ -293,7 +293,7 @@ export default function StatsScreen() {
         visible={editingRecord !== null}
         record={editingRecord}
         onSave={(updates) => {
-          if (editingRecord) updateRecord(editingRecord.id, updates);
+          if (editingRecord) updateRecord(editingRecord.id, { result: updates.result, startedAt: updates.startedAt, ...(updates.endedAt != null ? { endedAt: updates.endedAt } : {}) });
           setEditingRecord(null);
         }}
         onDelete={() => {

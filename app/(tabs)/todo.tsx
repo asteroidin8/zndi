@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, Pressable, ScrollView, TextInput, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedListItem } from '@/components/AnimatedListItem';
@@ -119,6 +120,16 @@ function GroupHeader({
   onDelete: () => void;
 }) {
   const c = useThemeColors();
+  const rotation = useSharedValue(group.collapsed ? -90 : 0);
+  const allDone = totalCount > 0 && completedCount === totalCount;
+
+  useEffect(() => {
+    rotation.value = withTiming(group.collapsed ? -90 : 0, { duration: 200 });
+  }, [group.collapsed, rotation]);
+
+  const chevronStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
 
   return (
     <Pressable
@@ -134,17 +145,19 @@ function GroupHeader({
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-        <AppIcon
-          name={group.collapsed ? 'ChevronRight' : 'ChevronDown'}
-          size={14}
-          color={c.inkTertiary}
-        />
-        <AppText variant="body" style={{ fontWeight: '600', flex: 1 }}>
+        <Animated.View style={chevronStyle}>
+          <AppIcon name="ChevronDown" size={14} color={allDone ? c.primary : c.inkTertiary} />
+        </Animated.View>
+        <AppText variant="body" style={{ fontWeight: '600', flex: 1, color: allDone ? c.primary : c.ink }}>
           {group.name}
         </AppText>
-        <AppText variant="caption" tone="tertiary">
-          {completedCount}/{totalCount}
-        </AppText>
+        {allDone ? (
+          <AppText variant="caption" style={{ color: c.primary, fontWeight: '700' }}>✓</AppText>
+        ) : (
+          <AppText variant="caption" tone="tertiary">
+            {completedCount}/{totalCount}
+          </AppText>
+        )}
       </View>
       {!group.collapsed && totalCount > 0 && (
         <View style={{ paddingLeft: 22 }}>

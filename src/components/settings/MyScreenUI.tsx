@@ -1,9 +1,12 @@
 import { Pressable, Switch, View } from 'react-native';
+import type * as LucideIcons from 'lucide-react-native';
 
 import { AppIcon } from '../AppIcon';
 import { AppText } from '../AppText';
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
+
+type IconName = keyof typeof LucideIcons;
 
 export function GroupCard({ children }: { children: React.ReactNode }) {
   const c = useThemeColors();
@@ -25,11 +28,13 @@ export function Row({
   label,
   value,
   unset,
+  icon,
   onPress,
 }: {
   label: string;
   value?: string;
   unset?: boolean;
+  icon?: IconName;
   onPress?: () => void;
 }) {
   const c = useThemeColors();
@@ -48,7 +53,10 @@ export function Row({
         backgroundColor: pressed && onPress ? c.surfaceMuted : 'transparent',
       })}
     >
-      <AppText variant="body">{label}</AppText>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+        {icon && <AppIcon name={icon} size={16} color={c.inkTertiary} />}
+        <AppText variant="body">{label}</AppText>
+      </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
         {value != null && (
           <AppText variant="body" tone={unset ? 'disabled' : 'tertiary'}>
@@ -68,12 +76,14 @@ export function DangerRow({ label, onPress }: { label: string; onPress: () => vo
       onPress={onPress}
       accessibilityRole="button"
       style={({ pressed }) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
         minHeight: 48,
         paddingHorizontal: spacing.card,
-        justifyContent: 'center',
         backgroundColor: pressed ? c.surfaceMuted : 'transparent',
       })}
     >
+      <View style={{ width: 3, height: 16, backgroundColor: c.danger, borderRadius: 2, marginRight: spacing.sm }} />
       <AppText variant="body" style={{ color: c.danger }}>
         {label}
       </AppText>

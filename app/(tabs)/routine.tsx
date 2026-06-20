@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { Coachmark } from '@/components/Coachmark';
 import { Divider } from '@/components/Divider';
@@ -39,6 +40,7 @@ export default function RoutineScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editTarget, setEditTarget] = useState<Routine | null>(null);
   const [undoTarget, setUndoTarget] = useState<Routine | null>(null);
+  const [otherExpanded, setOtherExpanded] = useState(false);
 
   const today = getTodayDay();
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -182,15 +184,18 @@ export default function RoutineScreen() {
             </View>
           )}
 
-          {todayRoutines.length > 0 && (
+          {todayRoutines.length > 0 && (() => {
+            const completedCount = todayRoutines.filter((r) => isCompleted(r.id, todayStr)).length;
+            return (
             <>
-              <AppText
-                variant="caption"
-                tone="tertiary"
-                style={{ marginTop: spacing.card, marginBottom: spacing.xs, paddingHorizontal: spacing.screen }}
-              >
-                오늘 · {DAY_LABELS[today]}요일
-              </AppText>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.card, marginBottom: spacing.xs, paddingHorizontal: spacing.screen }}>
+                <AppText variant="caption" tone="tertiary">
+                  오늘 · {DAY_LABELS[today]}요일
+                </AppText>
+                <AppText variant="caption" tone={completedCount === todayRoutines.length ? 'primary' : 'tertiary'} style={{ fontWeight: '600' }}>
+                  {completedCount}/{todayRoutines.length}
+                </AppText>
+              </View>
               <View style={{ paddingHorizontal: spacing.screen }}>
                 <DraggableFlatList
                   data={todayRoutines}
@@ -202,27 +207,34 @@ export default function RoutineScreen() {
                 />
               </View>
             </>
-          )}
+            );
+          })()}
 
           {otherRoutines.length > 0 && (
             <>
-              <AppText
-                variant="caption"
-                tone="disabled"
-                style={{ marginTop: spacing.section, marginBottom: spacing.xs, paddingHorizontal: spacing.screen }}
+              <Pressable
+                onPress={() => setOtherExpanded((prev) => !prev)}
+                accessibilityRole="button"
+                accessibilityLabel={`그 외 ${otherRoutines.length}개${otherExpanded ? ', 접기' : ', 펼치기'}`}
+                style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.section, marginBottom: spacing.xs, paddingHorizontal: spacing.screen, gap: spacing.xs }}
               >
-                그 외
-              </AppText>
-              <View style={{ paddingHorizontal: spacing.screen }}>
-                <DraggableFlatList
-                  data={otherRoutines}
-                  keyExtractor={(r) => r.id}
-                  onDragEnd={handleOtherReorder}
-                  renderItem={renderRoutineItem(() => {}, false)}
-                  scrollEnabled={false}
-                  activationDistance={4}
-                />
-              </View>
+                <AppIcon name={otherExpanded ? 'ChevronDown' : 'ChevronRight'} size={12} color={c.inkDisabled} />
+                <AppText variant="caption" tone="disabled">
+                  그 외 {otherRoutines.length}
+                </AppText>
+              </Pressable>
+              {otherExpanded && (
+                <View style={{ paddingHorizontal: spacing.screen }}>
+                  <DraggableFlatList
+                    data={otherRoutines}
+                    keyExtractor={(r) => r.id}
+                    onDragEnd={handleOtherReorder}
+                    renderItem={renderRoutineItem(() => {}, false)}
+                    scrollEnabled={false}
+                    activationDistance={4}
+                  />
+                </View>
+              )}
             </>
           )}
         </ScrollView>

@@ -7,7 +7,12 @@ import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 const GOAL_HOURS = Array.from({ length: 72 }, (_, i) => i + 1);
-const PRESETS = [12, 16, 18, 24] as const;
+const PRESETS = [
+  { hours: 12, desc: '기본' },
+  { hours: 16, desc: '16:8' },
+  { hours: 18, desc: '케토시스' },
+  { hours: 24, desc: '풀 데이' },
+] as const;
 
 type Props = {
   goalHours: number;
@@ -18,39 +23,50 @@ type Props = {
 export function FastingGoalPicker({ goalHours, onGoalChange, onStart }: Props) {
   const c = useThemeColors();
   const [pickerVisible, setPickerVisible] = useState(false);
-  const isCustomGoal = !PRESETS.includes(goalHours as (typeof PRESETS)[number]);
+  const isCustomGoal = !PRESETS.some((p) => p.hours === goalHours);
 
   return (
     <>
       <View style={{ gap: spacing.sm, marginTop: spacing.card }}>
         <AppText variant="caption" tone="tertiary">목표 시간</AppText>
         <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-          {PRESETS.map((h) => (
-            <Pressable
-              key={h}
-              onPress={() => onGoalChange(h)}
-              accessibilityRole="button"
-              accessibilityLabel={`${h}시간 목표`}
-              accessibilityState={{ selected: goalHours === h }}
-              style={{
-                flex: 1,
-                paddingVertical: spacing.sm,
-                borderRadius: radius.sm,
-                borderWidth: 1,
-                borderColor: goalHours === h ? c.ink : c.border,
-                backgroundColor: goalHours === h ? c.surfaceSubtle : 'transparent',
-                alignItems: 'center',
-              }}
-            >
-              <AppText
-                variant="caption"
-                tone={goalHours === h ? 'primary' : 'tertiary'}
-                style={goalHours === h ? { fontWeight: '700' } : {}}
+          {PRESETS.map(({ hours, desc }) => {
+            const selected = goalHours === hours;
+            return (
+              <Pressable
+                key={hours}
+                onPress={() => onGoalChange(hours)}
+                accessibilityRole="button"
+                accessibilityLabel={`${hours}시간 목표, ${desc}`}
+                accessibilityState={{ selected }}
+                style={{
+                  flex: 1,
+                  paddingVertical: spacing.sm,
+                  borderRadius: radius.sm,
+                  borderWidth: 1,
+                  borderColor: selected ? c.ink : c.border,
+                  backgroundColor: selected ? c.surfaceSubtle : 'transparent',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
               >
-                {h}h
-              </AppText>
-            </Pressable>
-          ))}
+                <AppText
+                  variant="caption"
+                  tone={selected ? 'primary' : 'tertiary'}
+                  style={selected ? { fontWeight: '700' } : {}}
+                >
+                  {hours}h
+                </AppText>
+                <AppText
+                  variant="caption"
+                  tone="disabled"
+                  style={{ fontSize: 9 }}
+                >
+                  {desc}
+                </AppText>
+              </Pressable>
+            );
+          })}
           <Pressable
             onPress={() => setPickerVisible(true)}
             accessibilityRole="button"

@@ -177,6 +177,24 @@ export default function MyScreen() {
               )}
               <AppText variant="caption" tone="tertiary">{totalGrass}잔디</AppText>
             </View>
+
+            {grassLevel.max !== null && (
+              <View style={{ width: '60%', gap: spacing.xs, alignItems: 'center' }}>
+                <View style={{ width: '100%', height: 4, backgroundColor: c.surfaceMuted, borderRadius: 2, overflow: 'hidden' }}>
+                  <View
+                    style={{
+                      height: 4,
+                      width: `${Math.min(((totalGrass - grassLevel.min) / (grassLevel.max - grassLevel.min)) * 100, 100)}%`,
+                      backgroundColor: c.primary,
+                      borderRadius: 2,
+                    }}
+                  />
+                </View>
+                <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>
+                  다음 레벨까지 {grassLevel.max - totalGrass + 1}잔디
+                </AppText>
+              </View>
+            )}
           </View>
         ) : configured && !loading && !user ? (
           <View style={{ alignItems: 'center', gap: spacing.md }}>
@@ -218,10 +236,13 @@ export default function MyScreen() {
 
         {/* ── 설정 카드 1 ── */}
         <GroupCard>
-          <Row label="신체 정보" onPress={() => router.push('/settings/body')} />
+          <Row label="신체 정보" icon="User" onPress={() => router.push('/settings/body')} />
           <InsetDivider />
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48, paddingHorizontal: spacing.card }}>
-            <AppText variant="body">테마</AppText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+              <AppIcon name="Moon" size={16} color={c.inkTertiary} />
+              <AppText variant="body">테마</AppText>
+            </View>
             <View style={{ flexDirection: 'row', gap: spacing.xs }}>
               {THEME_OPTIONS.map((opt) => {
                 const selected = themeMode === opt.value;
@@ -247,12 +268,12 @@ export default function MyScreen() {
             </View>
           </View>
           <InsetDivider />
-          <Row label="알림" onPress={() => router.push('/settings/notifications')} />
+          <Row label="알림" icon="Bell" onPress={() => router.push('/settings/notifications')} />
         </GroupCard>
 
         {/* ── 설정 카드 2 ── */}
         <GroupCard>
-          <Row label="앱 정보" onPress={() => router.push('/settings/about')} />
+          <Row label="앱 정보" icon="Info" onPress={() => router.push('/settings/about')} />
         </GroupCard>
 
         {/* ── 위험 카드 ── */}

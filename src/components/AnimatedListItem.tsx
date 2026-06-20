@@ -1,9 +1,10 @@
 import Animated, { FadeInDown, FadeOutUp, LinearTransition } from 'react-native-reanimated';
 
+import { motion } from '@/constants/motion';
+
 type Props = {
   itemKey: string;
   index?: number;
-  /** 드래그 중 레이아웃 스프링 비활성화 */
   animateLayout?: boolean;
   children: React.ReactNode;
 };
@@ -17,9 +18,9 @@ export function AnimatedListItem({
   return (
     <Animated.View
       key={itemKey}
-      entering={FadeInDown.delay(Math.min(index * 40, 200)).duration(280).springify().damping(18)}
+      entering={FadeInDown.delay(Math.min(index * motion.stagger.list, motion.stagger.maxDelay)).duration(280).springify().damping(motion.spring.gentle.damping)}
       exiting={FadeOutUp.duration(200)}
-      layout={animateLayout ? LinearTransition.springify().damping(20) : undefined}
+      layout={animateLayout ? LinearTransition.springify().damping(motion.spring.stiff.damping) : undefined}
     >
       {children}
     </Animated.View>
