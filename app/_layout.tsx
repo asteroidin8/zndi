@@ -1,4 +1,5 @@
 import '../global.css';
+import '@/widgets/register';
 
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
@@ -16,6 +17,7 @@ import { useTodoNotifications } from '@/hooks/useTodoNotifications';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { initSentry } from '@/utils/sentry';
 import { setupNotificationHandler } from '@/utils/notifications';
+import { useWidgetSync } from '@/widgets/useWidgetSync';
 
 if (__DEV__) {
   LogBox.ignoreLogs([
@@ -40,6 +42,7 @@ function AppContent() {
   useMidnightArchive();
   useRoutineNotifications();
   useTodoNotifications();
+  useWidgetSync();
 
   return (
     <>
