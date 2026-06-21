@@ -8,12 +8,14 @@ import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
 import { FastingRecordEditModal } from '@/components/FastingRecordEditModal';
+import { ShareableGrassGrid } from '@/components/stats/ShareableGrassGrid';
 import { StatsBentoStats } from '@/components/stats/StatsBentoStats';
 import { StatsDayDetailModal } from '@/components/stats/StatsDayDetailModal';
 import { StatsMonthGrid } from '@/components/stats/StatsMonthGrid';
 import { STATS_LABELS } from '@/constants/statsLabels';
 import { spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
+import { useShareGrass } from '@/hooks/useShareGrass';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import type { FastingRecord } from '@/types';
 import { useFastingStore } from '@/stores/useFastingStore';
@@ -166,6 +168,7 @@ export default function StatsScreen() {
   const isCurrentMonth = viewYear === now.getFullYear() && viewMonth === now.getMonth();
 
   const grassMap = buildMonthGrassMap(viewYear, viewMonth, routines, isCompleted, todos);
+  const { gridRef, share } = useShareGrass();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
@@ -240,6 +243,14 @@ export default function StatsScreen() {
                     </AppText>
                   </Pressable>
                 )}
+                <Pressable
+                  onPress={() => share(viewYear, viewMonth)}
+                  hitSlop={8}
+                  style={{ padding: 4, marginLeft: 'auto' }}
+                  accessibilityLabel="잔디 공유"
+                >
+                  <AppIcon name="Share2" size={16} color={c.inkTertiary} />
+                </Pressable>
               </View>
 
               <StatsMonthGrid
@@ -268,6 +279,15 @@ export default function StatsScreen() {
           onClose={() => setSelected(null)}
         />
       )}
+
+      <View style={{ position: 'absolute', left: -9999, top: -9999 }}>
+        <ShareableGrassGrid
+          ref={gridRef}
+          year={viewYear}
+          month={viewMonth}
+          grassMap={grassMap}
+        />
+      </View>
 
       <FastingRecordEditModal
         visible={editingRecord !== null}
