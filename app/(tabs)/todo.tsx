@@ -18,7 +18,7 @@ import { TodoEditModal } from '@/components/TodoEditModal';
 import { TodoItem } from '@/components/TodoItem';
 import { type TodoCreatePayload, TodoModal } from '@/components/TodoModal';
 import { UndoSnackbar } from '@/components/UndoSnackbar';
-import { spacing } from '@/constants/spacing';
+import { radius, spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { getPriorityColor } from '@/utils/dateFormat';
@@ -89,6 +89,7 @@ function GroupHeader({
   group,
   completedCount,
   totalCount,
+  showDelete,
   onToggleCollapse,
   onRename,
   onDelete,
@@ -96,6 +97,7 @@ function GroupHeader({
   group: TodoGroup;
   completedCount: number;
   totalCount: number;
+  showDelete: boolean;
   onToggleCollapse: () => void;
   onRename: () => void;
   onDelete: () => void;
@@ -122,54 +124,79 @@ function GroupHeader({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: spacing.md,
-        paddingRight: spacing.screen,
-        paddingLeft: spacing.screen,
+        paddingHorizontal: spacing.screen,
+        marginHorizontal: spacing.screen,
+        marginTop: spacing.sm,
+        borderRadius: radius.md,
         backgroundColor: c.surfaceSubtle,
-        borderLeftWidth: 3,
-        borderLeftColor: allDone ? c.primary : c.inkDisabled,
+        borderWidth: 1,
+        borderColor: allDone ? `${c.primary}30` : c.borderNeutral,
       }}
     >
       <Animated.View style={chevronStyle}>
         <AppIcon name="ChevronDown" size={14} color={allDone ? c.primary : c.inkTertiary} />
       </Animated.View>
-      <AppText variant="body" style={{ fontWeight: '600', flex: 1, marginLeft: spacing.sm, color: allDone ? c.primary : c.ink }}>
+      <AppText
+        variant="body"
+        style={{
+          fontWeight: '600',
+          flex: 1,
+          marginLeft: spacing.sm,
+          color: allDone ? c.primary : c.ink,
+        }}
+      >
         {group.name}
       </AppText>
       {allDone ? (
-        <AppText variant="caption" style={{ color: c.primary, fontWeight: '700', marginRight: spacing.sm }}>✓</AppText>
+        <AppText variant="caption" style={{ color: c.primary, fontWeight: '700' }}>✓</AppText>
       ) : (
-        <AppText variant="caption" tone="tertiary" style={{ marginRight: spacing.sm }}>
+        <AppText variant="caption" tone="disabled">
           {completedCount}/{totalCount}
         </AppText>
       )}
-      <Pressable
-        onPress={onDelete}
-        hitSlop={8}
-        accessibilityRole="button"
-        accessibilityLabel={`${group.name} 그룹 삭제`}
-      >
-        <AppIcon name="Trash2" size={14} color={c.inkDisabled} />
-      </Pressable>
+      {showDelete && (
+        <Pressable
+          onPress={onDelete}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={`${group.name} 그룹 삭제`}
+          style={{ marginLeft: spacing.sm }}
+        >
+          <AppIcon name="Trash2" size={14} color={c.danger} />
+        </Pressable>
+      )}
     </Pressable>
   );
 }
 
-function UngroupedHeader() {
+function UngroupedHeader({ count }: { count: number }) {
   const c = useThemeColors();
   return (
     <View
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: spacing.sm + 2,
+        paddingVertical: spacing.sm,
         paddingHorizontal: spacing.screen,
-        marginTop: spacing.sm,
+        marginHorizontal: spacing.screen,
+        marginTop: spacing.md,
       }}
     >
-      <AppIcon name="Inbox" size={14} color={c.inkDisabled} />
-      <AppText variant="caption" tone="disabled" style={{ marginLeft: spacing.xs, flex: 1 }}>
+      <View
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: 3,
+          backgroundColor: c.inkDisabled,
+          marginRight: spacing.sm,
+        }}
+      />
+      <AppText variant="caption" tone="disabled" style={{ flex: 1 }}>
         미분류
       </AppText>
+      {count > 0 && (
+        <AppText variant="caption" tone="disabled">{count}</AppText>
+      )}
     </View>
   );
 }
@@ -331,6 +358,7 @@ export default function TodoScreen() {
   }
 
   // ── Build unified drag list (when groups exist) ──
+  // Always include ungrouped-header so items can be dragged back out of groups
 
   const dragItems = useMemo<ListItem[]>(() => {
     if (!hasGroups) return [];
@@ -355,15 +383,13 @@ export default function TodoScreen() {
       }
     }
 
-    if (ungroupedActive.length > 0) {
-      items.push({ type: 'ungrouped-header', key: 'ungrouped-header' });
-      const sorted = [...ungroupedActive].sort((a, b) => {
-        if (a.priority !== b.priority) return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
-        return (a.order ?? 0) - (b.order ?? 0);
-      });
-      for (const todo of sorted) {
-        items.push({ type: 'todo', key: todo.id, todo });
-      }
+    items.push({ type: 'ungrouped-header', key: 'ungrouped-header' });
+    const sorted = [...ungroupedActive].sort((a, b) => {
+      if (a.priority !== b.priority) return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+      return (a.order ?? 0) - (b.order ?? 0);
+    });
+    for (const todo of sorted) {
+      items.push({ type: 'todo', key: todo.id, todo });
     }
 
     return items;
@@ -468,74 +494,75 @@ export default function TodoScreen() {
   // ── Render items ──
 
   function renderUnifiedItem({ item, drag }: RenderItemParams<ListItem>) {
-      if (item.type === 'group-header') {
-        return (
-          <GroupHeader
-            group={item.group}
-            completedCount={item.completedCount}
-            totalCount={item.totalCount}
-            onToggleCollapse={() => toggleGroupCollapsed(item.group.id)}
-            onRename={() => handleRenameGroup(item.group)}
-            onDelete={() => handleDeleteGroup(item.group)}
-          />
-        );
-      }
-
-      if (item.type === 'ungrouped-header') {
-        return <UngroupedHeader />;
-      }
-
-      const todo = item.todo;
-      const isGrouped = !!todo.groupId;
-
-      if (editMode) {
-        const selected = selectedIds.has(todo.id);
-        return (
-          <Pressable
-            onPress={() => toggleSelection(todo.id)}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingVertical: spacing.md,
-              paddingHorizontal: spacing.screen,
-              paddingLeft: isGrouped ? spacing.screen + spacing.card : spacing.screen,
-              gap: spacing.item,
-              backgroundColor: selected ? `${c.primary}15` : 'transparent',
-            }}
-          >
-            <AppIcon
-              name={selected ? 'CheckSquare' : 'Square'}
-              size={20}
-              color={selected ? c.primary : c.inkDisabled}
-            />
-            <AppText variant="body" style={{ flex: 1 }}>{todo.title}</AppText>
-          </Pressable>
-        );
-      }
-
+    if (item.type === 'group-header') {
       return (
-        <ScaleDecorator activeScale={1.02}>
-          <SwipeActions
-            onDelete={() => {
-              setUndoTarget(todo);
-              removeTodo(todo.id);
-            }}
-            onComplete={() => completeTodo(todo.id)}
-          >
-            <View style={{ paddingLeft: isGrouped ? spacing.card : 0 }}>
-              <View style={{ paddingHorizontal: spacing.screen }}>
-                <TodoItem
-                  todo={todo}
-                  onToggle={() => completeTodo(todo.id)}
-                  onLongPress={drag}
-                  onPress={() => setEditTarget(todo)}
-                />
-              </View>
-              <Divider />
-            </View>
-          </SwipeActions>
-        </ScaleDecorator>
+        <GroupHeader
+          group={item.group}
+          completedCount={item.completedCount}
+          totalCount={item.totalCount}
+          showDelete={editMode}
+          onToggleCollapse={() => toggleGroupCollapsed(item.group.id)}
+          onRename={() => handleRenameGroup(item.group)}
+          onDelete={() => handleDeleteGroup(item.group)}
+        />
       );
+    }
+
+    if (item.type === 'ungrouped-header') {
+      return <UngroupedHeader count={ungroupedActive.length} />;
+    }
+
+    const todo = item.todo;
+    const isGrouped = !!todo.groupId;
+
+    if (editMode) {
+      const selected = selectedIds.has(todo.id);
+      return (
+        <Pressable
+          onPress={() => toggleSelection(todo.id)}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: spacing.md,
+            paddingHorizontal: spacing.screen,
+            marginLeft: isGrouped ? spacing.card : 0,
+            gap: spacing.item,
+            backgroundColor: selected ? `${c.primary}15` : 'transparent',
+          }}
+        >
+          <AppIcon
+            name={selected ? 'CheckSquare' : 'Square'}
+            size={20}
+            color={selected ? c.primary : c.inkDisabled}
+          />
+          <AppText variant="body" style={{ flex: 1 }}>{todo.title}</AppText>
+        </Pressable>
+      );
+    }
+
+    return (
+      <ScaleDecorator activeScale={1.02}>
+        <SwipeActions
+          onDelete={() => {
+            setUndoTarget(todo);
+            removeTodo(todo.id);
+          }}
+          onComplete={() => completeTodo(todo.id)}
+        >
+          <View style={{ marginLeft: isGrouped ? spacing.card : 0 }}>
+            <View style={{ paddingHorizontal: spacing.screen }}>
+              <TodoItem
+                todo={todo}
+                onToggle={() => completeTodo(todo.id)}
+                onLongPress={drag}
+                onPress={() => setEditTarget(todo)}
+              />
+            </View>
+            <Divider />
+          </View>
+        </SwipeActions>
+      </ScaleDecorator>
+    );
   }
 
   function renderLegacyTodoItem({ item, drag }: RenderItemParams<Todo>) {
@@ -732,7 +759,7 @@ export default function TodoScreen() {
           onDragEnd={handleUnifiedDragEnd}
           renderItem={renderUnifiedItem}
           activationDistance={4}
-          contentContainerStyle={{ paddingBottom: editMode ? 100 : 100 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
         />
       ) : (
