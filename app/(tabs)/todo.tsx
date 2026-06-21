@@ -897,7 +897,7 @@ function Header({
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
-          alignItems: 'center',
+          alignItems: 'baseline',
           paddingHorizontal: spacing.screen,
           paddingTop: spacing.card,
           paddingBottom: spacing.sm,
