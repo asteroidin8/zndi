@@ -32,6 +32,7 @@ export function useRealtimeSync() {
               reminderTime: (row.reminder_time as string | null) ?? null,
               createdAt: Number(row.created_at),
               order: Number(row.sort_order),
+              groupId: (row.group_id as string | null) ?? null,
             });
             return { routines: next.sort((a, b) => a.order - b.order) };
           });

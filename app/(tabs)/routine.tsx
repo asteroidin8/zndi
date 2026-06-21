@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,97 +7,67 @@ import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { Coachmark } from '@/components/Coachmark';
 import { Divider } from '@/components/Divider';
+import { EditBottomBar } from '@/components/EditBottomBar';
 import { EmptyState } from '@/components/EmptyState';
-import { FloatingAddButton } from '@/components/FloatingAddButton';
+import { GroupHeader } from '@/components/GroupHeader';
 import { RoutineItem } from '@/components/RoutineItem';
 import { RoutineModal } from '@/components/RoutineModal';
+import { SheetModal, SheetPrimaryButton } from '@/components/SheetModal';
+import { SpeedDialFab } from '@/components/SpeedDialFab';
 import { SwipeActions } from '@/components/SwipeActions';
 import { UndoSnackbar } from '@/components/UndoSnackbar';
+import { UngroupedHeader } from '@/components/UngroupedHeader';
 import { radius, spacing } from '@/constants/spacing';
 import { DAY_LABELS } from '@/constants/statsLabels';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useSettingsStore } from '@/stores/useSettingsStore';
-import { type Routine, type Weekday, useRoutineStore } from '@/stores/useRoutineStore';
+import {
+  type Routine,
+  type RoutineGroup,
+  type Weekday,
+  useRoutineStore,
+} from '@/stores/useRoutineStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
 
 const TAB_INDEX = 1 as const;
-
 const DAY_SHORT = ['일', '월', '화', '수', '목', '금', '토'];
 
 function getTodayDay(): Weekday {
   return new Date().getDay() as Weekday;
 }
 
-function EditBottomBar({
-  selectedCount,
-  totalCount,
-  onSelectAll,
-  onDelete,
-}: {
-  selectedCount: number;
-  totalCount: number;
-  onSelectAll: () => void;
-  onDelete: () => void;
-}) {
-  const c = useThemeColors();
-  const allSelected = selectedCount === totalCount && totalCount > 0;
-  return (
-    <View
-      style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spacing.screen,
-        paddingVertical: spacing.md,
-        paddingBottom: spacing.section,
-        backgroundColor: c.surfaceSubtle,
-        borderTopWidth: 1,
-        borderTopColor: c.border,
-      }}
-    >
-      <Pressable
-        onPress={onSelectAll}
-        hitSlop={8}
-        accessibilityRole="button"
-        style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}
-      >
-        <AppIcon name={allSelected ? 'CheckSquare' : 'Square'} size={18} color={c.ink} />
-        <AppText variant="body">{allSelected ? '선택 해제' : '전체 선택'}</AppText>
-      </Pressable>
+// ── Unified drag list types ──
 
-      <AppText variant="caption" tone="tertiary">{selectedCount}개 선택됨</AppText>
+type GroupPosition = 'first' | 'middle' | 'last' | 'only';
 
-      <Pressable
-        onPress={onDelete}
-        disabled={selectedCount === 0}
-        hitSlop={8}
-        accessibilityRole="button"
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: spacing.xs,
-          opacity: selectedCount === 0 ? 0.4 : 1,
-        }}
-      >
-        <AppIcon name="Trash2" size={16} color={c.danger} />
-        <AppText variant="body" style={{ color: c.danger }}>삭제</AppText>
-      </Pressable>
-    </View>
-  );
-}
+type ListItem =
+  | { type: 'group-header'; key: string; group: RoutineGroup; completedCount: number; totalCount: number; hasVisibleItems: boolean }
+  | { type: 'routine'; key: string; routine: Routine; groupPosition: GroupPosition | null }
+  | { type: 'ungrouped-header'; key: string };
+
+// ── Main ──
 
 export default function RoutineScreen() {
   const c = useThemeColors();
   const scrollRef = useRef<ScrollView>(null);
   useTabScrollToTop(TAB_INDEX, scrollRef);
 
-  const { routines, addRoutine, updateRoutine, removeRoutine, removeRoutines, reorderRoutines } = useRoutineStore();
+  const {
+    routines,
+    groups,
+    addRoutine,
+    updateRoutine,
+    removeRoutine,
+    removeRoutines,
+    reorderRoutines,
+    addGroup,
+    updateGroup,
+    removeGroup,
+    toggleGroupCollapsed,
+    batchUpdateRoutines,
+  } = useRoutineStore();
   const { toggleCompletion, isCompleted } = useRoutineCompletionStore();
   const { seenHints, markHintSeen } = useSettingsStore();
 
@@ -107,20 +77,28 @@ export default function RoutineScreen() {
   const [otherExpanded, setOtherExpanded] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [groupModalVisible, setGroupModalVisible] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
 
-  const today = getTodayDay();
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const todayRoutines = routines
-    .filter((r) => r.repeatDays.includes(today))
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  const otherRoutines = routines
-    .filter((r) => !r.repeatDays.includes(today))
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const today = useMemo(() => getTodayDay(), []);
+  const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
-  const allTodayComplete =
-    todayRoutines.length > 0 && todayRoutines.every((r) => isCompleted(r.id, todayStr));
+  const hasGroups = groups.length > 0;
+  const sortedGroups = useMemo(() => [...groups].sort((a, b) => a.order - b.order), [groups]);
+  const allRoutinesSorted = useMemo(() => [...routines].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)), [routines]);
+  const ungroupedRoutines = useMemo(() => allRoutinesSorted.filter((r) => (r.groupId ?? null) === null), [allRoutinesSorted]);
+
+  const todayRoutines = useMemo(() => ungroupedRoutines.filter((r) => r.repeatDays.includes(today)), [ungroupedRoutines, today]);
+  const otherRoutines = useMemo(() => ungroupedRoutines.filter((r) => !r.repeatDays.includes(today)), [ungroupedRoutines, today]);
+
+  const allTodayComplete = (() => {
+    const todayAll = routines.filter((r) => r.repeatDays.includes(today));
+    return todayAll.length > 0 && todayAll.every((r) => isCompleted(r.id, todayStr));
+  })();
 
   const showSwipeHint = !seenHints.swipeActions && routines.length > 0;
+
+  // ── Edit mode ──
 
   function enterEditMode() {
     setEditMode(true);
@@ -170,6 +148,8 @@ export default function RoutineScreen() {
     );
   }
 
+  // ── CRUD ──
+
   function openAdd() {
     setEditTarget(null);
     setModalVisible(true);
@@ -180,7 +160,7 @@ export default function RoutineScreen() {
     setModalVisible(true);
   }
 
-  function handleSave(data: { name: string; repeatDays: Weekday[]; reminderTime: string | null }) {
+  function handleSave(data: { name: string; repeatDays: Weekday[]; reminderTime: string | null; groupId: string | null }) {
     if (editTarget) {
       updateRoutine(editTarget.id, data);
     } else {
@@ -198,6 +178,108 @@ export default function RoutineScreen() {
     toggleCompletion(id, todayStr);
   }
 
+  // ── Group handlers ──
+
+  function handleCreateGroup() {
+    if (!newGroupName.trim()) return;
+    addGroup({
+      id: String(Date.now()),
+      name: newGroupName.trim(),
+      order: groups.length,
+      collapsed: false,
+    });
+    setNewGroupName('');
+    setGroupModalVisible(false);
+  }
+
+  function handleRenameGroup(group: RoutineGroup) {
+    Alert.prompt?.(
+      '그룹 이름 변경',
+      '',
+      (text) => {
+        if (text?.trim()) updateGroup(group.id, { name: text.trim() });
+      },
+      'plain-text',
+      group.name,
+    ) ??
+      Alert.alert('그룹 관리', group.name, [
+        { text: '삭제', style: 'destructive', onPress: () => removeGroup(group.id) },
+        { text: '닫기' },
+      ]);
+  }
+
+  function handleDeleteGroup(group: RoutineGroup) {
+    Alert.alert(
+      '그룹 삭제',
+      `"${group.name}" 그룹을 삭제할까요?\n그룹 안의 루틴은 유지됩니다.`,
+      [
+        { text: '취소', style: 'cancel' },
+        { text: '삭제', style: 'destructive', onPress: () => removeGroup(group.id) },
+      ],
+    );
+  }
+
+  // ── Build unified drag list ──
+
+  const dragItems = useMemo<ListItem[]>(() => {
+    if (!hasGroups) return [];
+    const items: ListItem[] = [];
+
+    for (const group of sortedGroups) {
+      const groupRoutines = allRoutinesSorted.filter((r) => (r.groupId ?? null) === group.id);
+      const todayInGroup = groupRoutines.filter((r) => r.repeatDays.includes(today));
+      const completedInGroup = todayInGroup.filter((r) => isCompleted(r.id, todayStr)).length;
+      const visibleCount = group.collapsed ? 0 : groupRoutines.length;
+
+      items.push({
+        type: 'group-header',
+        key: `gh-${group.id}`,
+        group,
+        completedCount: completedInGroup,
+        totalCount: todayInGroup.length,
+        hasVisibleItems: visibleCount > 0,
+      });
+
+      if (!group.collapsed) {
+        for (let i = 0; i < groupRoutines.length; i++) {
+          const pos: GroupPosition =
+            groupRoutines.length === 1 ? 'only' : i === 0 ? 'first' : i === groupRoutines.length - 1 ? 'last' : 'middle';
+          items.push({ type: 'routine', key: groupRoutines[i].id, routine: groupRoutines[i], groupPosition: pos });
+        }
+      }
+    }
+
+    items.push({ type: 'ungrouped-header', key: 'ungrouped-header' });
+    for (const routine of ungroupedRoutines) {
+      items.push({ type: 'routine', key: routine.id, routine, groupPosition: null });
+    }
+
+    return items;
+  }, [hasGroups, sortedGroups, allRoutinesSorted, ungroupedRoutines, today, todayStr, isCompleted]);
+
+  // ── Drag handlers ──
+
+  function handleUnifiedDragEnd({ data }: { data: ListItem[] }) {
+    let currentGroupId: string | null = null;
+    let order = 0;
+    const updates: { id: string; groupId: string | null; order: number }[] = [];
+
+    for (const item of data) {
+      if (item.type === 'group-header') {
+        currentGroupId = item.group.id;
+        order = 0;
+      } else if (item.type === 'ungrouped-header') {
+        currentGroupId = null;
+        order = 0;
+      } else {
+        updates.push({ id: item.routine.id, groupId: currentGroupId, order });
+        order++;
+      }
+    }
+
+    runAfterDragAnimation(() => batchUpdateRoutines(updates));
+  }
+
   function handleTodayReorder({ data }: { data: Routine[] }) {
     runAfterDragAnimation(() => {
       reorderRoutines([...data, ...otherRoutines].map((r, i) => ({ ...r, order: i })));
@@ -209,6 +291,8 @@ export default function RoutineScreen() {
       reorderRoutines([...todayRoutines, ...data].map((r, i) => ({ ...r, order: i })));
     });
   }
+
+  // ── Render helpers ──
 
   function renderSelectableItem(routine: Routine) {
     const selected = selectedIds.has(routine.id);
@@ -240,42 +324,148 @@ export default function RoutineScreen() {
     );
   }
 
-  function renderRoutineItem(onToggle: (id: string) => void, allowComplete: boolean) {
-    return function RoutineListRow({ item, drag }: RenderItemParams<Routine>) {
-      const completed = isCompleted(item.id, todayStr);
+  function renderRoutineRow(routine: Routine, allowComplete: boolean, drag?: () => void) {
+    const completed = isCompleted(routine.id, todayStr);
+    const isToday = routine.repeatDays.includes(today);
 
+    return (
+      <ScaleDecorator activeScale={1.02}>
+        <SwipeActions
+          onDelete={() => {
+            setUndoTarget(routine);
+            removeRoutine(routine.id);
+          }}
+          onComplete={
+            allowComplete && isToday
+              ? () => { if (!completed) toggleCompleted(routine.id); }
+              : undefined
+          }
+        >
+          <View>
+            <RoutineItem
+              routine={routine}
+              isCompleted={isToday ? completed : false}
+              onToggle={isToday ? () => toggleCompleted(routine.id) : undefined}
+              onLongPress={drag}
+              onPress={() => openEdit(routine)}
+            />
+            <Divider />
+          </View>
+        </SwipeActions>
+      </ScaleDecorator>
+    );
+  }
+
+  function renderUnifiedItem({ item, drag }: RenderItemParams<ListItem>) {
+    if (item.type === 'group-header') {
       return (
-        <ScaleDecorator activeScale={1.02}>
-          <SwipeActions
-            onDelete={() => {
-              setUndoTarget(item);
-              removeRoutine(item.id);
-            }}
-            onComplete={
-              allowComplete
-                ? () => {
-                    if (!completed) toggleCompleted(item.id);
-                  }
-                : undefined
-            }
-          >
-            <View>
-              <RoutineItem
-                routine={item}
-                isCompleted={completed}
-                onToggle={() => onToggle(item.id)}
-                onLongPress={drag}
-                onPress={() => openEdit(item)}
-              />
-              <Divider />
-            </View>
-          </SwipeActions>
-        </ScaleDecorator>
+        <GroupHeader
+          group={item.group}
+          completedCount={item.completedCount}
+          totalCount={item.totalCount}
+          hasVisibleItems={item.hasVisibleItems}
+          showDelete={editMode}
+          onToggleCollapse={() => toggleGroupCollapsed(item.group.id)}
+          onRename={() => handleRenameGroup(item.group)}
+          onDelete={() => handleDeleteGroup(item.group)}
+        />
       );
+    }
+
+    if (item.type === 'ungrouped-header') {
+      return <UngroupedHeader count={ungroupedRoutines.length} />;
+    }
+
+    const routine = item.routine;
+    const gp = item.groupPosition;
+    const isGrouped = gp !== null;
+
+    const cardWrapStyle = isGrouped
+      ? {
+          marginHorizontal: spacing.screen,
+          backgroundColor: c.surfaceSubtle,
+          borderLeftWidth: 1,
+          borderRightWidth: 1,
+          borderBottomWidth: gp === 'last' || gp === 'only' ? 1 : 0,
+          borderColor: c.borderNeutral,
+          borderBottomLeftRadius: gp === 'last' || gp === 'only' ? radius.md : 0,
+          borderBottomRightRadius: gp === 'last' || gp === 'only' ? radius.md : 0,
+        }
+      : undefined;
+
+    if (editMode) {
+      const selected = selectedIds.has(routine.id);
+      return (
+        <View style={cardWrapStyle}>
+          <Pressable
+            onPress={() => toggleSelection(routine.id)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingVertical: spacing.md,
+              paddingHorizontal: spacing.screen,
+              gap: spacing.item,
+              backgroundColor: selected ? `${c.primary}15` : 'transparent',
+            }}
+          >
+            <AppIcon
+              name={selected ? 'CheckSquare' : 'Square'}
+              size={20}
+              color={selected ? c.primary : c.inkDisabled}
+            />
+            <View style={{ flex: 1 }}>
+              <AppText variant="body">{routine.name}</AppText>
+              <AppText variant="caption" tone="disabled">
+                {routine.repeatDays.map((d) => DAY_SHORT[d]).join('·')}
+              </AppText>
+            </View>
+          </Pressable>
+        </View>
+      );
+    }
+
+    const completed = isCompleted(routine.id, todayStr);
+    const isToday = routine.repeatDays.includes(today);
+
+    return (
+      <ScaleDecorator activeScale={1.02}>
+        <SwipeActions
+          onDelete={() => {
+            setUndoTarget(routine);
+            removeRoutine(routine.id);
+          }}
+          onComplete={
+            isToday
+              ? () => { if (!completed) toggleCompleted(routine.id); }
+              : undefined
+          }
+        >
+          <View style={cardWrapStyle}>
+            <View style={{ paddingHorizontal: isGrouped ? spacing.screen : 0 }}>
+              <RoutineItem
+                routine={routine}
+                isCompleted={isToday ? completed : false}
+                onToggle={isToday ? () => toggleCompleted(routine.id) : undefined}
+                onLongPress={drag}
+                onPress={() => openEdit(routine)}
+              />
+            </View>
+            {(gp !== 'last' && gp !== 'only') && <Divider />}
+          </View>
+        </SwipeActions>
+      </ScaleDecorator>
+    );
+  }
+
+  function renderLegacyItem(allowComplete: boolean) {
+    return function RoutineListRow({ item, drag }: RenderItemParams<Routine>) {
+      return renderRoutineRow(item, allowComplete, drag);
     };
   }
 
-  const isEmpty = routines.length === 0;
+  // ── Layout ──
+
+  const isEmpty = routines.length === 0 && groups.length === 0;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
@@ -305,6 +495,17 @@ export default function RoutineScreen() {
           variant="routine"
           actionLabel="루틴 추가하기"
           onAction={openAdd}
+        />
+      ) : hasGroups ? (
+        /* ── Unified DnD list (groups exist) ── */
+        <DraggableFlatList
+          data={dragItems}
+          keyExtractor={(item) => item.key}
+          onDragEnd={handleUnifiedDragEnd}
+          renderItem={renderUnifiedItem}
+          activationDistance={4}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          showsVerticalScrollIndicator={false}
         />
       ) : editMode ? (
         <ScrollView
@@ -379,7 +580,7 @@ export default function RoutineScreen() {
                   data={todayRoutines}
                   keyExtractor={(r) => r.id}
                   onDragEnd={handleTodayReorder}
-                  renderItem={renderRoutineItem(toggleCompleted, true)}
+                  renderItem={renderLegacyItem(true)}
                   scrollEnabled={false}
                   activationDistance={4}
                 />
@@ -407,7 +608,7 @@ export default function RoutineScreen() {
                     data={otherRoutines}
                     keyExtractor={(r) => r.id}
                     onDragEnd={handleOtherReorder}
-                    renderItem={renderRoutineItem(() => {}, false)}
+                    renderItem={renderLegacyItem(false)}
                     scrollEnabled={false}
                     activationDistance={4}
                   />
@@ -426,7 +627,15 @@ export default function RoutineScreen() {
           onDelete={handleBulkDelete}
         />
       ) : (
-        !isEmpty && <FloatingAddButton onPress={openAdd} accessibilityLabel="루틴 추가" />
+        !isEmpty && (
+          <SpeedDialFab
+            accessibilityLabel="추가 메뉴"
+            actions={[
+              { label: '루틴 추가', icon: 'Plus', onPress: openAdd },
+              { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
+            ]}
+          />
+        )
       )}
 
       <Coachmark
@@ -445,6 +654,31 @@ export default function RoutineScreen() {
         onDelete={editTarget ? () => { removeRoutine(editTarget.id); setModalVisible(false); } : undefined}
         onClose={() => setModalVisible(false)}
       />
+
+      <SheetModal
+        visible={groupModalVisible}
+        onClose={() => setGroupModalVisible(false)}
+        title="그룹 추가"
+        footer={<SheetPrimaryButton label="추가" onPress={handleCreateGroup} disabled={!newGroupName.trim()} />}
+      >
+        <TextInput
+          value={newGroupName}
+          onChangeText={setNewGroupName}
+          placeholder="그룹 이름"
+          placeholderTextColor={c.inkDisabled}
+          autoFocus
+          returnKeyType="done"
+          onSubmitEditing={handleCreateGroup}
+          style={{
+            fontSize: 16,
+            color: c.ink,
+            borderBottomWidth: 1,
+            borderBottomColor: c.border,
+            paddingVertical: spacing.sm,
+          }}
+        />
+      </SheetModal>
+
       <UndoSnackbar
         message="루틴이 삭제됐어요"
         visible={undoTarget !== null}

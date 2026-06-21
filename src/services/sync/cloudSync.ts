@@ -142,6 +142,7 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
           reminderTime: r.reminder_time,
           createdAt: r.created_at,
           order: r.sort_order,
+          groupId: (r as Record<string, unknown>).group_id as string | null ?? null,
         }))
         .sort((a, b) => a.order - b.order),
     });

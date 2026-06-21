@@ -1,29 +1,39 @@
 import { useEffect, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
 
 import { AppText } from './AppText';
 import { SheetDangerButton, SheetModal, SheetPrimaryButton } from './SheetModal';
 import { TimePickerModal } from './TimePickerModal';
-import { spacing } from '@/constants/spacing';
+import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import type { Routine, Weekday } from '@/stores/useRoutineStore';
+import { useRoutineStore } from '@/stores/useRoutineStore';
+import type { Routine, Weekday } from '@/types';
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 const ALL_DAYS: Weekday[] = [0, 1, 2, 3, 4, 5, 6];
 
+type SavePayload = {
+  name: string;
+  repeatDays: Weekday[];
+  reminderTime: string | null;
+  groupId: string | null;
+};
+
 type Props = {
   visible: boolean;
   initial?: Partial<Routine>;
-  onSave: (data: { name: string; repeatDays: Weekday[]; reminderTime: string | null }) => void;
+  onSave: (data: SavePayload) => void;
   onDelete?: () => void;
   onClose: () => void;
 };
 
 export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Props) {
   const c = useThemeColors();
+  const { groups } = useRoutineStore();
   const [name, setName] = useState(initial?.name ?? '');
   const [days, setDays] = useState<Weekday[]>(initial?.repeatDays ?? [1, 2, 3, 4, 5]);
   const [reminderTime, setReminderTime] = useState<string | null>(initial?.reminderTime ?? null);
+  const [groupId, setGroupId] = useState<string | null>(initial?.groupId ?? null);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
 
   useEffect(() => {
@@ -31,6 +41,7 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
     setName(initial?.name ?? '');
     setDays(initial?.repeatDays ?? [1, 2, 3, 4, 5]);
     setReminderTime(initial?.reminderTime ?? null);
+    setGroupId(initial?.groupId ?? null);
   }, [visible, initial]);
 
   function toggleDay(day: Weekday) {
@@ -41,10 +52,11 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
 
   function handleSave() {
     if (!name.trim()) return;
-    onSave({ name: name.trim(), repeatDays: days, reminderTime });
+    onSave({ name: name.trim(), repeatDays: days, reminderTime, groupId });
     setName('');
     setDays([1, 2, 3, 4, 5]);
     setReminderTime(null);
+    setGroupId(null);
   }
 
   const canSave = !!name.trim();
@@ -106,6 +118,68 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
             </Pressable>
           ))}
         </View>
+
+        {groups.length > 0 && (
+          <>
+            <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
+              그룹
+            </AppText>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              nestedScrollEnabled
+              style={{ marginBottom: spacing.section }}
+            >
+              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <Pressable
+                  onPress={() => setGroupId(null)}
+                  style={{
+                    paddingHorizontal: spacing.item,
+                    paddingVertical: spacing.sm,
+                    borderRadius: radius.sm,
+                    borderWidth: 1,
+                    borderColor: groupId === null ? c.ink : c.border,
+                    backgroundColor: groupId === null ? c.surfaceSubtle : 'transparent',
+                  }}
+                >
+                  <AppText
+                    variant="caption"
+                    style={{
+                      color: groupId === null ? c.ink : c.inkTertiary,
+                      fontWeight: groupId === null ? '700' : '400',
+                    }}
+                  >
+                    없음
+                  </AppText>
+                </Pressable>
+                {groups.map((g) => (
+                  <Pressable
+                    key={g.id}
+                    onPress={() => setGroupId(groupId === g.id ? null : g.id)}
+                    style={{
+                      paddingHorizontal: spacing.item,
+                      paddingVertical: spacing.sm,
+                      borderRadius: radius.sm,
+                      borderWidth: 1,
+                      borderColor: groupId === g.id ? c.ink : c.border,
+                      backgroundColor: groupId === g.id ? c.surfaceSubtle : 'transparent',
+                    }}
+                  >
+                    <AppText
+                      variant="caption"
+                      style={{
+                        color: groupId === g.id ? c.ink : c.inkTertiary,
+                        fontWeight: groupId === g.id ? '700' : '400',
+                      }}
+                    >
+                      {g.name}
+                    </AppText>
+                  </Pressable>
+                ))}
+              </View>
+            </ScrollView>
+          </>
+        )}
 
         <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
           알림
