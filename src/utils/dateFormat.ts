@@ -7,14 +7,16 @@ export function formatDueDate(dueDate: string): {
   isOverdue: boolean;
   urgency: DueUrgency;
 } {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-  const due = new Date(dueDate);
-  due.setHours(0, 0, 0, 0);
+  const [ty, tm, td] = todayStr.split('-').map(Number);
+  const [dy, dm, dd] = dueDate.split('-').map(Number);
 
-  const diffMs = due.getTime() - today.getTime();
-  const diffDays = Math.round(diffMs / 86_400_000);
+  const todayEpoch = Date.UTC(ty, tm - 1, td);
+  const dueEpoch = Date.UTC(dy, dm - 1, dd);
+
+  const diffDays = Math.round((dueEpoch - todayEpoch) / 86_400_000);
 
   if (diffDays === 0) return { label: '오늘', isOverdue: false, urgency: 'today' };
   if (diffDays === 1) return { label: '내일', isOverdue: false, urgency: 'soon' };
