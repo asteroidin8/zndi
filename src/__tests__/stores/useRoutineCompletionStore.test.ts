@@ -43,7 +43,8 @@ describe('useRoutineCompletionStore', () => {
 
   describe('getStreak', () => {
     it('returns 0 when no completions', () => {
-      const streak = useRoutineCompletionStore.getState().getStreak('r1', [1, 3, 5]);
+      const routine = { id: 'r1', name: '', repeatType: 'weekly' as const, repeatDays: [1, 3, 5] as (0|1|2|3|4|5|6)[], monthDates: [], reminderTime: null, createdAt: 0, order: 0, groupId: null };
+      const streak = useRoutineCompletionStore.getState().getStreak('r1', routine);
       expect(streak).toBe(0);
     });
 
@@ -71,7 +72,18 @@ describe('useRoutineCompletionStore', () => {
         new Set([oneDayAgo.getDay(), threeDaysAgo.getDay()]),
       ) as Weekday[];
 
-      const streak = useRoutineCompletionStore.getState().getStreak('r1', repeatDays);
+      const routine = {
+        id: 'r1',
+        name: '',
+        repeatType: 'weekly' as const,
+        repeatDays,
+        monthDates: [],
+        reminderTime: null,
+        createdAt: 0,
+        order: 0,
+        groupId: null,
+      };
+      const streak = useRoutineCompletionStore.getState().getStreak('r1', routine);
       expect(streak).toBe(2);
 
       jest.useRealTimers();

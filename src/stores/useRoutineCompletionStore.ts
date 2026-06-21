@@ -2,8 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { Weekday } from '@/types';
+import type { Routine } from '@/types';
 import { toDateStr } from '@/utils/homeDailyBoard';
+import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
 const MAX_STREAK_DAYS = 365;
 const COMPLETION_RETENTION_DAYS = 30;
@@ -17,7 +18,7 @@ type RoutineCompletionStore = {
   toggleCompletion: (routineId: string, date: string) => void;
   isCompleted: (routineId: string, date: string) => boolean;
   getCompletedIds: (date: string) => string[];
-  getStreak: (routineId: string, repeatDays: Weekday[]) => number;
+  getStreak: (routineId: string, routine: Routine) => number;
   clearOldCompletions: () => void;
 };
 
@@ -50,15 +51,14 @@ export const useRoutineCompletionStore = create<RoutineCompletionStore>()(
           .map((k) => k.slice(prefix.length));
       },
 
-      getStreak: (routineId, repeatDays) => {
+      getStreak: (routineId, routine) => {
         const { completions } = get();
         let streak = 0;
         const cursor = new Date();
         cursor.setHours(0, 0, 0, 0);
 
         for (let i = 0; i < MAX_STREAK_DAYS; i++) {
-          const dayOfWeek = cursor.getDay();
-          if (repeatDays.includes(dayOfWeek as Weekday)) {
+          if (isRoutineScheduledForDate(routine, cursor)) {
             const dateStr = toDateStr(cursor);
             if (completions[makeKey(routineId, dateStr)]) {
               streak++;

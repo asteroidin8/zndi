@@ -31,20 +31,20 @@ describe('getDayDotStatus', () => {
 
 describe('getRoutineProgressForDate', () => {
   const routines = [
-    { id: 'r1', name: '운동', emoji: '', repeatDays: [1, 3, 5] as (0 | 1 | 2 | 3 | 4 | 5 | 6)[], notifyTime: null, order: 0 },
-    { id: 'r2', name: '독서', emoji: '', repeatDays: [1, 2, 3, 4, 5] as (0 | 1 | 2 | 3 | 4 | 5 | 6)[], notifyTime: null, order: 1 },
+    { id: 'r1', name: '운동', repeatType: 'weekly' as const, repeatDays: [1, 3, 5] as (0 | 1 | 2 | 3 | 4 | 5 | 6)[], monthDates: [] as number[], reminderTime: null, createdAt: 0, order: 0, groupId: null },
+    { id: 'r2', name: '독서', repeatType: 'weekly' as const, repeatDays: [1, 2, 3, 4, 5] as (0 | 1 | 2 | 3 | 4 | 5 | 6)[], monthDates: [] as number[], reminderTime: null, createdAt: 0, order: 1, groupId: null },
   ];
 
   it('counts routines for a given day of week', () => {
     const isCompleted = (id: string) => id === 'r1';
-    const result = getRoutineProgressForDate('2026-06-20', 1, routines, isCompleted);
+    const result = getRoutineProgressForDate('2026-06-22', 1, routines, isCompleted);
     expect(result.total).toBe(2);
     expect(result.completed).toBe(1);
   });
 
   it('returns 0/0 for days with no routines', () => {
     const isCompleted = () => false;
-    const result = getRoutineProgressForDate('2026-06-20', 0, routines, isCompleted);
+    const result = getRoutineProgressForDate('2026-06-21', 0, routines, isCompleted);
     expect(result.total).toBe(0);
     expect(result.completed).toBe(0);
   });

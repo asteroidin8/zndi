@@ -24,6 +24,7 @@ import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { buildMonthGrassMap } from '@/utils/calendarGrass';
 import { formatMetric } from '@/utils/formatMetric';
+import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 import { type DailyFastingSummary, groupFastingByDay } from '@/utils/statsHelper';
 
 const TAB_INDEX = 3 as const;
@@ -83,8 +84,7 @@ export default function StatsScreen() {
 
   const completedFasts = records.filter((r) => r.result === 'completed').length;
 
-  const todayWeekday = now.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  const todayRoutines = routines.filter((r) => r.repeatDays.includes(todayWeekday));
+  const todayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, now));
 
   const completedTodos = todos.filter((t) => t.completedAt !== null).length;
   const completionRate = todos.length > 0 ? Math.round((completedTodos / todos.length) * 100) : 0;
