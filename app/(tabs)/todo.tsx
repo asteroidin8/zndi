@@ -10,7 +10,6 @@ import { Coachmark } from '@/components/Coachmark';
 import { Divider } from '@/components/Divider';
 import { EditBottomBar } from '@/components/EditBottomBar';
 import { EmptyState } from '@/components/EmptyState';
-import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { GroupHeader } from '@/components/GroupHeader';
 import { SheetModal, SheetPrimaryButton } from '@/components/SheetModal';
 import { SpeedDialFab } from '@/components/SpeedDialFab';
@@ -467,7 +466,6 @@ export default function TodoScreen() {
   // ── Completed tab ──
 
   if (filter === 'completed') {
-    const showFab = completedTodos.length > 0;
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
         <Header
@@ -546,7 +544,13 @@ export default function TodoScreen() {
             onDelete={handleBulkDelete}
           />
         ) : (
-          showFab && <FloatingAddButton onPress={() => setAddModalVisible(true)} accessibilityLabel="할일 추가" />
+          <SpeedDialFab
+            accessibilityLabel="추가 메뉴"
+            actions={[
+              { label: '할일 추가', icon: 'Plus', onPress: () => setAddModalVisible(true) },
+              { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
+            ]}
+          />
         )}
         {modals}
       </SafeAreaView>
@@ -571,8 +575,6 @@ export default function TodoScreen() {
       {!hasTodos && groups.length === 0 ? (
         <EmptyState
           message={`오늘 해낼 일을 적어봐요\n작은 한 걸음이 습관이 돼요`}
-          actionLabel="할 일 추가하기"
-          onAction={() => setAddModalVisible(true)}
           variant="todo"
         />
       ) : hasGroups ? (
@@ -626,15 +628,13 @@ export default function TodoScreen() {
           onDelete={handleBulkDelete}
         />
       ) : (
-        (hasTodos || groups.length > 0) && (
-          <SpeedDialFab
-            accessibilityLabel="추가 메뉴"
-            actions={[
-              { label: '할일 추가', icon: 'Plus', onPress: () => setAddModalVisible(true) },
-              { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
-            ]}
-          />
-        )
+        <SpeedDialFab
+          accessibilityLabel="추가 메뉴"
+          actions={[
+            { label: '할일 추가', icon: 'Plus', onPress: () => setAddModalVisible(true) },
+            { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
+          ]}
+        />
       )}
 
       <SheetModal

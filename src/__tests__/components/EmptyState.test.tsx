@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, screen } from '@testing-library/react-native';
+import { render, screen } from '@testing-library/react-native';
 
 import { EmptyState } from '@/components/EmptyState';
 
@@ -24,19 +24,8 @@ describe('EmptyState', () => {
     expect(screen.getByText('No items yet')).toBeTruthy();
   });
 
-  it('renders action button when provided', async () => {
-    const onAction = jest.fn();
-    await render(
-      <EmptyState message="Empty" actionLabel="Add item" onAction={onAction} />,
-    );
-    const button = screen.getByText('Add item');
-    expect(button).toBeTruthy();
-    fireEvent.press(button);
-    expect(onAction).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not render action button when no actionLabel', async () => {
-    await render(<EmptyState message="Empty" />);
-    expect(screen.queryByText('Add item')).toBeNull();
+  it('renders with inline style', async () => {
+    await render(<EmptyState message="Empty section" inline />);
+    expect(screen.getByText('Empty section')).toBeTruthy();
   });
 });

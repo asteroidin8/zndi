@@ -469,8 +469,6 @@ export default function RoutineScreen() {
         <EmptyState
           message="되고 싶은 내 모습을 추가해보세요"
           variant="routine"
-          actionLabel="루틴 추가하기"
-          onAction={openAdd}
         />
       ) : hasGroups ? (
         /* ── Unified DnD list (groups exist) ── */
@@ -603,15 +601,13 @@ export default function RoutineScreen() {
           onDelete={handleBulkDelete}
         />
       ) : (
-        !isEmpty && (
-          <SpeedDialFab
-            accessibilityLabel="추가 메뉴"
-            actions={[
-              { label: '루틴 추가', icon: 'Plus', onPress: openAdd },
-              { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
-            ]}
-          />
-        )
+        <SpeedDialFab
+          accessibilityLabel="추가 메뉴"
+          actions={[
+            { label: '루틴 추가', icon: 'Plus', onPress: openAdd },
+            { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
+          ]}
+        />
       )}
 
       <Coachmark
