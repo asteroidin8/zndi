@@ -47,6 +47,46 @@
           "icon": "./assets/icon.png",
           "color": "#22C55E"
         }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "GrassWidget",
+              "label": "잔디",
+              "description": "주간 잔디와 오늘 달성률",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "none",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "ChecklistWidget",
+              "label": "잔디 체크리스트",
+              "description": "오늘의 루틴과 할일 체크",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "FastingWidget",
+              "label": "단식 타이머",
+              "description": "단식 진행 상태",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "none",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
       ]
     ],
     "extra": {
