@@ -40,9 +40,11 @@ const PRIORITY_ORDER: Record<TodoPriority, number> = { high: 0, mid: 1, low: 2 }
 
 // ── Unified drag list types ──
 
+type GroupPosition = 'first' | 'middle' | 'last' | 'only';
+
 type ListItem =
-  | { type: 'group-header'; key: string; group: TodoGroup; completedCount: number; totalCount: number }
-  | { type: 'todo'; key: string; todo: Todo }
+  | { type: 'group-header'; key: string; group: TodoGroup; completedCount: number; totalCount: number; hasVisibleItems: boolean }
+  | { type: 'todo'; key: string; todo: Todo; groupPosition: GroupPosition | null }
   | { type: 'ungrouped-header'; key: string };
 
 // ── Small components ──
@@ -89,6 +91,7 @@ function GroupHeader({
   group,
   completedCount,
   totalCount,
+  hasVisibleItems,
   showDelete,
   onToggleCollapse,
   onRename,
@@ -97,6 +100,7 @@ function GroupHeader({
   group: TodoGroup;
   completedCount: number;
   totalCount: number;
+  hasVisibleItems: boolean;
   showDelete: boolean;
   onToggleCollapse: () => void;
   onRename: () => void;
@@ -105,6 +109,7 @@ function GroupHeader({
   const c = useThemeColors();
   const rotation = useSharedValue(group.collapsed ? -90 : 0);
   const allDone = totalCount > 0 && completedCount === totalCount;
+  const openBottom = hasVisibleItems && !group.collapsed;
 
   useEffect(() => {
     rotation.value = withTiming(group.collapsed ? -90 : 0, { duration: 200 });
@@ -113,6 +118,8 @@ function GroupHeader({
   const chevronStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
+
+  const borderColor = allDone ? `${c.primary}30` : c.borderNeutral;
 
   return (
     <Pressable
@@ -127,10 +134,14 @@ function GroupHeader({
         paddingHorizontal: spacing.screen,
         marginHorizontal: spacing.screen,
         marginTop: spacing.sm,
-        borderRadius: radius.md,
+        borderTopLeftRadius: radius.md,
+        borderTopRightRadius: radius.md,
+        borderBottomLeftRadius: openBottom ? 0 : radius.md,
+        borderBottomRightRadius: openBottom ? 0 : radius.md,
         backgroundColor: c.surfaceSubtle,
         borderWidth: 1,
-        borderColor: allDone ? `${c.primary}30` : c.borderNeutral,
+        borderBottomWidth: openBottom ? 0 : 1,
+        borderColor,
       }}
     >
       <Animated.View style={chevronStyle}>
@@ -369,16 +380,20 @@ export default function TodoScreen() {
         .filter((t) => t.groupId === group.id)
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       const groupCompleted = todos.filter((t) => t.groupId === group.id && !!t.completedAt);
+      const visibleCount = group.collapsed ? 0 : groupActive.length;
       items.push({
         type: 'group-header',
         key: `gh-${group.id}`,
         group,
         completedCount: groupCompleted.length,
         totalCount: groupActive.length + groupCompleted.length,
+        hasVisibleItems: visibleCount > 0,
       });
       if (!group.collapsed) {
-        for (const todo of groupActive) {
-          items.push({ type: 'todo', key: todo.id, todo });
+        for (let i = 0; i < groupActive.length; i++) {
+          const pos: GroupPosition =
+            groupActive.length === 1 ? 'only' : i === 0 ? 'first' : i === groupActive.length - 1 ? 'last' : 'middle';
+          items.push({ type: 'todo', key: groupActive[i].id, todo: groupActive[i], groupPosition: pos });
         }
       }
     }
@@ -389,7 +404,7 @@ export default function TodoScreen() {
       return (a.order ?? 0) - (b.order ?? 0);
     });
     for (const todo of sorted) {
-      items.push({ type: 'todo', key: todo.id, todo });
+      items.push({ type: 'todo', key: todo.id, todo, groupPosition: null });
     }
 
     return items;
@@ -500,6 +515,7 @@ export default function TodoScreen() {
           group={item.group}
           completedCount={item.completedCount}
           totalCount={item.totalCount}
+          hasVisibleItems={item.hasVisibleItems}
           showDelete={editMode}
           onToggleCollapse={() => toggleGroupCollapsed(item.group.id)}
           onRename={() => handleRenameGroup(item.group)}
@@ -513,30 +529,45 @@ export default function TodoScreen() {
     }
 
     const todo = item.todo;
-    const isGrouped = !!todo.groupId;
+    const gp = item.groupPosition;
+    const isGrouped = gp !== null;
+
+    const cardWrapStyle = isGrouped
+      ? {
+          marginHorizontal: spacing.screen,
+          backgroundColor: c.surfaceSubtle,
+          borderLeftWidth: 1,
+          borderRightWidth: 1,
+          borderBottomWidth: gp === 'last' || gp === 'only' ? 1 : 0,
+          borderColor: c.borderNeutral,
+          borderBottomLeftRadius: gp === 'last' || gp === 'only' ? radius.md : 0,
+          borderBottomRightRadius: gp === 'last' || gp === 'only' ? radius.md : 0,
+        }
+      : undefined;
 
     if (editMode) {
       const selected = selectedIds.has(todo.id);
       return (
-        <Pressable
-          onPress={() => toggleSelection(todo.id)}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingVertical: spacing.md,
-            paddingHorizontal: spacing.screen,
-            marginLeft: isGrouped ? spacing.card : 0,
-            gap: spacing.item,
-            backgroundColor: selected ? `${c.primary}15` : 'transparent',
-          }}
-        >
-          <AppIcon
-            name={selected ? 'CheckSquare' : 'Square'}
-            size={20}
-            color={selected ? c.primary : c.inkDisabled}
-          />
-          <AppText variant="body" style={{ flex: 1 }}>{todo.title}</AppText>
-        </Pressable>
+        <View style={cardWrapStyle}>
+          <Pressable
+            onPress={() => toggleSelection(todo.id)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingVertical: spacing.md,
+              paddingHorizontal: spacing.screen,
+              gap: spacing.item,
+              backgroundColor: selected ? `${c.primary}15` : 'transparent',
+            }}
+          >
+            <AppIcon
+              name={selected ? 'CheckSquare' : 'Square'}
+              size={20}
+              color={selected ? c.primary : c.inkDisabled}
+            />
+            <AppText variant="body" style={{ flex: 1 }}>{todo.title}</AppText>
+          </Pressable>
+        </View>
       );
     }
 
@@ -549,7 +580,7 @@ export default function TodoScreen() {
           }}
           onComplete={() => completeTodo(todo.id)}
         >
-          <View style={{ marginLeft: isGrouped ? spacing.card : 0 }}>
+          <View style={cardWrapStyle}>
             <View style={{ paddingHorizontal: spacing.screen }}>
               <TodoItem
                 todo={todo}
@@ -558,7 +589,7 @@ export default function TodoScreen() {
                 onPress={() => setEditTarget(todo)}
               />
             </View>
-            <Divider />
+            {(gp !== 'last' && gp !== 'only') && <Divider />}
           </View>
         </SwipeActions>
       </ScaleDecorator>

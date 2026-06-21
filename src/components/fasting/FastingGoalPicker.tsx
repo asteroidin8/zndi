@@ -8,10 +8,10 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 
 const GOAL_HOURS = Array.from({ length: 72 }, (_, i) => i + 1);
 const PRESETS = [
-  { hours: 12, desc: '기본' },
-  { hours: 16, desc: '16:8' },
+  { hours: 12, desc: '소화 리셋' },
+  { hours: 16, desc: '지방 연소' },
   { hours: 18, desc: '케토시스' },
-  { hours: 24, desc: '풀 데이' },
+  { hours: 24, desc: '오토파지' },
 ] as const;
 
 type Props = {
