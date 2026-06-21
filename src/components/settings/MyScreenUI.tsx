@@ -83,7 +83,9 @@ export function DangerRow({ label, onPress }: { label: string; onPress: () => vo
         backgroundColor: pressed ? c.surfaceMuted : 'transparent',
       })}
     >
-      <View style={{ width: 3, height: 16, backgroundColor: c.danger, borderRadius: 2, marginRight: spacing.sm }} />
+      <View style={{ width: 16, alignItems: 'center', marginRight: spacing.sm }}>
+        <View style={{ width: 3, height: 16, backgroundColor: c.danger, borderRadius: 2 }} />
+      </View>
       <AppText variant="body" style={{ color: c.danger }}>
         {label}
       </AppText>
