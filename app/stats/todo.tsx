@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
-import { EmptyIllustration } from '@/components/EmptyIllustration';
+import { EmptyState } from '@/components/EmptyState';
 import { StatsSummaryCard } from '@/components/stats/StatsSummaryCard';
 import { PageHeader } from '@/components/settings/MyScreenUI';
 import { STATS_LABELS } from '@/constants/statsLabels';
@@ -122,10 +122,7 @@ export default function TodoDetailScreen() {
             })}
           </View>
         ) : (
-          <View style={{ alignItems: 'center', paddingVertical: 40, gap: 8 }}>
-            <EmptyIllustration variant="todo" size={48} />
-            <AppText variant="body" tone="tertiary">{L.noRecords}</AppText>
-          </View>
+          <EmptyState inline variant="todo" message={L.noRecords} />
         )}
       </ScrollView>
     </SafeAreaView>

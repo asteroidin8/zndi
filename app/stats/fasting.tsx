@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 
 import { AppText } from '@/components/AppText';
 import { BarChart, type BarChartItem } from '@/components/BarChart';
-import { EmptyIllustration } from '@/components/EmptyIllustration';
+import { EmptyState } from '@/components/EmptyState';
 import { FastingRecordEditModal } from '@/components/FastingRecordEditModal';
 import { StatsDayDetailModal } from '@/components/stats/StatsDayDetailModal';
 import { StatsSummaryCard } from '@/components/stats/StatsSummaryCard';
@@ -119,10 +119,7 @@ export default function FastingDetailScreen() {
             ))}
           </View>
         ) : (
-          <View style={{ alignItems: 'center', paddingVertical: 40, gap: 8 }}>
-            <EmptyIllustration variant="fasting" size={48} />
-            <AppText variant="body" tone="tertiary">{L.noRecords}</AppText>
-          </View>
+          <EmptyState inline variant="fasting" message={L.noRecords} />
         )}
       </ScrollView>
 

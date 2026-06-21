@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
-import { EmptyIllustration } from '@/components/EmptyIllustration';
+import { EmptyState } from '@/components/EmptyState';
 import { FastingRecordEditModal } from '@/components/FastingRecordEditModal';
 import { StatsBentoStats } from '@/components/stats/StatsBentoStats';
 import { StatsDayDetailModal } from '@/components/stats/StatsDayDetailModal';
@@ -199,14 +199,10 @@ export default function StatsScreen() {
         <StatsBentoStats />
 
         {isDataEmpty ? (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 }}>
-            <EmptyIllustration variant="stats" size={48} />
-            <AppText variant="body" tone="tertiary" style={{ textAlign: 'center', lineHeight: 22 }}>
-              {L.emptyBodyLine1}
-              {'\n'}
-              {L.emptyBodyLine2}
-            </AppText>
-          </View>
+          <EmptyState
+            variant="stats"
+            message={`${L.emptyBodyLine1}\n${L.emptyBodyLine2}`}
+          />
         ) : (
           <>
             <View style={{ gap: 12 }}>
