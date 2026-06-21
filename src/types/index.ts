@@ -1,12 +1,14 @@
-// ── Todo ──
-export type TodoPriority = 'high' | 'mid' | 'low';
-
-export type TodoGroup = {
+// ── Shared ──
+export type ItemGroup = {
   id: string;
   name: string;
   order: number;
   collapsed: boolean;
 };
+
+// ── Todo ──
+export type TodoPriority = 'high' | 'mid' | 'low';
+export type TodoGroup = ItemGroup;
 
 export type Todo = {
   id: string;
@@ -24,6 +26,7 @@ export type Todo = {
 
 // ── Routine ──
 export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type RoutineGroup = ItemGroup;
 
 export type Routine = {
   id: string;
@@ -32,6 +35,7 @@ export type Routine = {
   reminderTime: string | null;
   createdAt: number;
   order: number;
+  groupId: string | null;
 };
 
 // ── Fasting ──

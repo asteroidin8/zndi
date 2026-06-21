@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Alert, FlatList, Pressable, ScrollView, TextInput, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedListItem } from '@/components/AnimatedListItem';
@@ -9,8 +8,10 @@ import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { Coachmark } from '@/components/Coachmark';
 import { Divider } from '@/components/Divider';
+import { EditBottomBar } from '@/components/EditBottomBar';
 import { EmptyState } from '@/components/EmptyState';
 import { FloatingAddButton } from '@/components/FloatingAddButton';
+import { GroupHeader } from '@/components/GroupHeader';
 import { SheetModal, SheetPrimaryButton } from '@/components/SheetModal';
 import { SpeedDialFab } from '@/components/SpeedDialFab';
 import { SwipeActions } from '@/components/SwipeActions';
@@ -18,6 +19,7 @@ import { TodoEditModal } from '@/components/TodoEditModal';
 import { TodoItem } from '@/components/TodoItem';
 import { type TodoCreatePayload, TodoModal } from '@/components/TodoModal';
 import { UndoSnackbar } from '@/components/UndoSnackbar';
+import { UngroupedHeader } from '@/components/UngroupedHeader';
 import { radius, spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -87,192 +89,6 @@ function PrioritySectionHeader({ label, priority, count }: { label: string; prio
   );
 }
 
-function GroupHeader({
-  group,
-  completedCount,
-  totalCount,
-  hasVisibleItems,
-  showDelete,
-  onToggleCollapse,
-  onRename,
-  onDelete,
-}: {
-  group: TodoGroup;
-  completedCount: number;
-  totalCount: number;
-  hasVisibleItems: boolean;
-  showDelete: boolean;
-  onToggleCollapse: () => void;
-  onRename: () => void;
-  onDelete: () => void;
-}) {
-  const c = useThemeColors();
-  const rotation = useSharedValue(group.collapsed ? -90 : 0);
-  const allDone = totalCount > 0 && completedCount === totalCount;
-  const openBottom = hasVisibleItems && !group.collapsed;
-
-  useEffect(() => {
-    rotation.value = withTiming(group.collapsed ? -90 : 0, { duration: 200 });
-  }, [group.collapsed, rotation]);
-
-  const chevronStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }],
-  }));
-
-  const borderColor = allDone ? `${c.primary}30` : c.borderNeutral;
-
-  return (
-    <Pressable
-      onPress={onToggleCollapse}
-      onLongPress={onRename}
-      accessibilityRole="button"
-      accessibilityLabel={`${group.name} 그룹, ${completedCount}/${totalCount} 완료`}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: spacing.md,
-        paddingHorizontal: spacing.screen,
-        marginHorizontal: spacing.screen,
-        marginTop: spacing.sm,
-        borderTopLeftRadius: radius.md,
-        borderTopRightRadius: radius.md,
-        borderBottomLeftRadius: openBottom ? 0 : radius.md,
-        borderBottomRightRadius: openBottom ? 0 : radius.md,
-        backgroundColor: c.surfaceSubtle,
-        borderWidth: 1,
-        borderBottomWidth: openBottom ? 0 : 1,
-        borderColor,
-      }}
-    >
-      <Animated.View style={chevronStyle}>
-        <AppIcon name="ChevronDown" size={14} color={allDone ? c.primary : c.inkTertiary} />
-      </Animated.View>
-      <AppText
-        variant="body"
-        style={{
-          fontWeight: '600',
-          flex: 1,
-          marginLeft: spacing.sm,
-          color: allDone ? c.primary : c.ink,
-        }}
-      >
-        {group.name}
-      </AppText>
-      {allDone ? (
-        <AppText variant="caption" style={{ color: c.primary, fontWeight: '700' }}>✓</AppText>
-      ) : (
-        <AppText variant="caption" tone="disabled">
-          {completedCount}/{totalCount}
-        </AppText>
-      )}
-      {showDelete && (
-        <Pressable
-          onPress={onDelete}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={`${group.name} 그룹 삭제`}
-          style={{ marginLeft: spacing.sm }}
-        >
-          <AppIcon name="Trash2" size={14} color={c.danger} />
-        </Pressable>
-      )}
-    </Pressable>
-  );
-}
-
-function UngroupedHeader({ count }: { count: number }) {
-  const c = useThemeColors();
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: spacing.sm,
-        paddingHorizontal: spacing.screen,
-        marginHorizontal: spacing.screen,
-        marginTop: spacing.md,
-      }}
-    >
-      <View
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: 3,
-          backgroundColor: c.inkDisabled,
-          marginRight: spacing.sm,
-        }}
-      />
-      <AppText variant="caption" tone="disabled" style={{ flex: 1 }}>
-        미분류
-      </AppText>
-      {count > 0 && (
-        <AppText variant="caption" tone="disabled">{count}</AppText>
-      )}
-    </View>
-  );
-}
-
-function EditBottomBar({
-  selectedCount,
-  totalCount,
-  onSelectAll,
-  onDelete,
-}: {
-  selectedCount: number;
-  totalCount: number;
-  onSelectAll: () => void;
-  onDelete: () => void;
-}) {
-  const c = useThemeColors();
-  const allSelected = selectedCount === totalCount && totalCount > 0;
-  return (
-    <View
-      style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spacing.screen,
-        paddingVertical: spacing.md,
-        paddingBottom: spacing.section,
-        backgroundColor: c.surfaceSubtle,
-        borderTopWidth: 1,
-        borderTopColor: c.border,
-      }}
-    >
-      <Pressable
-        onPress={onSelectAll}
-        hitSlop={8}
-        accessibilityRole="button"
-        style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}
-      >
-        <AppIcon name={allSelected ? 'CheckSquare' : 'Square'} size={18} color={c.ink} />
-        <AppText variant="body">{allSelected ? '선택 해제' : '전체 선택'}</AppText>
-      </Pressable>
-
-      <AppText variant="caption" tone="tertiary">{selectedCount}개 선택됨</AppText>
-
-      <Pressable
-        onPress={onDelete}
-        disabled={selectedCount === 0}
-        hitSlop={8}
-        accessibilityRole="button"
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: spacing.xs,
-          opacity: selectedCount === 0 ? 0.4 : 1,
-        }}
-      >
-        <AppIcon name="Trash2" size={16} color={c.danger} />
-        <AppText variant="body" style={{ color: c.danger }}>삭제</AppText>
-      </Pressable>
-    </View>
-  );
-}
 
 // ── Main ──
 
