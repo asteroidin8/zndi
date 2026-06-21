@@ -85,6 +85,8 @@ export default function StatsScreen() {
   const completedFasts = records.filter((r) => r.result === 'completed').length;
 
   const todayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, now));
+  const todayDateStr = now.toISOString().slice(0, 10);
+  const completedRoutinesToday = todayRoutines.filter((r) => isCompleted(r.id, todayDateStr)).length;
 
   const completedTodos = todos.filter((t) => t.completedAt !== null).length;
   const completionRate = todos.length > 0 ? Math.round((completedTodos / todos.length) * 100) : 0;
@@ -116,7 +118,7 @@ export default function StatsScreen() {
             key="routine"
             icon="RotateCcw"
             title={L.sectionRoutine}
-            metric={`${todayRoutines.length}/${routines.length}${L.countUnit}`}
+            metric={`${completedRoutinesToday}/${todayRoutines.length}${L.countUnit}`}
             onPress={() => router.push('/stats/routine')}
           />
         );
