@@ -54,6 +54,14 @@ export type FastingRecord = {
   result: FastingResult | null;
 };
 
+// ── Weight ──
+export type WeightRecord = {
+  id: string;
+  date: string;
+  weightKg: number;
+  createdAt: number;
+};
+
 // ── User ──
 export type UserProfile = {
   heightCm: number | null;
