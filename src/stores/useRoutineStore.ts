@@ -95,7 +95,7 @@ export const useRoutineStore = create<RoutineStore>()(
     {
       name: 'routine-store',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 2,
+      version: 3,
       migrate: (persisted: unknown, version: number) => {
         const state = persisted as Record<string, unknown>;
         if (version < 1) {
@@ -110,6 +110,10 @@ export const useRoutineStore = create<RoutineStore>()(
             repeatType: r.repeatType ?? 'weekly',
             monthDates: r.monthDates ?? [],
           }));
+        }
+        if (version < 3) {
+          const routines = (state.routines as Record<string, unknown>[]) ?? [];
+          state.routines = routines.map((r) => ({ ...r, section: r.section ?? null }));
         }
         return state as RoutineStore;
       },
