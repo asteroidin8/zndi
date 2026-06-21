@@ -102,7 +102,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                   ...(allRoutinesDone ? { color: c.primary } : {}),
                 }}
               >
-                {allRoutinesDone ? '오늘 잔디 완료 ✓' : '오늘의 루틴'}
+                {allRoutinesDone ? '오늘 잔디 심기 완료 ✓' : '오늘의 루틴'}
               </AppText>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>

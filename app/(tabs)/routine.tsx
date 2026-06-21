@@ -176,10 +176,10 @@ export default function RoutineScreen() {
               }}
             >
               <AppText variant="body" style={{ fontWeight: '700' }}>
-                오늘 루틴을 모두 완료했어요
+                오늘 잔디 심기 완료!
               </AppText>
               <AppText variant="caption" tone="tertiary" style={{ marginTop: 2 }}>
-                내일도 이어가면 스트릭이 쌓여요
+                내일도 잔디를 심어보세요
               </AppText>
             </View>
           )}
