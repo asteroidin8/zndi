@@ -45,25 +45,30 @@ export function Row({
       accessibilityRole={onPress ? 'button' : 'text'}
       accessibilityLabel={value ? `${label}, ${value}` : label}
       style={({ pressed }) => ({
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        minHeight: 48,
-        paddingHorizontal: spacing.card,
         backgroundColor: pressed && onPress ? c.surfaceMuted : 'transparent',
       })}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-        {icon && <AppIcon name={icon} size={16} color={c.inkTertiary} />}
-        <AppText variant="body">{label}</AppText>
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-        {value != null && (
-          <AppText variant="body" tone={unset ? 'disabled' : 'tertiary'}>
-            {value}
-          </AppText>
-        )}
-        {onPress && <AppIcon name="ChevronRight" size={16} color={c.inkTertiary} />}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          minHeight: 48,
+          paddingHorizontal: spacing.card,
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+          {icon && <AppIcon name={icon} size={16} color={c.inkTertiary} />}
+          <AppText variant="body">{label}</AppText>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+          {value != null && (
+            <AppText variant="body" tone={unset ? 'disabled' : 'tertiary'}>
+              {value}
+            </AppText>
+          )}
+          {onPress && <AppIcon name="ChevronRight" size={16} color={c.inkTertiary} />}
+        </View>
       </View>
     </Pressable>
   );
@@ -76,19 +81,24 @@ export function DangerRow({ label, onPress }: { label: string; onPress: () => vo
       onPress={onPress}
       accessibilityRole="button"
       style={({ pressed }) => ({
-        flexDirection: 'row',
-        alignItems: 'center',
-        minHeight: 48,
-        paddingHorizontal: spacing.card,
         backgroundColor: pressed ? c.surfaceMuted : 'transparent',
       })}
     >
-      <View style={{ width: 16, alignItems: 'center', marginRight: spacing.sm }}>
-        <View style={{ width: 3, height: 16, backgroundColor: c.danger, borderRadius: 2 }} />
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          minHeight: 48,
+          paddingHorizontal: spacing.card,
+        }}
+      >
+        <View style={{ width: 16, alignItems: 'center', marginRight: spacing.sm }}>
+          <View style={{ width: 3, height: 16, backgroundColor: c.danger, borderRadius: 2 }} />
+        </View>
+        <AppText variant="body" style={{ color: c.danger }}>
+          {label}
+        </AppText>
       </View>
-      <AppText variant="body" style={{ color: c.danger }}>
-        {label}
-      </AppText>
     </Pressable>
   );
 }
