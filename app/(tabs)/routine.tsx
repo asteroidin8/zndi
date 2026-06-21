@@ -34,13 +34,22 @@ import { runAfterDragAnimation } from '@/utils/deferredReorder';
 import { formatRepeatLabel, isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
 const TAB_INDEX = 1 as const;
+function sortBySection(routines: Routine[]): Routine[] {
+  return [...routines].sort((a, b) => {
+    const sa = a.section ?? '';
+    const sb = b.section ?? '';
+    if (sa !== sb) return sa.localeCompare(sb);
+    return (a.order ?? 0) - (b.order ?? 0);
+  });
+}
+
 // ── Unified drag list types ──
 
 type GroupPosition = 'first' | 'middle' | 'last' | 'only';
 
 type ListItem =
   | { type: 'group-header'; key: string; group: RoutineGroup; completedCount: number; totalCount: number; hasVisibleItems: boolean }
-  | { type: 'routine'; key: string; routine: Routine; groupPosition: GroupPosition | null }
+  | { type: 'routine'; key: string; routine: Routine; groupPosition: GroupPosition | null; sectionLabel: string | null }
   | { type: 'ungrouped-header'; key: string };
 
 // ── Main ──
@@ -131,7 +140,7 @@ export default function RoutineScreen() {
     setModalVisible(true);
   }
 
-  function handleSave(data: { name: string; repeatType: import('@/types').RepeatType; repeatDays: Weekday[]; monthDates: number[]; reminderTime: string | null; groupId: string | null }) {
+  function handleSave(data: { name: string; repeatType: import('@/types').RepeatType; repeatDays: Weekday[]; monthDates: number[]; section: string | null; reminderTime: string | null; groupId: string | null }) {
     if (editTarget) {
       updateRoutine(editTarget.id, data);
     } else {
@@ -212,17 +221,27 @@ export default function RoutineScreen() {
       });
 
       if (!group.collapsed) {
-        for (let i = 0; i < groupRoutines.length; i++) {
+        const sorted = sortBySection(groupRoutines);
+        let prevSection: string | null | undefined;
+        for (let i = 0; i < sorted.length; i++) {
           const pos: GroupPosition =
-            groupRoutines.length === 1 ? 'only' : i === 0 ? 'first' : i === groupRoutines.length - 1 ? 'last' : 'middle';
-          items.push({ type: 'routine', key: groupRoutines[i].id, routine: groupRoutines[i], groupPosition: pos });
+            sorted.length === 1 ? 'only' : i === 0 ? 'first' : i === sorted.length - 1 ? 'last' : 'middle';
+          const curSection = sorted[i].section ?? null;
+          const showLabel = curSection !== null && curSection !== prevSection;
+          items.push({ type: 'routine', key: sorted[i].id, routine: sorted[i], groupPosition: pos, sectionLabel: showLabel ? curSection : null });
+          prevSection = curSection;
         }
       }
     }
 
     items.push({ type: 'ungrouped-header', key: 'ungrouped-header' });
-    for (const routine of ungroupedRoutines) {
-      items.push({ type: 'routine', key: routine.id, routine, groupPosition: null });
+    const sortedUngrouped = sortBySection(ungroupedRoutines);
+    let prevUngroupedSection: string | null | undefined;
+    for (const routine of sortedUngrouped) {
+      const curSection = routine.section ?? null;
+      const showLabel = curSection !== null && curSection !== prevUngroupedSection;
+      items.push({ type: 'routine', key: routine.id, routine, groupPosition: null, sectionLabel: showLabel ? curSection : null });
+      prevUngroupedSection = curSection;
     }
 
     return items;
@@ -349,6 +368,7 @@ export default function RoutineScreen() {
 
     const routine = item.routine;
     const gp = item.groupPosition;
+    const sectionLabel = item.sectionLabel;
     const isGrouped = gp !== null;
 
     const cardWrapStyle = isGrouped
@@ -364,11 +384,19 @@ export default function RoutineScreen() {
         }
       : undefined;
 
+    const sectionHeader = sectionLabel ? (
+      <View style={isGrouped ? { marginHorizontal: spacing.screen, paddingHorizontal: spacing.screen, paddingTop: spacing.sm, paddingBottom: spacing.xs, backgroundColor: c.surfaceSubtle, borderLeftWidth: 1, borderRightWidth: 1, borderColor: c.borderNeutral } : { paddingHorizontal: spacing.screen, paddingTop: spacing.md, paddingBottom: spacing.xs }}>
+        <AppText variant="caption" tone="tertiary" style={{ fontWeight: '600' }}>{sectionLabel}</AppText>
+      </View>
+    ) : null;
+
     if (editMode) {
       const selected = selectedIds.has(routine.id);
       return (
-        <View style={cardWrapStyle}>
-          <Pressable
+        <>
+          {sectionHeader}
+          <View style={cardWrapStyle}>
+            <Pressable
             onPress={() => toggleSelection(routine.id)}
             style={{
               flexDirection: 'row',
@@ -392,6 +420,7 @@ export default function RoutineScreen() {
             </View>
           </Pressable>
         </View>
+        </>
       );
     }
 
@@ -399,32 +428,35 @@ export default function RoutineScreen() {
     const isToday = isRoutineScheduledForDate(routine, todayDate);
 
     return (
-      <ScaleDecorator activeScale={1.02}>
-        <SwipeActions
-          onDelete={() => {
-            setUndoTarget(routine);
-            removeRoutine(routine.id);
-          }}
-          onComplete={
-            isToday
-              ? () => { if (!completed) toggleCompleted(routine.id); }
-              : undefined
-          }
-        >
-          <View style={cardWrapStyle}>
-            <View style={{ paddingHorizontal: isGrouped ? spacing.screen : 0 }}>
-              <RoutineItem
-                routine={routine}
-                isCompleted={isToday ? completed : false}
-                onToggle={isToday ? () => toggleCompleted(routine.id) : undefined}
-                onLongPress={drag}
-                onPress={() => openEdit(routine)}
-              />
+      <>
+        {sectionHeader}
+        <ScaleDecorator activeScale={1.02}>
+          <SwipeActions
+            onDelete={() => {
+              setUndoTarget(routine);
+              removeRoutine(routine.id);
+            }}
+            onComplete={
+              isToday
+                ? () => { if (!completed) toggleCompleted(routine.id); }
+                : undefined
+            }
+          >
+            <View style={cardWrapStyle}>
+              <View style={{ paddingHorizontal: isGrouped ? spacing.screen : 0 }}>
+                <RoutineItem
+                  routine={routine}
+                  isCompleted={isToday ? completed : false}
+                  onToggle={isToday ? () => toggleCompleted(routine.id) : undefined}
+                  onLongPress={drag}
+                  onPress={() => openEdit(routine)}
+                />
+              </View>
+              {(gp !== 'last' && gp !== 'only') && <Divider />}
             </View>
-            {(gp !== 'last' && gp !== 'only') && <Divider />}
-          </View>
-        </SwipeActions>
-      </ScaleDecorator>
+          </SwipeActions>
+        </ScaleDecorator>
+      </>
     );
   }
 

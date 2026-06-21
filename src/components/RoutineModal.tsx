@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Keyboard, Pressable, ScrollView, TextInput, View } from 'react-native';
 
 import { AppText } from './AppText';
@@ -24,6 +24,7 @@ type SavePayload = {
   repeatType: RepeatType;
   repeatDays: Weekday[];
   monthDates: number[];
+  section: string | null;
   reminderTime: string | null;
   groupId: string | null;
 };
@@ -38,15 +39,24 @@ type Props = {
 
 export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Props) {
   const c = useThemeColors();
-  const { groups } = useRoutineStore();
+  const { routines, groups } = useRoutineStore();
   const timeFormat = useSettingsStore((s) => s.timeFormat ?? '24h');
   const [name, setName] = useState(initial?.name ?? '');
   const [repeatType, setRepeatType] = useState<RepeatType>(initial?.repeatType ?? 'weekly');
   const [days, setDays] = useState<Weekday[]>(initial?.repeatDays ?? [1, 2, 3, 4, 5]);
   const [monthDates, setMonthDates] = useState<number[]>(initial?.monthDates ?? []);
+  const [section, setSection] = useState<string>(initial?.section ?? '');
   const [reminderTime, setReminderTime] = useState<string | null>(initial?.reminderTime ?? null);
   const [groupId, setGroupId] = useState<string | null>(initial?.groupId ?? null);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
+
+  const existingSections = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of routines) {
+      if (r.section) set.add(r.section);
+    }
+    return Array.from(set).sort();
+  }, [routines]);
 
   useEffect(() => {
     if (!visible) return;
@@ -54,6 +64,7 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
     setRepeatType(initial?.repeatType ?? 'weekly');
     setDays(initial?.repeatDays ?? [1, 2, 3, 4, 5]);
     setMonthDates(initial?.monthDates ?? []);
+    setSection(initial?.section ?? '');
     setReminderTime(initial?.reminderTime ?? null);
     setGroupId(initial?.groupId ?? null);
   }, [visible, initial]);
@@ -73,11 +84,13 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
   function handleSave() {
     if (!name.trim()) return;
     const finalDays = repeatType === 'daily' ? ALL_DAYS.slice() : days;
-    onSave({ name: name.trim(), repeatType, repeatDays: finalDays, monthDates, reminderTime, groupId });
+    const trimmedSection = section.trim() || null;
+    onSave({ name: name.trim(), repeatType, repeatDays: finalDays, monthDates, section: trimmedSection, reminderTime, groupId });
     setName('');
     setRepeatType('weekly');
     setDays([1, 2, 3, 4, 5]);
     setMonthDates([]);
+    setSection('');
     setReminderTime(null);
     setGroupId(null);
   }
@@ -258,6 +271,44 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
             </ScrollView>
           </>
         )}
+
+        <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
+          섹션
+        </AppText>
+        {existingSections.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            nestedScrollEnabled
+            style={{ marginBottom: spacing.sm }}
+          >
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              {existingSections.map((s) => (
+                <Pressable
+                  key={s}
+                  onPress={() => setSection(section === s ? '' : s)}
+                  style={chipStyle(section === s)}
+                >
+                  <AppText variant="caption" style={chipTextStyle(section === s)}>{s}</AppText>
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
+        )}
+        <TextInput
+          value={section}
+          onChangeText={setSection}
+          placeholder="예: 아침, 점심, 저녁"
+          placeholderTextColor={c.inkDisabled}
+          style={{
+            fontSize: 14,
+            color: c.ink,
+            borderBottomWidth: 1,
+            borderBottomColor: c.border,
+            paddingVertical: spacing.sm,
+            marginBottom: spacing.section,
+          }}
+        />
 
         <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
           알림

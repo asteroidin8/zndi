@@ -31,6 +31,7 @@ export function useRealtimeSync() {
               repeatType: ((row.repeat_type as string | undefined) ?? 'weekly') as import('@/types').RepeatType,
               repeatDays: row.repeat_days as Weekday[],
               monthDates: (row.month_dates as number[] | undefined) ?? [],
+              section: (row.section as string | null | undefined) ?? null,
               reminderTime: (row.reminder_time as string | null) ?? null,
               createdAt: Number(row.created_at),
               order: Number(row.sort_order),

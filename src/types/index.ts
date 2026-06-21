@@ -35,6 +35,7 @@ export type Routine = {
   repeatType: RepeatType;
   repeatDays: Weekday[];
   monthDates: number[];
+  section: string | null;
   reminderTime: string | null;
   createdAt: number;
   order: number;
