@@ -6,6 +6,7 @@ export default function StatsLayout() {
       <Stack.Screen name="fasting" />
       <Stack.Screen name="routine" />
       <Stack.Screen name="todo" />
+      <Stack.Screen name="cards" />
     </Stack>
   );
 }
