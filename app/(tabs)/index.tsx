@@ -43,7 +43,6 @@ export default function HomeScreen() {
         {isProfileBannerVisible && (
           <InfoBanner
             title="프로필을 설정하면 칼로리 계산이 가능해요"
-            description="키, 몸무게 입력하기"
             onPress={() => router.push('/settings/body')}
             accessibilityLabel="프로필 설정하기"
           />
