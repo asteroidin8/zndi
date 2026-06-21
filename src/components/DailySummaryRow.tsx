@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, {
-  FadeInDown,
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
   withSpring,
 } from 'react-native-reanimated';
 
@@ -15,7 +13,6 @@ import { TodoPriorityBadge } from './TodoPriorityBadge';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { motion } from '@/constants/motion';
 import { radius, size, spacing } from '@/constants/spacing';
-import { neonGlowShadow } from '@/constants/themeEffects';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
@@ -64,7 +61,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
   const progressWidth = useSharedValue(0);
 
   useEffect(() => {
-    progressWidth.value = withDelay(200, withSpring(progressRatio, motion.spring.gentle));
+    progressWidth.value = withSpring(progressRatio, motion.spring.gentle);
   }, [progressRatio, progressWidth]);
 
   const progressStyle = useAnimatedStyle(() => ({
@@ -106,9 +103,13 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
   return (
     <View style={{ gap: spacing.section }}>
       {hasRoutines && (
-        <Animated.View
-          entering={FadeInDown.duration(280).springify().damping(motion.spring.gentle.damping)}
-          style={{ ...cardStyle, ...(allRoutinesDone ? neonGlowShadow(c, 'soft') : {}) }}
+        <View
+          style={{
+            ...cardStyle,
+            borderLeftWidth: 3,
+            borderLeftColor: c.primary,
+            ...(allRoutinesDone ? { borderColor: `${c.primary}30` } : {}),
+          }}
         >
           <Pressable
             onPress={onRoutinePress}
@@ -136,7 +137,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
             </View>
           </Pressable>
 
-          <View style={{ height: 3, backgroundColor: c.surfaceMuted, marginHorizontal: spacing.card, borderRadius: 2 }}>
+          <View style={{ height: 3, backgroundColor: `${c.primary}15`, marginHorizontal: spacing.card, borderRadius: 2 }}>
             <Animated.View
               style={[
                 { height: 3, backgroundColor: c.primary, borderRadius: 2 },
@@ -186,13 +187,16 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
               </AppText>
             </Pressable>
           )}
-        </Animated.View>
+        </View>
       )}
 
       {hasTodos && (
-        <Animated.View
-          entering={FadeInDown.delay(100).duration(280).springify().damping(motion.spring.gentle.damping)}
-          style={cardStyle}
+        <View
+          style={{
+            ...cardStyle,
+            borderLeftWidth: 3,
+            borderLeftColor: c.primary,
+          }}
         >
           <Pressable
             onPress={onTodoPress}
@@ -254,7 +258,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
               </AppText>
             </Pressable>
           )}
-        </Animated.View>
+        </View>
       )}
     </View>
   );

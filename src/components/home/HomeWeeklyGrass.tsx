@@ -1,10 +1,8 @@
 import { View } from 'react-native';
-import Animated, { ZoomIn } from 'react-native-reanimated';
 
 import { AppText } from '@/components/AppText';
 import { SectionHeader } from '@/components/SectionHeader';
 import { HOME_COPY } from '@/constants/copy';
-import { motion } from '@/constants/motion';
 import { opacity, radius, spacing } from '@/constants/spacing';
 import { grassGlowShadow } from '@/constants/themeEffects';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -80,9 +78,8 @@ export function HomeWeeklyGrass() {
                     ? '미완료'
                     : '기록 없음';
             return (
-              <Animated.View
+              <View
                 key={dot.dateStr}
-                entering={ZoomIn.delay(index * motion.stagger.list).duration(250).springify().damping(motion.spring.gentle.damping)}
                 style={{ flex: 1, alignItems: 'center', gap: CELL_GAP }}
                 accessibilityLabel={`${dot.weekdayLabel} ${statusA11y}`}
               >
@@ -93,9 +90,8 @@ export function HomeWeeklyGrass() {
                     borderRadius: radius.xs,
                     backgroundColor: colors.bg,
                     opacity: partial ? opacity.partial : 1,
-                    borderWidth: dot.status === 'none' || dot.status === 'empty' ? 1 : 0,
-                    borderColor: colors.border,
-                    transform: [{ scale: isToday ? 1.15 : 1 }],
+                    borderWidth: isToday ? 1.5 : (dot.status === 'none' || dot.status === 'empty' ? 1 : 0),
+                    borderColor: isToday ? c.primary : colors.border,
                     ...(colors.glow ? grassGlowShadow(c) : {}),
                   }}
                 />
@@ -106,7 +102,7 @@ export function HomeWeeklyGrass() {
                 >
                   {dot.weekdayLabel}
                 </AppText>
-              </Animated.View>
+              </View>
             );
           })}
         </View>

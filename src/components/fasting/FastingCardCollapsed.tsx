@@ -77,6 +77,7 @@ export function FastingCardCollapsed({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel="단식 상세 보기"
+      style={{ borderLeftWidth: 3, borderLeftColor: accent }}
     >
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <AppText variant="caption" tone="secondary">
