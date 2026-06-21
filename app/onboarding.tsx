@@ -38,7 +38,7 @@ export default function OnboardingScreen() {
   const isLast = page === SLIDES.length - 1;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top', 'bottom']}>
       <PagerView
         ref={pagerRef}
         style={{ flex: 1 }}
@@ -63,7 +63,7 @@ export default function OnboardingScreen() {
         ))}
       </PagerView>
 
-      <View style={{ padding: spacing.screen, gap: spacing.item }}>
+      <View style={{ paddingHorizontal: spacing.screen, paddingBottom: spacing.screen, paddingTop: spacing.item, gap: spacing.item }}>
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.sm }}>
           {SLIDES.map((_, i) => (
             <View
