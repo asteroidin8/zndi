@@ -1,6 +1,5 @@
 import { Pressable, View } from 'react-native';
 
-import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -37,13 +36,16 @@ export function EditBottomBar({ selectedCount, totalCount, onSelectAll, onDelete
         onPress={onSelectAll}
         hitSlop={8}
         accessibilityRole="button"
-        style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}
+        style={{ flex: 1, alignItems: 'flex-start' }}
       >
-        <AppIcon name={allSelected ? 'CheckSquare' : 'Square'} size={18} color={c.ink} />
-        <AppText variant="body">{allSelected ? '선택 해제' : '전체 선택'}</AppText>
+        <AppText variant="body" style={{ fontWeight: '600' }}>
+          {allSelected ? '선택 해제' : '전체 선택'}
+        </AppText>
       </Pressable>
 
-      <AppText variant="caption" tone="tertiary">{selectedCount}개 선택됨</AppText>
+      <AppText variant="caption" tone="tertiary" style={{ flex: 1, textAlign: 'center' }}>
+        {selectedCount}개 선택됨
+      </AppText>
 
       <Pressable
         onPress={onDelete}
@@ -51,14 +53,12 @@ export function EditBottomBar({ selectedCount, totalCount, onSelectAll, onDelete
         hitSlop={8}
         accessibilityRole="button"
         style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: spacing.xs,
+          flex: 1,
+          alignItems: 'flex-end',
           opacity: selectedCount === 0 ? 0.4 : 1,
         }}
       >
-        <AppIcon name="Trash2" size={16} color={c.danger} />
-        <AppText variant="body" style={{ color: c.danger }}>삭제</AppText>
+        <AppText variant="body" style={{ color: c.danger, fontWeight: '600' }}>삭제</AppText>
       </Pressable>
     </View>
   );

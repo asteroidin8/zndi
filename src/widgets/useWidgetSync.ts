@@ -6,6 +6,7 @@ import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { getWeekDayDots, getRoutineStreakDays, toDateStr } from '@/utils/homeDailyBoard';
+import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 import type { ChecklistItem, WidgetData } from './widgetDataBridge';
 import { writeWidgetData } from './widgetDataBridge';
 
@@ -20,13 +21,12 @@ export function useWidgetSync() {
 
     const now = new Date();
     const todayStr = toDateStr(now);
-    const todayDay = now.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
     const dots = getWeekDayDots(routines, isCompleted);
     const weeklyGrass = dots.map((d) => d.status === 'full');
     const streak = getRoutineStreakDays(routines, isCompleted);
 
-    const todayRoutines = routines.filter((r) => r.repeatDays.includes(todayDay));
+    const todayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, now));
     const completedRoutines = todayRoutines.filter((r) => isCompleted(r.id, todayStr));
     const activeTodos = todos.filter((t) => !t.completedAt);
 

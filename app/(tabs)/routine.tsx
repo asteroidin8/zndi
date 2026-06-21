@@ -31,14 +31,9 @@ import {
 } from '@/stores/useRoutineStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
+import { formatRepeatLabel, isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
 const TAB_INDEX = 1 as const;
-const DAY_SHORT = ['일', '월', '화', '수', '목', '금', '토'];
-
-function getTodayDay(): Weekday {
-  return new Date().getDay() as Weekday;
-}
-
 // ── Unified drag list types ──
 
 type GroupPosition = 'first' | 'middle' | 'last' | 'only';
@@ -80,7 +75,7 @@ export default function RoutineScreen() {
   const [groupModalVisible, setGroupModalVisible] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
 
-  const today = useMemo(() => getTodayDay(), []);
+  const todayDate = useMemo(() => new Date(), []);
   const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   const hasGroups = groups.length > 0;
@@ -88,11 +83,11 @@ export default function RoutineScreen() {
   const allRoutinesSorted = useMemo(() => [...routines].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)), [routines]);
   const ungroupedRoutines = useMemo(() => allRoutinesSorted.filter((r) => (r.groupId ?? null) === null), [allRoutinesSorted]);
 
-  const todayRoutines = useMemo(() => ungroupedRoutines.filter((r) => r.repeatDays.includes(today)), [ungroupedRoutines, today]);
-  const otherRoutines = useMemo(() => ungroupedRoutines.filter((r) => !r.repeatDays.includes(today)), [ungroupedRoutines, today]);
+  const todayRoutines = useMemo(() => ungroupedRoutines.filter((r) => isRoutineScheduledForDate(r, todayDate)), [ungroupedRoutines, todayDate]);
+  const otherRoutines = useMemo(() => ungroupedRoutines.filter((r) => !isRoutineScheduledForDate(r, todayDate)), [ungroupedRoutines, todayDate]);
 
   const allTodayComplete = (() => {
-    const todayAll = routines.filter((r) => r.repeatDays.includes(today));
+    const todayAll = routines.filter((r) => isRoutineScheduledForDate(r, todayDate));
     return todayAll.length > 0 && todayAll.every((r) => isCompleted(r.id, todayStr));
   })();
 
@@ -136,7 +131,7 @@ export default function RoutineScreen() {
     setModalVisible(true);
   }
 
-  function handleSave(data: { name: string; repeatDays: Weekday[]; reminderTime: string | null; groupId: string | null }) {
+  function handleSave(data: { name: string; repeatType: import('@/types').RepeatType; repeatDays: Weekday[]; monthDates: number[]; reminderTime: string | null; groupId: string | null }) {
     if (editTarget) {
       updateRoutine(editTarget.id, data);
     } else {
@@ -203,7 +198,7 @@ export default function RoutineScreen() {
 
     for (const group of sortedGroups) {
       const groupRoutines = allRoutinesSorted.filter((r) => (r.groupId ?? null) === group.id);
-      const todayInGroup = groupRoutines.filter((r) => r.repeatDays.includes(today));
+      const todayInGroup = groupRoutines.filter((r) => isRoutineScheduledForDate(r, todayDate));
       const completedInGroup = todayInGroup.filter((r) => isCompleted(r.id, todayStr)).length;
       const visibleCount = group.collapsed ? 0 : groupRoutines.length;
 
@@ -231,7 +226,7 @@ export default function RoutineScreen() {
     }
 
     return items;
-  }, [hasGroups, sortedGroups, allRoutinesSorted, ungroupedRoutines, today, todayStr, isCompleted]);
+  }, [hasGroups, sortedGroups, allRoutinesSorted, ungroupedRoutines, todayDate, todayStr, isCompleted]);
 
   // ── Drag handlers ──
 
@@ -293,7 +288,7 @@ export default function RoutineScreen() {
         <View style={{ flex: 1 }}>
           <AppText variant="body">{routine.name}</AppText>
           <AppText variant="caption" tone="disabled">
-            {routine.repeatDays.map((d) => DAY_SHORT[d]).join('·')}
+            {formatRepeatLabel(routine)}
           </AppText>
         </View>
       </Pressable>
@@ -302,7 +297,7 @@ export default function RoutineScreen() {
 
   function renderRoutineRow(routine: Routine, allowComplete: boolean, drag?: () => void) {
     const completed = isCompleted(routine.id, todayStr);
-    const isToday = routine.repeatDays.includes(today);
+    const isToday = isRoutineScheduledForDate(routine, todayDate);
 
     return (
       <ScaleDecorator activeScale={1.02}>
@@ -392,7 +387,7 @@ export default function RoutineScreen() {
             <View style={{ flex: 1 }}>
               <AppText variant="body">{routine.name}</AppText>
               <AppText variant="caption" tone="disabled">
-                {routine.repeatDays.map((d) => DAY_SHORT[d]).join('·')}
+                {formatRepeatLabel(routine)}
               </AppText>
             </View>
           </Pressable>
@@ -401,7 +396,7 @@ export default function RoutineScreen() {
     }
 
     const completed = isCompleted(routine.id, todayStr);
-    const isToday = routine.repeatDays.includes(today);
+    const isToday = isRoutineScheduledForDate(routine, todayDate);
 
     return (
       <ScaleDecorator activeScale={1.02}>
@@ -490,7 +485,7 @@ export default function RoutineScreen() {
             <>
               <View style={{ marginTop: spacing.card, marginBottom: spacing.xs, paddingHorizontal: spacing.screen }}>
                 <AppText variant="caption" tone="tertiary">
-                  오늘 · {DAY_LABELS[today]}요일
+                  오늘 · {DAY_LABELS[todayDate.getDay()]}요일
                 </AppText>
               </View>
               {todayRoutines.map(renderSelectableItem)}
@@ -543,7 +538,7 @@ export default function RoutineScreen() {
             <>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.card, marginBottom: spacing.xs, paddingHorizontal: spacing.screen }}>
                 <AppText variant="caption" tone="tertiary">
-                  오늘 · {DAY_LABELS[today]}요일
+                  오늘 · {DAY_LABELS[todayDate.getDay()]}요일
                 </AppText>
                 <AppText variant="caption" tone={completedCount === todayRoutines.length ? 'primary' : 'tertiary'} style={{ fontWeight: '600' }}>
                   {completedCount}/{todayRoutines.length}

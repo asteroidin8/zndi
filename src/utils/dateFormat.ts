@@ -47,3 +47,12 @@ export function getPriorityColor(
 ): string {
   return { high: c.priorityHigh, mid: c.priorityMid, low: c.priorityLow }[priority];
 }
+
+export function formatTimeDisplay(time: string, format: '12h' | '24h'): string {
+  if (format === '24h') return time;
+  const [hStr, mStr] = time.split(':');
+  const h = parseInt(hStr, 10);
+  const period = h < 12 ? '오전' : '오후';
+  const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${period} ${displayH}:${mStr}`;
+}

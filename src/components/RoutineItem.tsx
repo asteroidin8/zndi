@@ -5,8 +5,9 @@ import { AppText } from './AppText';
 import { opacity, size, spacing } from '@/constants/spacing';
 import { feedbackComplete, feedbackUncomplete } from '@/utils/microFeedback';
 import type { Routine } from '@/stores/useRoutineStore';
-
-const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+import { useSettingsStore } from '@/stores/useSettingsStore';
+import { formatTimeDisplay } from '@/utils/dateFormat';
+import { formatRepeatLabel } from '@/utils/routineSchedule';
 
 type Props = {
   routine: Routine;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export function RoutineItem({ routine, isCompleted = false, onToggle, onLongPress, onPress }: Props) {
+  const timeFormat = useSettingsStore((s) => s.timeFormat ?? '24h');
   function handleToggle() {
     if (isCompleted) feedbackUncomplete();
     else feedbackComplete();
@@ -56,8 +58,8 @@ export function RoutineItem({ routine, isCompleted = false, onToggle, onLongPres
           {routine.name}
         </AppText>
         <AppText variant="caption" tone="disabled">
-          {routine.repeatDays.map((d) => DAY_LABELS[d]).join('·')}
-          {routine.reminderTime ? `  ·  ${routine.reminderTime}` : ''}
+          {formatRepeatLabel(routine)}
+          {routine.reminderTime ? `  ·  ${formatTimeDisplay(routine.reminderTime, timeFormat)}` : ''}
         </AppText>
       </View>
     </Pressable>

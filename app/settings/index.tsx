@@ -11,7 +11,7 @@ import { DangerRow, GroupCard, InsetDivider, Row } from '@/components/settings/M
 import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import type { ThemeMode } from '@/stores/useSettingsStore';
+import type { ThemeMode, TimeFormat } from '@/stores/useSettingsStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
@@ -28,9 +28,14 @@ const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
   { value: 'dark', label: '다크' },
 ];
 
+const TIME_FORMAT_OPTIONS: { value: TimeFormat; label: string }[] = [
+  { value: '24h', label: '24시간' },
+  { value: '12h', label: '오전/오후' },
+];
+
 export default function MyScreen() {
   const c = useThemeColors();
-  const { themeMode, setThemeMode } = useSettingsStore();
+  const { themeMode, setThemeMode, timeFormat, setTimeFormat } = useSettingsStore();
   const { configured, loading, user, signInGoogle, sendEmailOtp, verifyEmailOtp, signOut } = useAuth();
   const { profile, setNickname } = useUserStore();
   const { routines } = useRoutineStore();
@@ -242,6 +247,36 @@ export default function MyScreen() {
                   <Pressable
                     key={opt.value}
                     onPress={() => setThemeMode(opt.value)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    style={{
+                      paddingHorizontal: spacing.md, paddingVertical: spacing.xs + 2,
+                      borderRadius: radius.sm,
+                      backgroundColor: selected ? c.primary : 'transparent',
+                    }}
+                  >
+                    <AppText variant="caption" style={{
+                      fontWeight: selected ? '700' : '400',
+                      color: selected ? c.onPrimary : c.inkTertiary,
+                    }}>{opt.label}</AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+          <InsetDivider />
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48, paddingHorizontal: spacing.card }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+              <AppIcon name="Clock" size={16} color={c.inkTertiary} />
+              <AppText variant="body">시간 표기</AppText>
+            </View>
+            <View style={{ flexDirection: 'row', gap: spacing.xs }}>
+              {TIME_FORMAT_OPTIONS.map((opt) => {
+                const selected = (timeFormat ?? '24h') === opt.value;
+                return (
+                  <Pressable
+                    key={opt.value}
+                    onPress={() => setTimeFormat(opt.value)}
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
                     style={{

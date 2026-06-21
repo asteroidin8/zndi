@@ -28,7 +28,9 @@ export function useRealtimeSync() {
             next.push({
               id: String(row.id),
               name: String(row.name),
+              repeatType: ((row.repeat_type as string | undefined) ?? 'weekly') as import('@/types').RepeatType,
               repeatDays: row.repeat_days as Weekday[],
+              monthDates: (row.month_dates as number[] | undefined) ?? [],
               reminderTime: (row.reminder_time as string | null) ?? null,
               createdAt: Number(row.created_at),
               order: Number(row.sort_order),

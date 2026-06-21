@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { Routine, RoutineGroup } from '@/types';
 
-export type { Routine, RoutineGroup, Weekday } from '@/types';
+export type { Routine, RoutineGroup, Weekday, RepeatType } from '@/types';
 
 type RoutineStore = {
   routines: Routine[];
@@ -95,13 +95,21 @@ export const useRoutineStore = create<RoutineStore>()(
     {
       name: 'routine-store',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 1,
+      version: 2,
       migrate: (persisted: unknown, version: number) => {
         const state = persisted as Record<string, unknown>;
-        if (version === 0) {
+        if (version < 1) {
           const routines = (state.routines as Record<string, unknown>[]) ?? [];
           state.routines = routines.map((r) => ({ ...r, groupId: r.groupId ?? null }));
           state.groups = state.groups ?? [];
+        }
+        if (version < 2) {
+          const routines = (state.routines as Record<string, unknown>[]) ?? [];
+          state.routines = routines.map((r) => ({
+            ...r,
+            repeatType: r.repeatType ?? 'weekly',
+            monthDates: r.monthDates ?? [],
+          }));
         }
         return state as RoutineStore;
       },

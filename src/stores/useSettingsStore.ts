@@ -6,15 +6,19 @@ import type { HintKey, ThemeMode } from '@/types';
 
 export type { HintKey, ThemeMode } from '@/types';
 
+export type TimeFormat = '12h' | '24h';
+
 type SettingsStore = {
   foregroundServiceEnabled: boolean;
   themeMode: ThemeMode;
+  timeFormat: TimeFormat;
   routineNotificationsEnabled: boolean;
   todoNotificationsEnabled: boolean;
   onboardingCompleted: boolean;
   seenHints: Partial<Record<HintKey, boolean>>;
   toggleForegroundService: () => void;
   setThemeMode: (mode: ThemeMode) => void;
+  setTimeFormat: (format: TimeFormat) => void;
   setRoutineNotifications: (enabled: boolean) => void;
   setTodoNotifications: (enabled: boolean) => void;
   setOnboardingCompleted: (completed: boolean) => void;
@@ -26,6 +30,7 @@ export const useSettingsStore = create<SettingsStore>()(
     (set) => ({
       foregroundServiceEnabled: true,
       themeMode: 'dark',
+      timeFormat: '24h',
       routineNotificationsEnabled: false,
       todoNotificationsEnabled: false,
       onboardingCompleted: false,
@@ -33,6 +38,7 @@ export const useSettingsStore = create<SettingsStore>()(
       toggleForegroundService: () =>
         set((s) => ({ foregroundServiceEnabled: !s.foregroundServiceEnabled })),
       setThemeMode: (mode) => set({ themeMode: mode }),
+      setTimeFormat: (format) => set({ timeFormat: format }),
       setRoutineNotifications: (enabled) => set({ routineNotificationsEnabled: enabled }),
       setTodoNotifications: (enabled) => set({ todoNotificationsEnabled: enabled }),
       setOnboardingCompleted: (completed) => set({ onboardingCompleted: completed }),

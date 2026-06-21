@@ -17,6 +17,7 @@ import { radius, size, spacing } from '@/constants/spacing';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
+import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
 const MAX_ROUTINES = 5;
 const MAX_TODOS = 4;
@@ -37,10 +38,10 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
   const { isCompleted, toggleCompletion } = useRoutineCompletionStore();
 
   const today = getTodayDate();
-  const todayDay = new Date().getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  const now = new Date();
 
   const todayRoutines = routines
-    .filter((r) => r.repeatDays.includes(todayDay))
+    .filter((r) => isRoutineScheduledForDate(r, now))
     .sort((a, b) => {
       const aDone = isCompleted(a.id, today) ? 1 : 0;
       const bDone = isCompleted(b.id, today) ? 1 : 0;

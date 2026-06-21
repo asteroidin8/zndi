@@ -13,8 +13,8 @@ import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
-import type { Weekday } from '@/types';
 import { toDateStr } from '@/utils/homeDailyBoard';
+import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
 const L = STATS_LABELS;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -25,17 +25,15 @@ export default function RoutineDetailScreen() {
   const { getStreak, isCompleted } = useRoutineCompletionStore();
 
   const now = new Date();
-  const todayWeekday = now.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  const todayRoutines = routines.filter((r) => r.repeatDays.includes(todayWeekday));
-  const maxStreak = routines.reduce((max, r) => Math.max(max, getStreak(r.id, r.repeatDays)), 0);
+  const todayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, now));
+  const maxStreak = routines.reduce((max, r) => Math.max(max, getStreak(r.id, r)), 0);
 
   const todayStr = toDateStr(new Date());
   const last7Days: BarChartItem[] = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     const ds = toDateStr(d);
-    const dayOfWeek = d.getDay() as Weekday;
-    const scheduled = routines.filter((r) => r.repeatDays.includes(dayOfWeek));
+    const scheduled = routines.filter((r) => isRoutineScheduledForDate(r, d));
     const completed = scheduled.filter((r) => isCompleted(r.id, ds)).length;
     return {
       label: WEEKDAY_SHORT[d.getDay()],
@@ -77,7 +75,7 @@ export default function RoutineDetailScreen() {
         {routines.length > 0 ? (
           <View style={{ gap: 8 }}>
             {routines.map((r) => {
-              const streak = getStreak(r.id, r.repeatDays);
+              const streak = getStreak(r.id, r);
               const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
               const done = isCompleted(r.id, todayStr);
               return (

@@ -1,6 +1,7 @@
 import { DAY_LABELS } from '@/constants/statsLabels';
 import type { Routine } from '@/stores/useRoutineStore';
 import type { Todo } from '@/stores/useTodoStore';
+import { isRoutineScheduledForDate } from './routineSchedule';
 
 export type DayDotStatus = 'none' | 'empty' | 'partial' | 'full';
 
@@ -22,7 +23,8 @@ export function getRoutineProgressForDate(
   routines: Routine[],
   isCompleted: (routineId: string, date: string) => boolean,
 ) {
-  const dayRoutines = routines.filter((r) => r.repeatDays.includes(dayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6));
+  const date = new Date(dateStr + 'T12:00:00');
+  const dayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, date));
   if (dayRoutines.length === 0) {
     return { completed: 0, total: 0 };
   }

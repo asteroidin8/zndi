@@ -26,12 +26,15 @@ export type Todo = {
 
 // ── Routine ──
 export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type RepeatType = 'daily' | 'weekly' | 'monthly';
 export type RoutineGroup = ItemGroup;
 
 export type Routine = {
   id: string;
   name: string;
+  repeatType: RepeatType;
   repeatDays: Weekday[];
+  monthDates: number[];
   reminderTime: string | null;
   createdAt: number;
   order: number;
