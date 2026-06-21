@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Keyboard, Pressable, ScrollView, TextInput, View } from 'react-native';
 
 import { AppText } from './AppText';
 import { radius, spacing } from '@/constants/spacing';
@@ -216,7 +216,7 @@ export function TodoFormFields({
           <Chip
             label={isCustomDate && dueDate ? formatDueDate(dueDate) : '직접 선택'}
             selected={isCustomDate}
-            onPress={onDatePickerOpen}
+            onPress={() => { Keyboard.dismiss(); onDatePickerOpen(); }}
           />
         </View>
       </View>

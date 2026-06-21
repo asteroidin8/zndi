@@ -5,9 +5,9 @@ import { DrumPicker } from './DrumPicker';
 import { SheetModal, SheetPrimaryButton } from './SheetModal';
 import { spacing } from '@/constants/spacing';
 
-const HOURS = Array.from({ length: 18 }, (_, i) => ({
-  value: i + 6,
-  label: `${String(i + 6).padStart(2, '0')}시`,
+const HOURS = Array.from({ length: 24 }, (_, i) => ({
+  value: i,
+  label: `${String(i).padStart(2, '0')}시`,
 }));
 
 const MINUTES = Array.from({ length: 12 }, (_, i) => ({
@@ -28,7 +28,7 @@ function parseTime(value: string | null) {
   const [hStr, mStr] = value.split(':');
   const hour = parseInt(hStr, 10);
   const minute = parseInt(mStr, 10);
-  const safeHour = Number.isFinite(hour) ? Math.min(23, Math.max(6, hour)) : 9;
+  const safeHour = Number.isFinite(hour) ? Math.min(23, Math.max(0, hour)) : 9;
   const safeMinute = snapMinute(Number.isFinite(minute) ? minute : 0);
   return { hour: safeHour, minute: safeMinute };
 }

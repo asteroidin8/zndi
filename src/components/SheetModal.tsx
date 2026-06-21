@@ -57,7 +57,7 @@ export function SheetModal({ visible, onClose, title, headerRight, footer, child
     <Modal visible transparent animationType="none" onRequestClose={onClose}>
       <KeyboardAvoidingView
         style={{ flex: 1, justifyContent: 'flex-end' }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 6 : 0}
       >
         <Animated.View
@@ -104,7 +104,7 @@ export function SheetModal({ visible, onClose, title, headerRight, footer, child
 
             {scrollable ? (
               <ScrollView
-                style={{ maxHeight: '60%' }}
+                style={{ maxHeight: '80%' }}
                 contentContainerStyle={{ paddingHorizontal: spacing.screen }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
