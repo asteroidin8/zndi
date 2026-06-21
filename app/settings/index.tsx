@@ -105,7 +105,7 @@ export default function MyScreen() {
           await cancelNotificationsByPrefix(NOTIFICATION_ID.todoPrefix);
           await Notifications.dismissNotificationAsync(NOTIFICATION_ID.fasting).catch(() => {});
           useFastingStore.setState({ status: 'idle', startedAt: null, records: [], goalHours: 16 });
-          useRoutineStore.setState({ routines: [] });
+          useRoutineStore.setState({ routines: [], groups: [] });
           useTodoStore.setState({ todos: [], groups: [], lastArchiveDate: null });
           useRoutineCompletionStore.setState({ completions: {} });
           useUserStore.setState({
