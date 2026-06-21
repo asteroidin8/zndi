@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -19,6 +19,7 @@ import type { FastingRecord } from '@/types';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
+import { type StatsCardId, useStatsCardStore } from '@/stores/useStatsCardStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { buildMonthGrassMap } from '@/utils/calendarGrass';
@@ -78,6 +79,7 @@ export default function StatsScreen() {
   const { todos } = useTodoStore();
   const { getStreak, isCompleted } = useRoutineCompletionStore();
   const { profile } = useUserStore();
+  const { cards } = useStatsCardStore();
 
   const now = new Date();
   const [viewYear, setViewYear] = useState(now.getFullYear());
@@ -116,6 +118,69 @@ export default function StatsScreen() {
 
   const isDataEmpty = records.length === 0 && routines.length === 0 && todos.length === 0;
 
+  const hasWeight = profile.weightKg != null && profile.targetWeightKg != null;
+
+  const visibleCards = useMemo(
+    () => cards.filter((c) => c.visible && (c.id !== 'weight' || hasWeight)),
+    [cards, hasWeight],
+  );
+
+  function renderCardById(id: StatsCardId) {
+    switch (id) {
+      case 'fasting':
+        return (
+          <StatCard
+            key="fasting"
+            icon="Timer"
+            title={L.sectionFasting}
+            metric={`${completedFasts}${L.timesUnit}`}
+            sub={avgFastMinutes > 0 ? `${L.avgDuration} ${formatMinutes(avgFastMinutes)}` : ''}
+            onPress={() => router.push('/stats/fasting')}
+          />
+        );
+      case 'routine':
+        return (
+          <StatCard
+            key="routine"
+            icon="RotateCcw"
+            title={L.sectionRoutine}
+            metric={`${todayRoutines.length}/${routines.length}${L.countUnit}`}
+            sub={maxStreak > 0 ? `${L.maxStreak} ${maxStreak}${L.dayUnit}` : ''}
+            onPress={() => router.push('/stats/routine')}
+          />
+        );
+      case 'todo':
+        return (
+          <StatCard
+            key="todo"
+            icon="ListTodo"
+            title={L.sectionTodo}
+            metric={`${completionRate}%`}
+            sub={`${completedTodos}/${todos.length} ${L.completed}`}
+            onPress={() => router.push('/stats/todo')}
+          />
+        );
+      case 'weight':
+        if (!hasWeight) return null;
+        return (
+          <Card key="weight" style={{ gap: spacing.xs }}>
+            <AppText variant="caption" tone="tertiary">{L.sectionWeightGoal}</AppText>
+            <AppText variant="body" style={{ fontWeight: '600' }}>
+              {formatMetric(profile.weightKg!, 'kg')} {L.weightArrow}{' '}
+              {formatMetric(profile.targetWeightKg!, 'kg')}
+            </AppText>
+            <AppText variant="caption" tone="tertiary">
+              {profile.weightKg! > profile.targetWeightKg!
+                ? `${(profile.weightKg! - profile.targetWeightKg!).toFixed(1)}kg ${L.weightToLose}`
+                : profile.weightKg! < profile.targetWeightKg!
+                  ? `${(profile.targetWeightKg! - profile.weightKg!).toFixed(1)}kg ${L.weightToGain}`
+                  : L.weightAtGoal}
+            </AppText>
+          </Card>
+        );
+    }
+  }
+
   function prevMonth() {
     if (viewMonth === 0) {
       setViewYear((y) => y - 1);
@@ -147,7 +212,19 @@ export default function StatsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <AppText variant="title">{L.title}</AppText>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <AppText variant="title">{L.title}</AppText>
+          {!isDataEmpty && (
+            <Pressable
+              onPress={() => router.push('/stats/cards')}
+              hitSlop={8}
+              style={{ padding: 4 }}
+              accessibilityLabel="카드 편집"
+            >
+              <AppIcon name="Settings2" size={20} color={c.inkTertiary} />
+            </Pressable>
+          )}
+        </View>
 
         <StatsBentoStats />
 
@@ -214,46 +291,7 @@ export default function StatsScreen() {
             </View>
 
             <View style={{ gap: spacing.md }}>
-              <StatCard
-                icon="Timer"
-                title={L.sectionFasting}
-                metric={`${completedFasts}${L.timesUnit}`}
-                sub={avgFastMinutes > 0 ? `${L.avgDuration} ${formatMinutes(avgFastMinutes)}` : ''}
-                onPress={() => router.push('/stats/fasting')}
-              />
-
-              <StatCard
-                icon="RotateCcw"
-                title={L.sectionRoutine}
-                metric={`${todayRoutines.length}/${routines.length}${L.countUnit}`}
-                sub={maxStreak > 0 ? `${L.maxStreak} ${maxStreak}${L.dayUnit}` : ''}
-                onPress={() => router.push('/stats/routine')}
-              />
-
-              <StatCard
-                icon="ListTodo"
-                title={L.sectionTodo}
-                metric={`${completionRate}%`}
-                sub={`${completedTodos}/${todos.length} ${L.completed}`}
-                onPress={() => router.push('/stats/todo')}
-              />
-
-              {profile.weightKg != null && profile.targetWeightKg != null && (
-                <Card style={{ gap: spacing.xs }}>
-                  <AppText variant="caption" tone="tertiary">{L.sectionWeightGoal}</AppText>
-                  <AppText variant="body" style={{ fontWeight: '600' }}>
-                    {formatMetric(profile.weightKg, 'kg')} {L.weightArrow}{' '}
-                    {formatMetric(profile.targetWeightKg, 'kg')}
-                  </AppText>
-                  <AppText variant="caption" tone="tertiary">
-                    {profile.weightKg > profile.targetWeightKg
-                      ? `${(profile.weightKg - profile.targetWeightKg).toFixed(1)}kg ${L.weightToLose}`
-                      : profile.weightKg < profile.targetWeightKg
-                        ? `${(profile.targetWeightKg - profile.weightKg).toFixed(1)}kg ${L.weightToGain}`
-                        : L.weightAtGoal}
-                  </AppText>
-                </Card>
-              )}
+              {visibleCards.map((card) => renderCardById(card.id))}
             </View>
           </>
         )}
