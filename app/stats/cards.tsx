@@ -38,7 +38,7 @@ export default function StatsCardsEditScreen() {
             padding: spacing.card,
             marginBottom: spacing.sm,
             marginHorizontal: spacing.screen,
-            gap: 12,
+            gap: spacing.md,
           }}
         >
           <Pressable onLongPress={drag} hitSlop={8} style={{ padding: 4 }}>

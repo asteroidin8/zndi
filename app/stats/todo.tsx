@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
+import { ProgressBar } from '@/components/ProgressBar';
 import { StatsSummaryCard } from '@/components/stats/StatsSummaryCard';
 import { PageHeader } from '@/components/settings/MyScreenUI';
 import { STATS_LABELS } from '@/constants/statsLabels';
@@ -45,7 +46,7 @@ export default function TodoDetailScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+        <View style={{ flexDirection: 'row', gap: spacing.gap }}>
           <StatsSummaryCard label={L.completionRate} value={`${completionRate}%`} />
           <StatsSummaryCard
             label={L.importantTodos}
@@ -53,7 +54,7 @@ export default function TodoDetailScreen() {
           />
         </View>
 
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+        <View style={{ flexDirection: 'row', gap: spacing.gap }}>
           <StatsSummaryCard label="진행 중" value={`${activeTodos}${L.countUnit}`} />
           <StatsSummaryCard label={L.completed} value={`${completedTodos}${L.countUnit}`} />
         </View>
@@ -63,16 +64,7 @@ export default function TodoDetailScreen() {
             <AppText variant="caption" tone="tertiary">
               전체 달성률
             </AppText>
-            <View style={{ height: 8, backgroundColor: c.surfaceMuted, borderRadius: 4, overflow: 'hidden' }}>
-              <View
-                style={{
-                  height: 8,
-                  width: `${completionRate}%`,
-                  backgroundColor: c.primary,
-                  borderRadius: 4,
-                }}
-              />
-            </View>
+            <ProgressBar value={completionRate} height={8} />
           </View>
         )}
 
@@ -105,16 +97,7 @@ export default function TodoDetailScreen() {
                       </AppText>
                     </View>
                     {total > 0 && (
-                      <View style={{ height: 6, backgroundColor: c.surfaceMuted, borderRadius: 3, overflow: 'hidden' }}>
-                        <View
-                          style={{
-                            height: 6,
-                            width: `${rate}%`,
-                            backgroundColor: priorityColor(priority),
-                            borderRadius: 3,
-                          }}
-                        />
-                      </View>
+                      <ProgressBar value={rate} height={6} color={priorityColor(priority)} />
                     )}
                   </View>
                 </Card>

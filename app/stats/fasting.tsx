@@ -82,7 +82,7 @@ export default function FastingDetailScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+        <View style={{ flexDirection: 'row', gap: spacing.gap }}>
           <StatsSummaryCard label={L.totalRecords} value={`${records.length}${L.timesUnit}`} />
           <StatsSummaryCard label={L.completed} value={`${completedFasts}${L.timesUnit}`} />
           <StatsSummaryCard label={L.avgDuration} value={formatMinutes(avgFastMinutes)} />

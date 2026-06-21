@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert, FlatList, Pressable, ScrollView, TextInput, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +22,7 @@ import { UndoSnackbar } from '@/components/UndoSnackbar';
 import { UngroupedHeader } from '@/components/UngroupedHeader';
 import { radius, spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
+import { useEditMode } from '@/hooks/useEditMode';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { getPriorityColor } from '@/utils/dateFormat';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
@@ -121,8 +122,7 @@ export default function TodoScreen() {
   const [undoTarget, setUndoTarget] = useState<Todo | null>(null);
   const [groupModalVisible, setGroupModalVisible] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
-  const [editMode, setEditMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const { editMode, selectedIds, enterEditMode, exitEditMode, toggleSelection, toggleSelectAll } = useEditMode();
 
   const activeTodos = todos.filter((t) => !t.completedAt);
   const completedTodos = todos.filter((t) => !!t.completedAt);
@@ -132,37 +132,14 @@ export default function TodoScreen() {
   const ungroupedActive = activeTodos.filter((t) => !t.groupId);
   const hasGroups = groups.length > 0;
 
-  function enterEditMode() {
-    setEditMode(true);
-    setSelectedIds(new Set());
-  }
-
-  function exitEditMode() {
-    setEditMode(false);
-    setSelectedIds(new Set());
-  }
-
-  function toggleSelection(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
   const visibleTodoIds = useMemo(() => {
     const list = filter === 'active' ? activeTodos : completedTodos;
     return list.map((t) => t.id);
   }, [filter, activeTodos, completedTodos]);
 
-  function handleSelectAll() {
-    if (selectedIds.size === visibleTodoIds.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(visibleTodoIds));
-    }
-  }
+  const handleSelectAll = useCallback(() => {
+    toggleSelectAll(visibleTodoIds);
+  }, [toggleSelectAll, visibleTodoIds]);
 
   function handleBulkDelete() {
     const count = selectedIds.size;

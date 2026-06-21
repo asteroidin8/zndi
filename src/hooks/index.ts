@@ -1,4 +1,5 @@
 export { useAppHydrated } from './useAppHydrated';
+export { useEditMode } from './useEditMode';
 export { useAutoCloudSync } from './useAutoCloudSync';
 export { useFastingNotification } from './useFastingNotification';
 export { useMidnightArchive } from './useMidnightArchive';

@@ -56,7 +56,7 @@ export default function RoutineDetailScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+        <View style={{ flexDirection: 'row', gap: spacing.gap }}>
           <StatsSummaryCard label={L.totalRoutines} value={`${routines.length}${L.countUnit}`} />
           <StatsSummaryCard label={L.todayRoutines} value={`${todayRoutines.length}${L.countUnit}`} />
           <StatsSummaryCard

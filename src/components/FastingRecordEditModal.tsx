@@ -283,7 +283,7 @@ export function FastingRecordEditModal({ visible, record, onSave, onDelete, onCl
       <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
         결과
       </AppText>
-      <View style={{ flexDirection: 'row', gap: 10 }}>
+      <View style={{ flexDirection: 'row', gap: spacing.gap }}>
         {RESULT_OPTIONS.map((opt) => {
           const selected = result === opt.value;
           return (

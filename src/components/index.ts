@@ -7,6 +7,7 @@ export { EmptyState } from './EmptyState';
 export { GroupHeader } from './GroupHeader';
 export { FastingCard } from './FastingCard';
 export { InfoBanner } from './InfoBanner';
+export { ProgressBar } from './ProgressBar';
 export { RoutineItem } from './RoutineItem';
 export { RoutineModal } from './RoutineModal';
 export { TodoItem } from './TodoItem';

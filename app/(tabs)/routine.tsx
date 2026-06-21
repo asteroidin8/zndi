@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,6 +20,7 @@ import { UngroupedHeader } from '@/components/UngroupedHeader';
 import { radius, spacing } from '@/constants/spacing';
 import { DAY_LABELS } from '@/constants/statsLabels';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
+import { useEditMode } from '@/hooks/useEditMode';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import {
@@ -75,8 +76,7 @@ export default function RoutineScreen() {
   const [editTarget, setEditTarget] = useState<Routine | null>(null);
   const [undoTarget, setUndoTarget] = useState<Routine | null>(null);
   const [otherExpanded, setOtherExpanded] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const { editMode, selectedIds, enterEditMode, exitEditMode, toggleSelection, toggleSelectAll } = useEditMode();
   const [groupModalVisible, setGroupModalVisible] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
 
@@ -98,35 +98,11 @@ export default function RoutineScreen() {
 
   const showSwipeHint = !seenHints.swipeActions && routines.length > 0;
 
-  // ── Edit mode ──
+  const allRoutineIds = useMemo(() => routines.map((r) => r.id), [routines]);
 
-  function enterEditMode() {
-    setEditMode(true);
-    setSelectedIds(new Set());
-  }
-
-  function exitEditMode() {
-    setEditMode(false);
-    setSelectedIds(new Set());
-  }
-
-  function toggleSelection(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  function handleSelectAll() {
-    const allIds = routines.map((r) => r.id);
-    if (selectedIds.size === allIds.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(allIds));
-    }
-  }
+  const handleSelectAll = useCallback(() => {
+    toggleSelectAll(allRoutineIds);
+  }, [toggleSelectAll, allRoutineIds]);
 
   function handleBulkDelete() {
     const count = selectedIds.size;

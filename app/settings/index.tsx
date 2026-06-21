@@ -6,6 +6,7 @@ import * as Notifications from 'expo-notifications';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
+import { ProgressBar } from '@/components/ProgressBar';
 import { DangerRow, GroupCard, InsetDivider, Row } from '@/components/settings/MyScreenUI';
 import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -180,16 +181,7 @@ export default function MyScreen() {
 
             {grassLevel.max !== null && (
               <View style={{ width: '60%', gap: spacing.xs, alignItems: 'center' }}>
-                <View style={{ width: '100%', height: 4, backgroundColor: c.surfaceMuted, borderRadius: 2, overflow: 'hidden' }}>
-                  <View
-                    style={{
-                      height: 4,
-                      width: `${Math.min(((totalGrass - grassLevel.min) / (grassLevel.max - grassLevel.min)) * 100, 100)}%`,
-                      backgroundColor: c.primary,
-                      borderRadius: 2,
-                    }}
-                  />
-                </View>
+                <ProgressBar value={Math.min(((totalGrass - grassLevel.min) / (grassLevel.max - grassLevel.min)) * 100, 100)} />
                 <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>
                   다음 레벨까지 {grassLevel.max - totalGrass + 1}잔디
                 </AppText>

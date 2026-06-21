@@ -43,7 +43,7 @@ function StatCard({
   const c = useThemeColors();
   return (
     <Card pressable onPress={onPress}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.gap }}>
         <AppIcon name={icon as never} size={18} color={c.primary} />
         <AppText variant="body" style={{ flex: 1, fontWeight: '600' }}>{title}</AppText>
         <AppText variant="body" style={{ fontWeight: '700' }}>{metric}</AppText>

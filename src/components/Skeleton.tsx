@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { radius } from '@/constants/spacing';
+import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 type Props = {
@@ -45,7 +45,7 @@ export function SkeletonBox({ width = '100%', height = 16, style, rounded = 'md'
 
 export function StatsSummarySkeleton() {
   return (
-    <View style={{ flexDirection: 'row', gap: 10 }}>
+    <View style={{ flexDirection: 'row', gap: spacing.gap }}>
       {[0, 1, 2].map((i) => (
         <View key={i} style={{ flex: 1, gap: 8 }}>
           <SkeletonBox height={12} width="60%" />
