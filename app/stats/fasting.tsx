@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Dimensions, ScrollView, View } from 'react-native';
+import { Alert, Dimensions, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
@@ -101,8 +101,9 @@ export default function FastingDetailScreen() {
         {summaries.length > 0 ? (
           <View style={{ gap: 8 }}>
             {summaries.map((s) => (
-              <View
+              <Pressable
                 key={s.date}
+                onPress={() => setSelected(s)}
                 style={{
                   flexDirection: 'row',
                   justifyContent: 'space-between',
@@ -116,7 +117,7 @@ export default function FastingDetailScreen() {
                 <AppText variant="caption" tone="secondary">
                   {formatMinutes(s.totalMinutes)} · {s.count}{L.timesUnit}
                 </AppText>
-              </View>
+              </Pressable>
             ))}
           </View>
         ) : (

@@ -6,10 +6,13 @@ const WIDGET_GROUP = 'group.com.asteroidin8.zndi';
 const WIDGET_KEY = 'zndi_widget_data';
 
 export interface WidgetData {
-  weeklyGrass: boolean[];
   streak: number;
   todayCompleted: number;
   todayTotal: number;
+  routineCompleted: number;
+  routineTotal: number;
+  todoCompleted: number;
+  todoTotal: number;
   checklist: ChecklistItem[];
   fasting: FastingWidgetData;
 }

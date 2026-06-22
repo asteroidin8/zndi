@@ -6,10 +6,13 @@ import { FastingWidget } from './FastingWidget';
 import { readWidgetData, type WidgetData } from './widgetDataBridge';
 
 const EMPTY_DATA: WidgetData = {
-  weeklyGrass: [false, false, false, false, false, false, false],
   streak: 0,
   todayCompleted: 0,
   todayTotal: 0,
+  routineCompleted: 0,
+  routineTotal: 0,
+  todoCompleted: 0,
+  todoTotal: 0,
   checklist: [],
   fasting: {
     status: 'idle',

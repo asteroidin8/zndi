@@ -11,8 +11,11 @@ interface Props {
 export function GrassWidget({ data, theme }: Props) {
   const c = colors[theme];
   const rate = data.todayTotal > 0
-    ? `${data.todayCompleted}/${data.todayTotal}`
-    : '-';
+    ? Math.round((data.todayCompleted / data.todayTotal) * 100)
+    : 0;
+
+  const filled = Math.max(rate, 2);
+  const remaining = 100 - filled;
 
   return (
     <FlexWidget
@@ -24,57 +27,67 @@ export function GrassWidget({ data, theme }: Props) {
         padding: 16,
         width: 'match_parent',
         height: 'match_parent',
-        flexGap: 10,
+        flexGap: 8,
       }}
       clickAction="OPEN_APP"
     >
-      <TextWidget
-        text="zndi"
-        style={{
-          fontSize: 11,
-          fontWeight: '700',
-          color: c.primary,
-          letterSpacing: 1,
-        }}
-      />
-
-      <FlexWidget style={{ flexDirection: 'row', flexGap: 4 }}>
-        {data.weeklyGrass.map((filled, i) => (
-          <FlexWidget
-            key={`g${i}`}
-            style={{
-              width: 16,
-              height: 16,
-              borderRadius: 4,
-              backgroundColor: filled ? c.primary : c.surfaceMuted,
-            }}
-          />
-        ))}
-      </FlexWidget>
-
       <FlexWidget
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
+          alignItems: 'center',
           width: 'match_parent',
         }}
       >
-        {data.streak > 0 ? (
+        <TextWidget
+          text="zndi"
+          style={{
+            fontSize: 11,
+            fontWeight: '700',
+            color: c.primary,
+            letterSpacing: 1,
+          }}
+        />
+        {data.streak > 0 && (
           <TextWidget
-            text={`🔥 ${data.streak}일`}
-            style={{ fontSize: 12, fontWeight: '600', color: c.ink }}
-          />
-        ) : (
-          <TextWidget
-            text=""
-            style={{ fontSize: 12, color: c.ink }}
+            text={`🔥${data.streak}`}
+            style={{ fontSize: 11, fontWeight: '600', color: c.ink }}
           />
         )}
-        <TextWidget
-          text={rate}
-          style={{ fontSize: 12, fontWeight: '700', color: c.inkTertiary }}
-        />
       </FlexWidget>
+
+      <TextWidget
+        text={`${rate}%`}
+        style={{ fontSize: 32, fontWeight: '700', color: c.primary }}
+      />
+
+      <FlexWidget
+        style={{
+          flexDirection: 'row',
+          height: 6,
+          borderRadius: 3,
+          backgroundColor: c.surfaceMuted,
+          width: 'match_parent',
+          overflow: 'hidden',
+        }}
+      >
+        <FlexWidget
+          style={{
+            flex: filled,
+            height: 6,
+            backgroundColor: c.primary,
+            borderRadius: 3,
+          }}
+        />
+        {remaining > 0 && (
+          <FlexWidget style={{ flex: remaining, height: 6 }} />
+        )}
+      </FlexWidget>
+
+      <TextWidget
+        text={`${data.todayCompleted}/${data.todayTotal} 완료`}
+        style={{ fontSize: 11, fontWeight: '500', color: c.inkTertiary }}
+      />
     </FlexWidget>
   );
 }
