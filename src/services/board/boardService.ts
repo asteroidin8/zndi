@@ -55,19 +55,15 @@ export async function createBoard(
 
   const inviteCode = generateInviteCode();
 
-  const { data, error } = await supabase
-    .from('boards')
-    .insert({ name, invite_code: inviteCode, owner_id: userId })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('create_board', {
+    p_name: name,
+    p_invite_code: inviteCode,
+    p_nickname: nickname,
+  });
   if (error) return { error: error.message };
 
-  const board = rowToBoard(data);
-
-  const { error: memberError } = await supabase
-    .from('board_members')
-    .insert({ board_id: board.id, user_id: userId, nickname });
-  if (memberError) return { error: memberError.message };
+  const row = data as Record<string, unknown>;
+  const board = rowToBoard(row);
 
   const member: BoardMember = {
     boardId: board.id,

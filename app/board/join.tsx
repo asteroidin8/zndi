@@ -17,13 +17,13 @@ export default function BoardJoinScreen() {
   const { user } = useAuth();
   const nickname = useUserStore((s) => s.profile.nickname);
   const [code, setCode] = useState('');
-  const [displayName, setDisplayName] = useState(nickname ?? '');
   const [loading, setLoading] = useState(false);
 
   async function handleJoin() {
-    if (!user?.id || !code.trim() || !displayName.trim()) return;
+    const displayName = nickname?.trim() || '익명';
+    if (!user?.id || !code.trim()) return;
     setLoading(true);
-    const { board, error } = await joinBoard(user.id, code.trim(), displayName.trim());
+    const { board, error } = await joinBoard(user.id, code.trim(), displayName);
     setLoading(false);
 
     if (error) {
@@ -76,27 +76,10 @@ export default function BoardJoinScreen() {
           />
         </View>
 
-        <View style={{ gap: spacing.sm }}>
-          <AppText variant="caption" tone="tertiary">보드에서 사용할 이름</AppText>
-          <TextInput
-            value={displayName}
-            onChangeText={setDisplayName}
-            placeholder="닉네임"
-            placeholderTextColor={c.inkDisabled}
-            style={{
-              fontSize: 16,
-              color: c.ink,
-              borderBottomWidth: 1,
-              borderBottomColor: c.border,
-              paddingVertical: spacing.sm,
-            }}
-          />
-        </View>
-
         <SheetPrimaryButton
           label={loading ? '참가 중...' : '참가하기'}
           onPress={handleJoin}
-          disabled={code.trim().length < 6 || !displayName.trim() || loading}
+          disabled={code.trim().length < 6 || loading}
         />
       </View>
     </SafeAreaView>

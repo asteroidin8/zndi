@@ -17,13 +17,13 @@ export default function BoardCreateScreen() {
   const { user } = useAuth();
   const nickname = useUserStore((s) => s.profile.nickname);
   const [name, setName] = useState('');
-  const [displayName, setDisplayName] = useState(nickname ?? '');
   const [loading, setLoading] = useState(false);
 
   async function handleCreate() {
-    if (!user?.id || !name.trim() || !displayName.trim()) return;
+    const displayName = nickname?.trim() || '익명';
+    if (!user?.id || !name.trim()) return;
     setLoading(true);
-    const { board, error } = await createBoard(user.id, name.trim(), displayName.trim());
+    const { board, error } = await createBoard(user.id, name.trim(), displayName);
     setLoading(false);
 
     if (error) {
@@ -70,27 +70,10 @@ export default function BoardCreateScreen() {
           />
         </View>
 
-        <View style={{ gap: spacing.sm }}>
-          <AppText variant="caption" tone="tertiary">보드에서 사용할 이름</AppText>
-          <TextInput
-            value={displayName}
-            onChangeText={setDisplayName}
-            placeholder="닉네임"
-            placeholderTextColor={c.inkDisabled}
-            style={{
-              fontSize: 16,
-              color: c.ink,
-              borderBottomWidth: 1,
-              borderBottomColor: c.border,
-              paddingVertical: spacing.sm,
-            }}
-          />
-        </View>
-
         <SheetPrimaryButton
           label={loading ? '생성 중...' : '만들기'}
           onPress={handleCreate}
-          disabled={!name.trim() || !displayName.trim() || loading}
+          disabled={!name.trim() || loading}
         />
       </View>
     </SafeAreaView>
