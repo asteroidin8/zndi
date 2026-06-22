@@ -7,6 +7,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="body" />
       <Stack.Screen name="notifications" />
       <Stack.Screen name="about" />
+      <Stack.Screen name="membership" />
     </Stack>
   );
 }
