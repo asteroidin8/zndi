@@ -6,6 +6,7 @@ import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { pushDailyProgress } from '@/services/board/boardService';
+import { pushPersonalProgress } from '@/services/social/followService';
 import { localDateStr } from '@/utils/dateFormat';
 import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
@@ -18,7 +19,7 @@ export function useBoardProgressSync() {
   const lastPushed = useRef('');
 
   useEffect(() => {
-    if (!user?.id || boards.length === 0) return;
+    if (!user?.id) return;
 
     const now = new Date();
     const todayStr = localDateStr(now);
@@ -47,14 +48,18 @@ export function useBoardProgressSync() {
     if (key === lastPushed.current) return;
     lastPushed.current = key;
 
+    const progressData = {
+      routineCompleted,
+      routineTotal,
+      todoCompleted,
+      todoTotal,
+      streak,
+    };
+
+    void pushPersonalProgress(user.id, todayStr, progressData);
+
     for (const board of boards) {
-      void pushDailyProgress(user.id, board.id, todayStr, {
-        routineCompleted,
-        routineTotal,
-        todoCompleted,
-        todoTotal,
-        streak,
-      });
+      void pushDailyProgress(user.id, board.id, todayStr, progressData);
     }
   }, [user?.id, boards, routines, todos, isCompleted]);
 }
