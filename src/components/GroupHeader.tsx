@@ -81,13 +81,9 @@ export function GroupHeader({
       >
         {group.name}
       </AppText>
-      {allDone ? (
-        <AppText variant="caption" style={{ color: c.primary, fontWeight: '700' }}>✓</AppText>
-      ) : (
-        <AppText variant="caption" tone="disabled">
-          {completedCount}/{totalCount}
-        </AppText>
-      )}
+      <AppText variant="caption" tone={allDone ? undefined : 'disabled'} style={allDone ? { color: c.primary, fontWeight: '700' } : undefined}>
+        {completedCount}/{totalCount}
+      </AppText>
       {showDelete && (
         <Pressable
           onPress={onDelete}

@@ -3,7 +3,6 @@ import { Pressable, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSequence,
   withSpring,
 } from 'react-native-reanimated';
 
@@ -71,30 +70,8 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
     width: `${progressWidth.value * 100}%`,
   }));
 
-  const routineBarWidth = useSharedValue(3);
-  const todoBarWidth = useSharedValue(3);
-
-  const routineBarStyle = useAnimatedStyle(() => ({
-    width: routineBarWidth.value,
-  }));
-
-  const todoBarStyle = useAnimatedStyle(() => ({
-    width: todoBarWidth.value,
-  }));
-
-  function pulseRoutineBar() {
-    routineBarWidth.value = withSequence(
-      withSpring(5, motion.spring.stiff),
-      withSpring(3, motion.spring.gentle),
-    );
-  }
-
-  function pulseTodoBar() {
-    todoBarWidth.value = withSequence(
-      withSpring(5, motion.spring.stiff),
-      withSpring(3, motion.spring.gentle),
-    );
-  }
+  function pulseRoutineBar() {}
+  function pulseTodoBar() {}
 
   if (!hasRoutines && !hasTodos) return null;
 
@@ -137,12 +114,6 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
             ...(allRoutinesDone ? { borderColor: `${c.primary}30` } : {}),
           }}
         >
-          <Animated.View
-            style={[
-              { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: c.primary, zIndex: 1 },
-              routineBarStyle,
-            ]}
-          />
           <Pressable
             onPress={onRoutinePress}
             style={headerRowStyle}
@@ -158,7 +129,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
                   ...(allRoutinesDone ? { color: c.primary } : {}),
                 }}
               >
-                {allRoutinesDone ? '오늘 잔디 심기 완료 ✓' : '오늘의 루틴'}
+                오늘의 루틴
               </AppText>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
@@ -227,12 +198,6 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
 
       {hasTodos && (
         <View style={cardStyle}>
-          <Animated.View
-            style={[
-              { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: c.primary, zIndex: 1 },
-              todoBarStyle,
-            ]}
-          />
           <Pressable
             onPress={onTodoPress}
             style={headerRowStyle}

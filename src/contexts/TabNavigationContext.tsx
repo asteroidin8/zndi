@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect } from 'react';
 
-export type TabIndex = 0 | 1 | 2 | 3;
+export type TabIndex = 0 | 1 | 2 | 3 | 4;
 
 interface TabNavigationContextValue {
   navigateTo: (index: TabIndex) => void;
