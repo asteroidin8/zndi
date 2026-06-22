@@ -12,6 +12,7 @@ import { GRASS_COLORS, GRASS_CELL_SKINS, getCellBorderRadius, getCellTransform }
 import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useProStore } from '@/stores/useProStore';
 import type { ThemeMode, TimeFormat } from '@/stores/useSettingsStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useFastingStore } from '@/stores/useFastingStore';
@@ -38,6 +39,7 @@ const TIME_FORMAT_OPTIONS: { value: TimeFormat; label: string }[] = [
 export default function MyScreen() {
   const c = useThemeColors();
   const { themeMode, setThemeMode, timeFormat, setTimeFormat, grassColor, setGrassColor, grassShape, setGrassShape } = useSettingsStore();
+  const { isColorUnlocked, isShapeUnlocked } = useProStore();
   const { configured, loading, user, signInGoogle, sendEmailOtp, verifyEmailOtp, signOut } = useAuth();
   const { profile, setNickname } = useUserStore();
   const { routines } = useRoutineStore();
@@ -327,10 +329,17 @@ export default function MyScreen() {
           <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
             {GRASS_COLORS.map((preset) => {
               const selected = grassColor === preset.id;
+              const locked = !isColorUnlocked(preset.id);
               return (
                 <Pressable
                   key={preset.id}
-                  onPress={() => setGrassColor(preset.id)}
+                  onPress={() => {
+                    if (locked) {
+                      Alert.alert('잠긴 테마', 'Pro 구독 또는 개별 구매로 잠금 해제할 수 있어요.');
+                      return;
+                    }
+                    setGrassColor(preset.id);
+                  }}
                   style={{
                     alignItems: 'center',
                     gap: 4,
@@ -338,16 +347,24 @@ export default function MyScreen() {
                     borderRadius: radius.md,
                     borderWidth: selected ? 2 : 0,
                     borderColor: selected ? preset.hex : 'transparent',
+                    opacity: locked ? 0.4 : 1,
                   }}
                 >
-                  <View
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 8,
-                      backgroundColor: preset.hex,
-                    }}
-                  />
+                  <View style={{ position: 'relative' }}>
+                    <View
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        backgroundColor: preset.hex,
+                      }}
+                    />
+                    {locked && (
+                      <View style={{ position: 'absolute', top: -4, right: -4 }}>
+                        <AppIcon name="Lock" size={12} color={c.inkTertiary} />
+                      </View>
+                    )}
+                  </View>
                   <AppText variant="caption" tone={selected ? 'secondary' : 'tertiary'} style={{ fontSize: 10, fontWeight: selected ? '700' : '400' }}>
                     {preset.name}
                   </AppText>
@@ -360,6 +377,7 @@ export default function MyScreen() {
           <View style={{ flexDirection: 'row', gap: spacing.md }}>
             {GRASS_CELL_SKINS.map((skin) => {
               const selected = grassShape === skin.id;
+              const locked = !isShapeUnlocked(skin.id);
               const previewSize = 28;
               const previewRadius = getCellBorderRadius(skin.id, previewSize);
               const transform = getCellTransform(skin.id);
@@ -368,7 +386,13 @@ export default function MyScreen() {
               return (
                 <Pressable
                   key={skin.id}
-                  onPress={() => setGrassShape(skin.id)}
+                  onPress={() => {
+                    if (locked) {
+                      Alert.alert('잠긴 스킨', 'Pro 구독 또는 개별 구매로 잠금 해제할 수 있어요.');
+                      return;
+                    }
+                    setGrassShape(skin.id);
+                  }}
                   style={{
                     flex: 1,
                     alignItems: 'center',
@@ -378,17 +402,25 @@ export default function MyScreen() {
                     borderWidth: selected ? 2 : 1,
                     borderColor: selected ? activeHex : c.border,
                     backgroundColor: selected ? `${activeHex}10` : 'transparent',
+                    opacity: locked ? 0.4 : 1,
                   }}
                 >
-                  <View
-                    style={{
-                      width: displaySize,
-                      height: displaySize,
-                      borderRadius: previewRadius,
-                      backgroundColor: activeHex,
-                      ...(transform.rotate ? { transform: [{ rotate: transform.rotate }] } : {}),
-                    }}
-                  />
+                  <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+                    <View
+                      style={{
+                        width: displaySize,
+                        height: displaySize,
+                        borderRadius: previewRadius,
+                        backgroundColor: activeHex,
+                        ...(transform.rotate ? { transform: [{ rotate: transform.rotate }] } : {}),
+                      }}
+                    />
+                    {locked && (
+                      <View style={{ position: 'absolute', top: -6, right: -8 }}>
+                        <AppIcon name="Lock" size={12} color={c.inkTertiary} />
+                      </View>
+                    )}
+                  </View>
                   <AppText variant="caption" style={{ fontSize: 10, fontWeight: selected ? '700' : '400', color: selected ? activeHex : c.inkTertiary }}>
                     {skin.name}
                   </AppText>
