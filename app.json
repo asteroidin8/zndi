@@ -18,6 +18,8 @@
       "bundleIdentifier": "com.asteroidin8.zndi",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "단식 진행, 루틴·할 일 알림을 보내기 위해 알림 권한이 필요합니다.",
+        "NSCameraUsageDescription": "루틴 인증 사진 촬영을 위해 카메라 접근이 필요합니다.",
+        "NSPhotoLibraryUsageDescription": "루틴 인증 사진 선택을 위해 사진 라이브러리 접근이 필요합니다.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -32,7 +34,9 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "NOTIFICATIONS",
-        "RECEIVE_BOOT_COMPLETED"
+        "RECEIVE_BOOT_COMPLETED",
+        "CAMERA",
+        "READ_MEDIA_IMAGES"
       ]
     },
     "web": {
@@ -41,6 +45,13 @@
     "plugins": [
       "expo-dev-client",
       "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "루틴 인증 사진 촬영을 위해 카메라 접근이 필요합니다.",
+          "photosPermission": "루틴 인증 사진 선택을 위해 사진 라이브러리 접근이 필요합니다."
+        }
+      ],
       [
         "expo-notifications",
         {

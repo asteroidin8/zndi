@@ -100,6 +100,28 @@ export type BoardDailyProgress = {
   streak: number;
 };
 
+// ── Board Routine ──
+export type BoardRoutine = {
+  id: string;
+  boardId: string;
+  name: string;
+  createdBy: string;
+  createdAt: string;
+};
+
+export type BoardVerificationLog = {
+  id: string;
+  boardId: string;
+  routineId: string;
+  userId: string;
+  photoPath: string;
+  photoUrl: string;
+  memo: string | null;
+  createdAt: string;
+  nickname?: string;
+  routineName?: string;
+};
+
 // ── Follow ──
 export type FollowUser = {
   userId: string;

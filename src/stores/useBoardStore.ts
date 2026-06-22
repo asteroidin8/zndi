@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 
-import type { Board, BoardDailyProgress, BoardMember } from '@/types';
+import type { Board, BoardDailyProgress, BoardMember, BoardRoutine, BoardVerificationLog } from '@/types';
 
 type BoardStore = {
   boards: Board[];
   members: Record<string, BoardMember[]>;
   progress: Record<string, BoardDailyProgress[]>;
+  routines: Record<string, BoardRoutine[]>;
+  logs: Record<string, BoardVerificationLog[]>;
   setBoards: (boards: Board[]) => void;
   addBoard: (board: Board) => void;
   removeBoard: (boardId: string) => void;
@@ -14,6 +16,12 @@ type BoardStore = {
   removeMember: (boardId: string, userId: string) => void;
   setProgress: (boardId: string, progress: BoardDailyProgress[]) => void;
   upsertProgress: (entry: BoardDailyProgress) => void;
+  setRoutines: (boardId: string, routines: BoardRoutine[]) => void;
+  addRoutine: (routine: BoardRoutine) => void;
+  removeRoutine: (boardId: string, routineId: string) => void;
+  setLogs: (boardId: string, logs: BoardVerificationLog[]) => void;
+  addLog: (log: BoardVerificationLog) => void;
+  removeLog: (boardId: string, logId: string) => void;
   reset: () => void;
 };
 
@@ -21,6 +29,8 @@ export const useBoardStore = create<BoardStore>()((set) => ({
   boards: [],
   members: {},
   progress: {},
+  routines: {},
+  logs: {},
   setBoards: (boards) => set({ boards }),
   addBoard: (board) => set((s) => ({ boards: [...s.boards, board] })),
   removeBoard: (boardId) =>
@@ -28,6 +38,8 @@ export const useBoardStore = create<BoardStore>()((set) => ({
       boards: s.boards.filter((b) => b.id !== boardId),
       members: Object.fromEntries(Object.entries(s.members).filter(([k]) => k !== boardId)),
       progress: Object.fromEntries(Object.entries(s.progress).filter(([k]) => k !== boardId)),
+      routines: Object.fromEntries(Object.entries(s.routines).filter(([k]) => k !== boardId)),
+      logs: Object.fromEntries(Object.entries(s.logs).filter(([k]) => k !== boardId)),
     })),
   setMembers: (boardId, members) =>
     set((s) => ({ members: { ...s.members, [boardId]: members } })),
@@ -58,5 +70,37 @@ export const useBoardStore = create<BoardStore>()((set) => ({
       else next.push(entry);
       return { progress: { ...s.progress, [entry.boardId]: next } };
     }),
-  reset: () => set({ boards: [], members: {}, progress: {} }),
+  setRoutines: (boardId, routines) =>
+    set((s) => ({ routines: { ...s.routines, [boardId]: routines } })),
+  addRoutine: (routine) =>
+    set((s) => ({
+      routines: {
+        ...s.routines,
+        [routine.boardId]: [...(s.routines[routine.boardId] ?? []), routine],
+      },
+    })),
+  removeRoutine: (boardId, routineId) =>
+    set((s) => ({
+      routines: {
+        ...s.routines,
+        [boardId]: (s.routines[boardId] ?? []).filter((r) => r.id !== routineId),
+      },
+    })),
+  setLogs: (boardId, logs) =>
+    set((s) => ({ logs: { ...s.logs, [boardId]: logs } })),
+  addLog: (log) =>
+    set((s) => ({
+      logs: {
+        ...s.logs,
+        [log.boardId]: [log, ...(s.logs[log.boardId] ?? [])],
+      },
+    })),
+  removeLog: (boardId, logId) =>
+    set((s) => ({
+      logs: {
+        ...s.logs,
+        [boardId]: (s.logs[boardId] ?? []).filter((l) => l.id !== logId),
+      },
+    })),
+  reset: () => set({ boards: [], members: {}, progress: {}, routines: {}, logs: {} }),
 }));
