@@ -19,7 +19,7 @@ import { fetchBoardRoutines, fetchVerificationLogs } from '@/services/board/boar
 import { localDateStr } from '@/utils/dateFormat';
 import { isProfileIncomplete } from '@/utils/profile';
 
-const TAB_INDEX = 0 as const;
+const TAB_INDEX = 2 as const;
 
 export default function HomeScreen() {
   const c = useThemeColors();
@@ -98,7 +98,7 @@ export default function HomeScreen() {
 
         <FastingCard />
 
-        <DailySummaryRow onRoutinePress={() => navigateTo(1)} onTodoPress={() => navigateTo(2)} />
+        <DailySummaryRow onRoutinePress={() => navigateTo(1)} onTodoPress={() => navigateTo(3)} />
       </ScrollView>
     </SafeAreaView>
   );

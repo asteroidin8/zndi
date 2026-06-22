@@ -30,7 +30,7 @@ import { localDateStr } from '@/utils/dateFormat';
 import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 import { type DailyFastingSummary, groupFastingByDay } from '@/utils/statsHelper';
 
-const TAB_INDEX = 3 as const;
+const TAB_INDEX = 4 as const;
 const L = STATS_LABELS;
 
 function StatCard({

@@ -1,22 +1,24 @@
-import { Alert } from 'react-native';
+import { useCallback, useState } from 'react';
+import { router } from 'expo-router';
 
 import { useProStore } from '@/stores/useProStore';
 
-const PRO_ALERT_TITLE = 'Pro 기능';
-const PRO_ALERT_MSG = '이 기능은 Pro 구독에서 사용할 수 있어요.';
-
 export function useProGating() {
   const isPro = useProStore((s) => s.isPro);
+  const [lockVisible, setLockVisible] = useState(false);
 
   function requirePro(callback: () => void) {
     if (isPro) {
       callback();
       return;
     }
-    Alert.alert(PRO_ALERT_TITLE, PRO_ALERT_MSG);
+    setLockVisible(true);
   }
 
-  return { isPro, requirePro };
+  const closeLock = useCallback(() => setLockVisible(false), []);
+  const goToShop = useCallback(() => router.push('/settings'), []);
+
+  return { isPro, requirePro, lockVisible, closeLock, goToShop };
 }
 
 export const FREE_LIMITS = {

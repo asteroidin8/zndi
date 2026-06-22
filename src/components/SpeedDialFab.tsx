@@ -17,7 +17,7 @@ const TAB_BAR_HEIGHT = 52;
 
 type SpeedDialAction = {
   label: string;
-  icon: 'Plus' | 'FolderPlus';
+  icon: 'Plus' | 'FolderPlus' | 'Pencil';
   onPress: () => void;
 };
 

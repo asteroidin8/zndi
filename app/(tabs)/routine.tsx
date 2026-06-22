@@ -484,10 +484,10 @@ export default function RoutineScreen() {
         }}
       >
         <AppText variant="title">루틴</AppText>
-        {!isEmpty && (
-          <Pressable onPress={editMode ? exitEditMode : enterEditMode} hitSlop={8} accessibilityRole="button">
-            <AppText variant="body" tone={editMode ? 'primary' : 'tertiary'} style={{ fontWeight: '600' }}>
-              {editMode ? '완료' : '편집'}
+        {editMode && (
+          <Pressable onPress={exitEditMode} hitSlop={8} accessibilityRole="button">
+            <AppText variant="body" tone="primary" style={{ fontWeight: '600' }}>
+              완료
             </AppText>
           </Pressable>
         )}
@@ -634,6 +634,7 @@ export default function RoutineScreen() {
           actions={[
             { label: '루틴 추가', icon: 'Plus', onPress: openAdd },
             { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
+            ...(!isEmpty ? [{ label: '편집', icon: 'Pencil' as const, onPress: enterEditMode }] : []),
           ]}
         />
       )}

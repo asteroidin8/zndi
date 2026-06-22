@@ -30,7 +30,7 @@ import { type Todo, type TodoGroup, type TodoPriority, useTodoStore } from '@/st
 
 type TabFilter = 'active' | 'completed';
 
-const TAB_INDEX = 2 as const;
+const TAB_INDEX = 3 as const;
 
 const PRIORITY_SECTIONS: { key: TodoPriority; label: string }[] = [
   { key: 'high', label: '높음' },
@@ -549,6 +549,7 @@ export default function TodoScreen() {
             actions={[
               { label: '할일 추가', icon: 'Plus', onPress: () => setAddModalVisible(true) },
               { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
+              { label: '편집', icon: 'Pencil', onPress: enterEditMode },
             ]}
           />
         )}
@@ -633,6 +634,7 @@ export default function TodoScreen() {
           actions={[
             { label: '할일 추가', icon: 'Plus', onPress: () => setAddModalVisible(true) },
             { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
+            { label: '편집', icon: 'Pencil', onPress: enterEditMode },
           ]}
         />
       )}
@@ -697,11 +699,13 @@ function Header({
         }}
       >
         <AppText variant="title">할일</AppText>
-        <Pressable onPress={onToggleEdit} hitSlop={8} accessibilityRole="button">
-          <AppText variant="body" tone={editMode ? 'primary' : 'tertiary'} style={{ fontWeight: '600' }}>
-            {editMode ? '완료' : '편집'}
-          </AppText>
-        </Pressable>
+        {editMode && (
+          <Pressable onPress={onToggleEdit} hitSlop={8} accessibilityRole="button">
+            <AppText variant="body" tone="primary" style={{ fontWeight: '600' }}>
+              완료
+            </AppText>
+          </Pressable>
+        )}
       </View>
       {!editMode && (
         <View style={{ flexDirection: 'row', paddingHorizontal: spacing.screen, gap: spacing.card, marginBottom: spacing.xs }}>

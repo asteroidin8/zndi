@@ -72,15 +72,6 @@ export function HomeTopBar() {
         }}
       >
         <Pressable
-          onPress={() => router.push('/board')}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="보드"
-          style={{ padding: spacing.xs }}
-        >
-          <AppIcon name="Users" size={20} color={c.inkTertiary} />
-        </Pressable>
-        <Pressable
           onPress={() => router.push('/settings')}
           hitSlop={12}
           accessibilityRole="button"

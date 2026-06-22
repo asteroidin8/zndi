@@ -10,22 +10,24 @@ import { TabNavigationContext, type TabIndex } from '@/contexts/TabNavigationCon
 import { feedbackTabSwitch } from '@/utils/microFeedback';
 import { useTodoStore } from '@/stores/useTodoStore';
 
+import BoardTabScreen from './board';
 import HomeScreen from './index';
 import RoutineScreen from './routine';
 import TodoScreen from './todo';
 import StatsScreen from './stats';
 
 const TABS = [
-  { key: 'home', title: TAB_LABELS.home, icon: 'Home' },
+  { key: 'board', title: TAB_LABELS.board, icon: 'Users' },
   { key: 'routine', title: TAB_LABELS.routine, icon: 'CheckSquare' },
+  { key: 'home', title: TAB_LABELS.home, icon: 'Home' },
   { key: 'todo', title: TAB_LABELS.todo, icon: 'ListTodo' },
   { key: 'stats', title: TAB_LABELS.stats, icon: 'Grid3x3' },
 ] as const;
 
-const HOME_INDEX = 0;
-const TODO_INDEX = 2;
+const HOME_INDEX = 2;
+const TODO_INDEX = 3;
 
-const SCREENS = [HomeScreen, RoutineScreen, TodoScreen, StatsScreen];
+const SCREENS = [BoardTabScreen, RoutineScreen, HomeScreen, TodoScreen, StatsScreen];
 
 export default function TabLayout() {
   const c = useThemeColors();

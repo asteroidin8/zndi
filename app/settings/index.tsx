@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { ProgressBar } from '@/components/ProgressBar';
+import { ProLockModal } from '@/components/ProLockModal';
 import { DangerRow, GroupCard, InsetDivider, Row } from '@/components/settings/MyScreenUI';
 import { GRASS_COLORS, GRASS_CELL_SKINS, getCellBorderRadius, getCellTransform } from '@/constants/grassTheme';
 import { radius, spacing } from '@/constants/spacing';
@@ -52,6 +53,7 @@ export default function MyScreen() {
   const [editingNickname, setEditingNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState(profile.nickname ?? '');
   const [nicknameError, setNicknameError] = useState<string | null>(null);
+  const [proLockVisible, setProLockVisible] = useState(false);
 
   async function handleNicknameSave() {
     const trimmed = nicknameInput.trim() || null;
@@ -335,7 +337,7 @@ export default function MyScreen() {
                   key={preset.id}
                   onPress={() => {
                     if (locked) {
-                      Alert.alert('잠긴 테마', 'Pro 구독 또는 개별 구매로 잠금 해제할 수 있어요.');
+                      setProLockVisible(true);
                       return;
                     }
                     setGrassColor(preset.id);
@@ -388,7 +390,7 @@ export default function MyScreen() {
                   key={skin.id}
                   onPress={() => {
                     if (locked) {
-                      Alert.alert('잠긴 스킨', 'Pro 구독 또는 개별 구매로 잠금 해제할 수 있어요.');
+                      setProLockVisible(true);
                       return;
                     }
                     setGrassShape(skin.id);
@@ -446,6 +448,11 @@ export default function MyScreen() {
           <DangerRow label="데이터 초기화" onPress={handleDataReset} />
         </GroupCard>
       </ScrollView>
+
+      <ProLockModal
+        visible={proLockVisible}
+        onClose={() => setProLockVisible(false)}
+      />
     </SafeAreaView>
   );
 }

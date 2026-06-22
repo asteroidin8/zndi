@@ -1,8 +1,9 @@
 /** zndi 앱 카피 — 톤: 부드러운 해요체, 짧고 담백 */
 
 export const TAB_LABELS = {
-  home: '오늘',
+  board: '보드',
   routine: '루틴',
+  home: '오늘',
   todo: '할일',
   stats: '잔디',
 } as const;
