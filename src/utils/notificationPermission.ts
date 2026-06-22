@@ -1,5 +1,7 @@
 import * as Notifications from 'expo-notifications';
-import { Alert, Linking, Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
+
+import { appAlert } from '@/stores/useAlertStore';
 
 export async function requestNotificationPermission(): Promise<boolean> {
   const { status: existing } = await Notifications.getPermissionsAsync();
@@ -8,7 +10,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
   const { status } = await Notifications.requestPermissionsAsync();
   if (status === 'granted') return true;
 
-  Alert.alert(
+  appAlert(
     '알림 권한이 필요해요',
     '설정에서 잔디 알림을 허용하면 리마인더와 단식 알림을 받을 수 있어요.',
     [

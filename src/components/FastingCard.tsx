@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, LayoutAnimation, Platform, Pressable, UIManager, View } from 'react-native';
+import { LayoutAnimation, Platform, Pressable, UIManager, View } from 'react-native';
 
 import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
@@ -12,6 +12,7 @@ import { SheetModal, SheetPrimaryButton } from './SheetModal';
 import { estimateCaloriesBurned, getFastingMessage } from '@/constants/fastingMessages';
 import { size } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { appAlert } from '@/stores/useAlertStore';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { feedbackSuccess } from '@/utils/microFeedback';
@@ -120,7 +121,7 @@ export function FastingCard() {
     const year = new Date().getFullYear();
     const newTs = new Date(year, editFields.month, editFields.day, editFields.hour, editFields.minute).getTime();
     if (newTs > Date.now()) {
-      Alert.alert('시간 오류', '미래 시간으로 설정할 수 없어요.');
+      appAlert('시간 오류', '미래 시간으로 설정할 수 없어요.');
       return;
     }
     updateStartTime(newTs);

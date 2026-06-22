@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 
@@ -13,6 +13,7 @@ import { GRASS_COLORS, GRASS_CELL_SKINS, GRASS_ANIMATIONS, getCellBorderRadius, 
 import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { appAlert } from '@/stores/useAlertStore';
 import { useProStore } from '@/stores/useProStore';
 import type { ThemeMode, TimeFormat } from '@/stores/useSettingsStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
@@ -78,9 +79,9 @@ export default function MyScreen() {
     try {
       const result = await signInGoogle();
       if (result.cancelled) return;
-      if (result.error) Alert.alert('로그인 실패', result.error);
+      if (result.error) appAlert('로그인 실패', result.error);
     } catch {
-      Alert.alert('로그인 실패', '로그인 중 오류가 발생했어요.');
+      appAlert('로그인 실패', '로그인 중 오류가 발생했어요.');
     } finally {
       setBusy(false);
     }
@@ -91,7 +92,7 @@ export default function MyScreen() {
     setBusy(true);
     const result = await sendEmailOtp(email);
     setBusy(false);
-    if (result.error) Alert.alert('이메일 전송 실패', result.error);
+    if (result.error) appAlert('이메일 전송 실패', result.error);
     else setOtpSent(true);
   }
 
@@ -99,22 +100,22 @@ export default function MyScreen() {
     setBusy(true);
     const result = await verifyEmailOtp(email, otp);
     setBusy(false);
-    if (result.error) Alert.alert('인증 실패', result.error);
+    if (result.error) appAlert('인증 실패', result.error);
     else { setEmailMode(false); setOtpSent(false); setOtp(''); }
   }
 
   function handleLogout() {
-    Alert.alert('로그아웃', '계정에서 로그아웃할까요?', [
+    appAlert('로그아웃', '계정에서 로그아웃할까요?', [
       { text: '취소', style: 'cancel' },
       { text: '로그아웃', style: 'destructive', onPress: async () => {
         const result = await signOut();
-        if (result.error) Alert.alert('로그아웃 실패', result.error);
+        if (result.error) appAlert('로그아웃 실패', result.error);
       }},
     ]);
   }
 
   function handleDataReset() {
-    Alert.alert(
+    appAlert(
       '데이터 초기화',
       '단식·루틴·할 일 기록과 프로필, 앱 설정이 모두 삭제됩니다.\n이 작업은 되돌릴 수 없어요.',
       [

@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
@@ -18,6 +18,7 @@ import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useShareGrass } from '@/hooks/useShareGrass';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import type { FastingRecord } from '@/types';
+import { appAlert } from '@/stores/useAlertStore';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
@@ -305,7 +306,7 @@ export default function StatsScreen() {
         }}
         onDelete={() => {
           if (!editingRecord) return;
-          Alert.alert(L.deleteAlertTitle, L.deleteAlertMessage, [
+          appAlert(L.deleteAlertTitle, L.deleteAlertMessage, [
             { text: L.cancel, style: 'cancel' },
             {
               text: L.delete,

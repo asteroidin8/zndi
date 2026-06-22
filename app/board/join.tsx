@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
@@ -9,6 +9,7 @@ import { SheetPrimaryButton } from '@/components/SheetModal';
 import { spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { appAlert } from '@/stores/useAlertStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { joinBoard, fetchMyBoards } from '@/services/board/boardService';
 
@@ -27,7 +28,7 @@ export default function BoardJoinScreen() {
     setLoading(false);
 
     if (error) {
-      Alert.alert('참가 실패', error);
+      appAlert('참가 실패', error);
       return;
     }
 

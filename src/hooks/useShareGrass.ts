@@ -1,7 +1,9 @@
 import { useCallback, useRef } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
+
+import { appAlert } from '@/stores/useAlertStore';
 
 export function useShareGrass() {
   const gridRef = useRef<View>(null);
@@ -22,10 +24,10 @@ export function useShareGrass() {
           dialogTitle: 'zndi 잔디 공유',
         });
       } else {
-        Alert.alert('공유 불가', '이 기기에서는 공유 기능을 사용할 수 없어요.');
+        appAlert('공유 불가', '이 기기에서는 공유 기능을 사용할 수 없어요.');
       }
     } catch {
-      Alert.alert('공유 실패', '이미지를 생성하는 중 문제가 발생했어요.');
+      appAlert('공유 실패', '이미지를 생성하는 중 문제가 발생했어요.');
     }
   }, []);
 

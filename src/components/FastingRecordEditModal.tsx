@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
 import { DrumPicker, type DrumItem } from './DrumPicker';
 import { SheetDangerButton, SheetModal, SheetPrimaryButton } from './SheetModal';
+import { appAlert } from '@/stores/useAlertStore';
 import { type FastingRecord, type FastingResult } from '@/stores/useFastingStore';
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -106,7 +107,7 @@ export function FastingRecordEditModal({ visible, record, onSave, onDelete, onCl
 
   function handleSave() {
     if (!isValid) {
-      Alert.alert('시간 오류', '종료 시간은 시작 시간보다 뒤여야 해요.');
+      appAlert('시간 오류', '종료 시간은 시작 시간보다 뒤여야 해요.');
       return;
     }
     onSave({

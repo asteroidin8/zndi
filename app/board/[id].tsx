@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -22,6 +21,7 @@ import { radius, spacing } from '@/constants/spacing';
 import { WEEKDAY_SHORT } from '@/constants/statsLabels';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { appAlert } from '@/stores/useAlertStore';
 import {
   EMPTY_BOARD_LOGS,
   EMPTY_BOARD_MEMBERS,
@@ -143,7 +143,7 @@ export default function BoardDetailScreen() {
   }
 
   function handleLeave() {
-    Alert.alert(
+    appAlert(
       isOwner ? '보드 삭제' : '보드 나가기',
       isOwner ? '보드를 삭제하면 모든 멤버가 제거됩니다.' : '이 보드를 나갈까요?',
       [
@@ -164,14 +164,14 @@ export default function BoardDetailScreen() {
   async function handleCreateRoutine() {
     if (!user?.id || !id || !routineName.trim()) return;
     const { error } = await createBoardRoutine(id, user.id, routineName.trim());
-    if (error) Alert.alert('오류', error);
+    if (error) appAlert('오류', error);
     setRoutineName('');
     setShowCreateRoutine(false);
   }
 
   function handleDeleteRoutine(routineId: string, name: string) {
     if (!id) return;
-    Alert.alert('루틴 삭제', `"${name}" 루틴을 삭제할까요?`, [
+    appAlert('루틴 삭제', `"${name}" 루틴을 삭제할까요?`, [
       { text: '취소', style: 'cancel' },
       {
         text: '삭제',
@@ -204,7 +204,7 @@ export default function BoardDetailScreen() {
     try {
       const { error } = await submitVerification(id, selectedRoutineId, user.id, photoUri, memo || null);
       if (error) {
-        Alert.alert('오류', error);
+        appAlert('오류', error);
         return;
       }
       setShowVerify(false);
@@ -215,7 +215,7 @@ export default function BoardDetailScreen() {
 
   function handleDeleteLog(log: BoardVerificationLog) {
     if (!id) return;
-    Alert.alert('인증 삭제', '이 인증 기록을 삭제할까요?', [
+    appAlert('인증 삭제', '이 인증 기록을 삭제할까요?', [
       { text: '취소', style: 'cancel' },
       {
         text: '삭제',
