@@ -17,13 +17,14 @@ import { radius, size, spacing } from '@/constants/spacing';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
+import { localDateStr } from '@/utils/dateFormat';
 import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
 const MAX_ROUTINES = 5;
 const MAX_TODOS = 4;
 
 function getTodayDate() {
-  return new Date().toISOString().slice(0, 10);
+  return localDateStr();
 }
 
 type Props = {

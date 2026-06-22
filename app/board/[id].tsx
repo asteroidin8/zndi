@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useBoardStore } from '@/stores/useBoardStore';
 import { leaveBoard } from '@/services/board/boardService';
+import { localDateStr } from '@/utils/dateFormat';
 
 const WEEKDAY_SHORT = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -20,7 +21,7 @@ function getWeekDates(): string[] {
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    dates.push(d.toISOString().slice(0, 10));
+    dates.push(localDateStr(d));
   }
   return dates;
 }
@@ -34,7 +35,7 @@ export default function BoardDetailScreen() {
   const progress = useBoardStore((s) => s.progress[id ?? ''] ?? []);
 
   const weekDates = useMemo(() => getWeekDates(), []);
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = localDateStr();
 
   const memberStats = useMemo(() => {
     return members.map((member) => {

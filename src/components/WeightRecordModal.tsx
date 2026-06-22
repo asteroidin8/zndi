@@ -6,6 +6,7 @@ import { DecimalWheelPicker } from './settings/DecimalWheelPicker';
 import { SheetModal, SheetPrimaryButton } from './SheetModal';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { localDateStr } from '@/utils/dateFormat';
 
 type Props = {
   visible: boolean;
@@ -14,34 +15,30 @@ type Props = {
   onClose: () => void;
 };
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function formatDateKr(dateStr: string) {
   const [y, m, d] = dateStr.split('-');
   return `${y}년 ${parseInt(m, 10)}월 ${parseInt(d, 10)}일`;
 }
 
 function addDays(dateStr: string, days: number) {
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d + days);
+  return localDateStr(date);
 }
 
 export function WeightRecordModal({ visible, initialWeight, onSave, onClose }: Props) {
   const c = useThemeColors();
-  const [date, setDate] = useState(todayStr());
+  const [date, setDate] = useState(localDateStr());
   const [weight, setWeight] = useState(initialWeight);
   const [pickerVisible, setPickerVisible] = useState(false);
 
   useEffect(() => {
     if (!visible) return;
-    setDate(todayStr());
+    setDate(localDateStr());
     setWeight(initialWeight);
   }, [visible, initialWeight]);
 
-  const isFuture = date > todayStr();
+  const isFuture = date > localDateStr();
 
   return (
     <>
@@ -74,11 +71,11 @@ export function WeightRecordModal({ visible, initialWeight, onSave, onClose }: P
               <Pressable
                 onPress={() => {
                   const next = addDays(date, 1);
-                  if (next <= todayStr()) setDate(next);
+                  if (next <= localDateStr()) setDate(next);
                 }}
                 hitSlop={8}
-                style={{ padding: 8, opacity: addDays(date, 1) > todayStr() ? 0.3 : 1 }}
-                disabled={addDays(date, 1) > todayStr()}
+                style={{ padding: 8, opacity: addDays(date, 1) > localDateStr() ? 0.3 : 1 }}
+                disabled={addDays(date, 1) > localDateStr()}
               >
                 <AppText variant="body" tone="secondary">▶</AppText>
               </Pressable>

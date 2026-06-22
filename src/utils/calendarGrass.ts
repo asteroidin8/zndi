@@ -2,6 +2,7 @@ import type { ThemeColors } from '@/constants/colors';
 import type { Routine } from '@/stores/useRoutineStore';
 import type { Todo } from '@/stores/useTodoStore';
 
+import { localDateStr } from './dateFormat';
 import { getRoutineProgressForDate, toDateStr } from './homeDailyBoard';
 
 export type GrassLevel = 0 | 1 | 2 | 3 | 4;
@@ -17,7 +18,7 @@ export type DailyGrassActivity = {
 export function countTodosCompletedOnDate(todos: Todo[], dateStr: string): number {
   return todos.filter((t) => {
     if (!t.completedAt) return false;
-    return new Date(t.completedAt).toISOString().slice(0, 10) === dateStr;
+    return localDateStr(new Date(t.completedAt)) === dateStr;
   }).length;
 }
 

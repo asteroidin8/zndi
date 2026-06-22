@@ -62,8 +62,8 @@ function getWidgetComponent(name: string, data: WidgetData) {
 async function handleClickAction(action: string, data: Record<string, unknown>) {
   if (action === 'TOGGLE_ROUTINE' && typeof data.id === 'string') {
     const { useRoutineCompletionStore } = await import('@/stores/useRoutineCompletionStore');
-    const todayStr = new Date().toISOString().slice(0, 10);
-    useRoutineCompletionStore.getState().toggleCompletion(data.id, todayStr);
+    const { localDateStr } = await import('@/utils/dateFormat');
+    useRoutineCompletionStore.getState().toggleCompletion(data.id, localDateStr());
   }
 
   if (action === 'TOGGLE_TODO' && typeof data.id === 'string') {

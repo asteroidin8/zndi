@@ -1,6 +1,7 @@
 import { getSupabase } from '@/lib/supabase';
 import { useBoardStore } from '@/stores/useBoardStore';
 import type { Board, BoardDailyProgress, BoardMember } from '@/types';
+import { localDateStr } from '@/utils/dateFormat';
 
 function generateInviteCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -199,7 +200,7 @@ export async function fetchBoardProgress(boardId: string): Promise<{ error?: str
 
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-  const since = sevenDaysAgo.toISOString().slice(0, 10);
+  const since = localDateStr(sevenDaysAgo);
 
   const { data, error } = await supabase
     .from('board_daily_progress')

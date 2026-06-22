@@ -1,8 +1,8 @@
 import { toDateStr, getDayDotStatus, getRoutineProgressForDate, getActiveTodoCount } from '@/utils/homeDailyBoard';
 
 describe('toDateStr', () => {
-  it('formats date as YYYY-MM-DD', () => {
-    const date = new Date('2026-06-20T15:30:00Z');
+  it('formats date as YYYY-MM-DD in local timezone', () => {
+    const date = new Date(2026, 5, 20, 15, 30);
     expect(toDateStr(date)).toBe('2026-06-20');
   });
 });

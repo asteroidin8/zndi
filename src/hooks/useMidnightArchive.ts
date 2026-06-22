@@ -3,9 +3,10 @@ import { AppState, type AppStateStatus } from 'react-native';
 
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useTodoStore } from '@/stores/useTodoStore';
+import { localDateStr } from '@/utils/dateFormat';
 
 function getTodayStr() {
-  return new Date().toISOString().slice(0, 10);
+  return localDateStr();
 }
 
 function getMsUntilMidnight() {

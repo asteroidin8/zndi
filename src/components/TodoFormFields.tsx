@@ -4,7 +4,7 @@ import { AppText } from './AppText';
 import { radius, spacing } from '@/constants/spacing';
 import { type TodoPriority, useTodoStore } from '@/stores/useTodoStore';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { getPriorityColor } from '@/utils/dateFormat';
+import { getPriorityColor, localDateStr } from '@/utils/dateFormat';
 
 const PRIORITY_OPTIONS: { value: TodoPriority; label: string }[] = [
   { value: 'high', label: '높음' },
@@ -20,13 +20,13 @@ const DUE_SHORTCUTS = [
 ];
 
 export function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  return localDateStr();
 }
 
 export function shiftDate(base: string, days: number) {
-  const d = new Date(base + 'T00:00:00');
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  const [y, m, d] = base.split('-').map(Number);
+  const date = new Date(y, m - 1, d + days);
+  return localDateStr(date);
 }
 
 export function formatDueDate(s: string) {

@@ -16,6 +16,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import type { FastingRecord } from '@/types';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { type DailyFastingSummary, formatMinutes, groupFastingByDay } from '@/utils/statsHelper';
+import { localDateStr } from '@/utils/dateFormat';
 import { toDateStr } from '@/utils/homeDailyBoard';
 
 const L = STATS_LABELS;
@@ -53,9 +54,9 @@ export default function FastingDetailScreen() {
   const last7Days: BarChartItem[] = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
-    const ds = d.toISOString().slice(0, 10);
+    const ds = localDateStr(d);
     const dayRecords = records.filter(
-      (r) => new Date(r.startedAt).toISOString().slice(0, 10) === ds,
+      (r) => localDateStr(new Date(r.startedAt)) === ds,
     );
     const totalHours = Math.round(
       dayRecords.reduce(

@@ -2,6 +2,15 @@ import type { ThemeColors } from '@/constants/colors';
 
 export type DueUrgency = 'normal' | 'soon' | 'today' | 'overdue';
 
+function pad2(n: number) {
+  return String(n).padStart(2, '0');
+}
+
+export function localDateStr(date?: Date): string {
+  const d = date ?? new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
 export function formatDueDate(dueDate: string): {
   label: string;
   isOverdue: boolean;

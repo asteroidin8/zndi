@@ -6,6 +6,7 @@ import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { pushDailyProgress } from '@/services/board/boardService';
+import { localDateStr } from '@/utils/dateFormat';
 import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
 export function useBoardProgressSync() {
@@ -20,7 +21,7 @@ export function useBoardProgressSync() {
     if (!user?.id || boards.length === 0) return;
 
     const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
+    const todayStr = localDateStr(now);
 
     const todayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, now));
     const routineCompleted = todayRoutines.filter((r) => isCompleted(r.id, todayStr)).length;
@@ -34,7 +35,7 @@ export function useBoardProgressSync() {
     for (let i = 0; i < 365; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const ds = d.toISOString().slice(0, 10);
+      const ds = localDateStr(d);
       const dayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, d));
       if (dayRoutines.length === 0) continue;
       const allDone = dayRoutines.every((r) => isCompleted(r.id, ds));

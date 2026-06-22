@@ -11,7 +11,7 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
 
-  const profile = useUserStore.getState().profile;
+  const { profile, weightRecords } = useUserStore.getState();
   const routines = useRoutineStore.getState().routines;
   const todos = useTodoStore.getState().todos;
   const completions = useRoutineCompletionStore.getState().completions;
@@ -26,6 +26,7 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
     target_weight_kg: profile.targetWeightKg,
     age_years: profile.ageYears,
     is_male: profile.isMale,
+    nickname: profile.nickname,
     updated_at: now,
   });
   if (profileError) return { error: profileError.message };
@@ -42,6 +43,7 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
         section: r.section ?? null,
         reminder_time: r.reminderTime,
         sort_order: r.order,
+        group_id: r.groupId ?? null,
         created_at: r.createdAt,
         updated_at: now,
       })),
@@ -63,6 +65,7 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
         sort_order: t.order,
         pinned_to_home: t.pinnedToHome,
         pin_order: t.pinOrder,
+        group_id: t.groupId ?? null,
         updated_at: now,
       })),
     );
@@ -95,6 +98,20 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
     if (error) return { error: error.message };
   }
 
+  if (weightRecords.length > 0) {
+    const { error } = await supabase.from('weight_records').upsert(
+      weightRecords.map((w) => ({
+        user_id: userId,
+        id: w.id,
+        date: w.date,
+        weight_kg: w.weightKg,
+        created_at: w.createdAt,
+        updated_at: now,
+      })),
+    );
+    if (error) return { error: error.message };
+  }
+
   await supabase.from('sync_state').upsert({
     user_id: userId,
     last_pushed_at: now,
@@ -108,12 +125,13 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
 
-  const [profileRes, routinesRes, todosRes, completionsRes, fastingRes] = await Promise.all([
+  const [profileRes, routinesRes, todosRes, completionsRes, fastingRes, weightRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('routines').select('*').eq('user_id', userId),
     supabase.from('todos').select('*').eq('user_id', userId),
     supabase.from('routine_completions').select('*').eq('user_id', userId),
     supabase.from('fasting_records').select('*').eq('user_id', userId),
+    supabase.from('weight_records').select('*').eq('user_id', userId),
   ]);
 
   if (profileRes.error) return { error: profileRes.error.message };
@@ -121,16 +139,18 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
   if (todosRes.error) return { error: todosRes.error.message };
   if (completionsRes.error) return { error: completionsRes.error.message };
   if (fastingRes.error) return { error: fastingRes.error.message };
+  if (weightRes.error) return { error: weightRes.error.message };
 
   if (profileRes.data) {
+    const p = profileRes.data as Record<string, unknown>;
     useUserStore.setState({
       profile: {
-        heightCm: profileRes.data.height_cm,
-        weightKg: profileRes.data.weight_kg,
-        targetWeightKg: profileRes.data.target_weight_kg,
-        ageYears: profileRes.data.age_years,
-        isMale: profileRes.data.is_male,
-        nickname: (profileRes.data as { nickname?: string | null }).nickname ?? null,
+        heightCm: p.height_cm as number | null,
+        weightKg: p.weight_kg as number | null,
+        targetWeightKg: p.target_weight_kg as number | null,
+        ageYears: p.age_years as number | null,
+        isMale: p.is_male as boolean | null,
+        nickname: (p.nickname as string | null) ?? null,
       },
     });
   }
@@ -191,6 +211,19 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
         goalHours: Number(r.goal_hours),
         result: r.result,
       })),
+    });
+  }
+
+  if (weightRes.data?.length) {
+    useUserStore.setState({
+      weightRecords: weightRes.data
+        .map((w: Record<string, unknown>) => ({
+          id: w.id as string,
+          date: w.date as string,
+          weightKg: Number(w.weight_kg),
+          createdAt: w.created_at as number,
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date)),
     });
   }
 

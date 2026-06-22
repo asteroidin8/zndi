@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/AppText';
 import { ONBOARDING } from '@/constants/copy';
@@ -18,6 +18,7 @@ const SLIDES = [
 
 export default function OnboardingScreen() {
   const c = useThemeColors();
+  const insets = useSafeAreaInsets();
   const pagerRef = useRef<PagerView>(null);
   const [page, setPage] = useState(0);
   const setOnboardingCompleted = useSettingsStore((s) => s.setOnboardingCompleted);
@@ -38,32 +39,42 @@ export default function OnboardingScreen() {
   const isLast = page === SLIDES.length - 1;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top', 'bottom']}>
-      <PagerView
-        ref={pagerRef}
-        style={{ flex: 1 }}
-        initialPage={0}
-        onPageSelected={(e) => setPage(e.nativeEvent.position)}
-      >
-        {SLIDES.map((slide) => (
-          <View
-            key={slide.title}
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              paddingHorizontal: spacing.screen,
-              gap: spacing.section,
-            }}
-          >
-            <AppText variant="headline">{slide.title}</AppText>
-            <AppText variant="body" tone="secondary" style={{ lineHeight: 22 }}>
-              {slide.body}
-            </AppText>
-          </View>
-        ))}
-      </PagerView>
+    <View style={{ flex: 1, backgroundColor: c.surface, paddingTop: insets.top }}>
+      <View style={{ flex: 1, overflow: 'hidden' }}>
+        <PagerView
+          ref={pagerRef}
+          style={{ flex: 1 }}
+          initialPage={0}
+          onPageSelected={(e) => setPage(e.nativeEvent.position)}
+        >
+          {SLIDES.map((slide) => (
+            <View
+              key={slide.title}
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                paddingHorizontal: spacing.screen,
+                gap: spacing.section,
+              }}
+            >
+              <AppText variant="headline">{slide.title}</AppText>
+              <AppText variant="body" tone="secondary" style={{ lineHeight: 22 }}>
+                {slide.body}
+              </AppText>
+            </View>
+          ))}
+        </PagerView>
+      </View>
 
-      <View style={{ paddingHorizontal: spacing.screen, paddingBottom: spacing.screen, paddingTop: spacing.item, gap: spacing.item }}>
+      <View
+        style={{
+          flexShrink: 0,
+          paddingHorizontal: spacing.screen,
+          paddingTop: spacing.item,
+          paddingBottom: Math.max(spacing.screen, insets.bottom + spacing.sm),
+          gap: spacing.item,
+        }}
+      >
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.sm }}>
           {SLIDES.map((_, i) => (
             <View
@@ -101,6 +112,6 @@ export default function OnboardingScreen() {
           </Pressable>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

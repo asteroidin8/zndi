@@ -1,4 +1,5 @@
 import type { FastingResult } from '@/types';
+import { localDateStr } from './dateFormat';
 
 export type CompletedFastingRecord = {
   id: string;
@@ -19,7 +20,7 @@ export function groupFastingByDay(records: CompletedFastingRecord[]): DailyFasti
   const map: Record<string, DailyFastingSummary> = {};
 
   for (const r of records) {
-    const date = new Date(r.startedAt).toISOString().slice(0, 10);
+    const date = localDateStr(new Date(r.startedAt));
     if (!map[date]) {
       map[date] = { date, totalMinutes: 0, count: 0, records: [] };
     }

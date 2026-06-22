@@ -1,6 +1,7 @@
 import { DAY_LABELS } from '@/constants/statsLabels';
 import type { Routine } from '@/stores/useRoutineStore';
 import type { Todo } from '@/stores/useTodoStore';
+import { localDateStr } from './dateFormat';
 import { isRoutineScheduledForDate } from './routineSchedule';
 
 export type DayDotStatus = 'none' | 'empty' | 'partial' | 'full';
@@ -14,7 +15,7 @@ export type WeekDayDot = {
 };
 
 export function toDateStr(date: Date) {
-  return date.toISOString().slice(0, 10);
+  return localDateStr(date);
 }
 
 export function getRoutineProgressForDate(

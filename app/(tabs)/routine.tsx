@@ -30,6 +30,7 @@ import {
   useRoutineStore,
 } from '@/stores/useRoutineStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
+import { localDateStr } from '@/utils/dateFormat';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
 import { formatRepeatLabel, isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
@@ -85,7 +86,7 @@ export default function RoutineScreen() {
   const [newGroupName, setNewGroupName] = useState('');
 
   const todayDate = useMemo(() => new Date(), []);
-  const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const todayStr = useMemo(() => localDateStr(), []);
 
   const hasGroups = groups.length > 0;
   const sortedGroups = useMemo(() => [...groups].sort((a, b) => a.order - b.order), [groups]);
