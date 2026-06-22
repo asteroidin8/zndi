@@ -72,6 +72,34 @@ export type UserProfile = {
   nickname: string | null;
 };
 
+// ── Board ──
+export type Board = {
+  id: string;
+  name: string;
+  inviteCode: string;
+  ownerId: string;
+  maxMembers: number;
+  createdAt: string;
+};
+
+export type BoardMember = {
+  boardId: string;
+  userId: string;
+  nickname: string;
+  joinedAt: string;
+};
+
+export type BoardDailyProgress = {
+  boardId: string;
+  userId: string;
+  date: string;
+  routineCompleted: number;
+  routineTotal: number;
+  todoCompleted: number;
+  todoTotal: number;
+  streak: number;
+};
+
 // ── Settings ──
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type HintKey = 'swipeActions' | 'longPressEdit';
