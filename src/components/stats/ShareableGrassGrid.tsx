@@ -15,10 +15,11 @@ type Props = {
   year: number;
   month: number;
   grassMap: Map<string, DailyGrassActivity>;
+  nickname?: string | null;
 };
 
 export const ShareableGrassGrid = forwardRef<View, Props>(function ShareableGrassGrid(
-  { year, month, grassMap },
+  { year, month, grassMap, nickname },
   ref,
 ) {
   const c = useThemeColors();
@@ -43,13 +44,20 @@ export const ShareableGrassGrid = forwardRef<View, Props>(function ShareableGras
         gap: 16,
       }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <AppText variant="title" style={{ fontSize: 18, fontWeight: '700', color: c.primary }}>
-          zndi
-        </AppText>
-        <AppText variant="body" style={{ fontWeight: '600' }}>
-          {year}년 {month + 1}월
-        </AppText>
+      <View style={{ alignItems: 'center', gap: 4 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <AppText variant="title" style={{ fontSize: 18, fontWeight: '700', color: c.primary }}>
+            zndi
+          </AppText>
+          <AppText variant="body" style={{ fontWeight: '600' }}>
+            {year}년 {month + 1}월
+          </AppText>
+        </View>
+        {nickname ? (
+          <AppText variant="caption" tone="tertiary" style={{ fontWeight: '500' }}>
+            by {nickname}
+          </AppText>
+        ) : null}
       </View>
 
       <View style={{ alignItems: 'center' }}>

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import { requestWidgetUpdate } from 'react-native-android-widget';
 
@@ -77,46 +77,65 @@ function buildWidgetData(
   };
 }
 
+async function pushUpdate(data: WidgetData) {
+  await writeWidgetData(data);
+  const widgets = ['GrassWidget', 'ChecklistWidget', 'FastingWidget'] as const;
+  const components = {
+    GrassWidget,
+    ChecklistWidget,
+    FastingWidget,
+  } as const;
+  for (const name of widgets) {
+    try {
+      const Widget = components[name];
+      await requestWidgetUpdate({
+        widgetName: name,
+        renderWidget: () => ({
+          light: React.createElement(Widget, { data, theme: 'light' as const }),
+          dark: React.createElement(Widget, { data, theme: 'dark' as const }),
+        }),
+      });
+    } catch { /* widget not placed */ }
+  }
+}
+
 export function useWidgetSync() {
   const routines = useRoutineStore((s) => s.routines);
   const { isCompleted } = useRoutineCompletionStore();
   const todos = useTodoStore((s) => s.todos);
   const { status, startedAt, goalHours } = useFastingStore();
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
 
     const data = buildWidgetData(routines, isCompleted, todos, status, startedAt, goalHours);
+    void pushUpdate(data);
 
-    void (async () => {
-      await writeWidgetData(data);
-      try {
-        await requestWidgetUpdate({
-          widgetName: 'GrassWidget',
-          renderWidget: () => ({
-            light: React.createElement(GrassWidget, { data, theme: 'light' }),
-            dark: React.createElement(GrassWidget, { data, theme: 'dark' }),
-          }),
-        });
-      } catch { /* not placed */ }
-      try {
-        await requestWidgetUpdate({
-          widgetName: 'ChecklistWidget',
-          renderWidget: () => ({
-            light: React.createElement(ChecklistWidget, { data, theme: 'light' }),
-            dark: React.createElement(ChecklistWidget, { data, theme: 'dark' }),
-          }),
-        });
-      } catch { /* not placed */ }
-      try {
-        await requestWidgetUpdate({
-          widgetName: 'FastingWidget',
-          renderWidget: () => ({
-            light: React.createElement(FastingWidget, { data, theme: 'light' }),
-            dark: React.createElement(FastingWidget, { data, theme: 'dark' }),
-          }),
-        });
-      } catch { /* not placed */ }
-    })();
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (status === 'fasting') {
+      timerRef.current = setInterval(() => {
+        const fresh = buildWidgetData(
+          useRoutineStore.getState().routines,
+          useRoutineCompletionStore.getState().isCompleted,
+          useTodoStore.getState().todos,
+          useFastingStore.getState().status,
+          useFastingStore.getState().startedAt,
+          useFastingStore.getState().goalHours,
+        );
+        void pushUpdate(fresh);
+      }, 60_000);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [routines, isCompleted, todos, status, startedAt, goalHours]);
 }
