@@ -9,167 +9,235 @@ interface Props {
 }
 
 function ProgressBar({ filled, total, color, bg }: { filled: number; total: number; color: `#${string}`; bg: `#${string}` }) {
-  const ratio = total > 0 ? Math.max(Math.round((filled / total) * 100), 2) : 2;
-  const rem = 100 - ratio;
+  const ratio = total > 0 ? Math.max(Math.round((filled / total) * 100), 2) : 0;
+  const rem = Math.max(100 - ratio, 0);
   return (
     <FlexWidget
       style={{
         flexDirection: 'row',
-        height: 6,
-        borderRadius: 3,
+        height: 4,
+        borderRadius: 2,
         backgroundColor: bg,
         width: 'match_parent',
         overflow: 'hidden',
       }}
     >
-      <FlexWidget style={{ flex: ratio, height: 6, backgroundColor: color, borderRadius: 3 }} />
-      {rem > 0 && <FlexWidget style={{ flex: rem, height: 6 }} />}
+      {ratio > 0 && (
+        <FlexWidget style={{ flex: ratio, height: 4, backgroundColor: color, borderRadius: 2 }} />
+      )}
+      {rem > 0 && <FlexWidget style={{ flex: rem, height: 4 }} />}
     </FlexWidget>
   );
 }
 
+function rateText(completed: number, total: number): string {
+  if (total === 0) return '0%';
+  return `${Math.round((completed / total) * 100)}%`;
+}
+
 export function ChecklistWidget({ data, theme }: Props) {
   const c = colors[theme];
-  const rate = data.todayTotal > 0
-    ? Math.round((data.todayCompleted / data.todayTotal) * 100)
-    : 0;
 
-  const overallFilled = Math.max(rate, 2);
-  const overallRem = 100 - overallFilled;
+  const routineItems = data.checklist.filter((i) => i.type === 'routine');
+  const todoItems = data.checklist.filter((i) => i.type === 'todo');
 
   return (
     <FlexWidget
       style={{
-        flexDirection: 'row',
+        flexDirection: 'column',
         backgroundColor: c.surface,
         borderRadius: 20,
         padding: 16,
         width: 'match_parent',
         height: 'match_parent',
-        flexGap: 16,
+        flexGap: 10,
       }}
       clickAction="OPEN_APP"
     >
-      {/* Left: Overall rate */}
+      {/* Two columns */}
       <FlexWidget
         style={{
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          width: 90,
-          flexGap: 6,
-        }}
-      >
-        <TextWidget
-          text="zndi"
-          style={{ fontSize: 10, fontWeight: '700', color: c.primary, letterSpacing: 1 }}
-        />
-        <TextWidget
-          text={`${rate}%`}
-          style={{ fontSize: 36, fontWeight: '700', color: c.primary }}
-        />
-        {data.streak > 0 && (
-          <TextWidget
-            text={`🔥 ${data.streak}일`}
-            style={{ fontSize: 11, fontWeight: '600', color: c.ink }}
-          />
-        )}
-      </FlexWidget>
-
-      {/* Right: Breakdown */}
-      <FlexWidget
-        style={{
-          flexDirection: 'column',
+          flexDirection: 'row',
           flex: 1,
-          justifyContent: 'center',
-          flexGap: 12,
+          width: 'match_parent',
+          flexGap: 14,
         }}
       >
-        {/* Overall progress bar */}
-        <FlexWidget style={{ flexDirection: 'column', flexGap: 4 }}>
+        {/* Left: Routines */}
+        <FlexWidget
+          style={{
+            flexDirection: 'column',
+            flex: 1,
+            flexGap: 8,
+          }}
+        >
           <FlexWidget
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
-              width: 'match_parent',
-            }}
-          >
-            <TextWidget
-              text="전체"
-              style={{ fontSize: 11, fontWeight: '600', color: c.inkTertiary }}
-            />
-            <TextWidget
-              text={`${data.todayCompleted}/${data.todayTotal}`}
-              style={{ fontSize: 11, fontWeight: '700', color: c.ink }}
-            />
-          </FlexWidget>
-          <FlexWidget
-            style={{
-              flexDirection: 'row',
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: c.surfaceMuted,
-              width: 'match_parent',
-              overflow: 'hidden',
-            }}
-          >
-            <FlexWidget style={{ flex: overallFilled, height: 6, backgroundColor: c.primary, borderRadius: 3 }} />
-            {overallRem > 0 && <FlexWidget style={{ flex: overallRem, height: 6 }} />}
-          </FlexWidget>
-        </FlexWidget>
-
-        {/* Routine */}
-        <FlexWidget style={{ flexDirection: 'column', flexGap: 4 }}>
-          <FlexWidget
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
+              alignItems: 'center',
               width: 'match_parent',
             }}
           >
             <TextWidget
               text="루틴"
-              style={{ fontSize: 11, fontWeight: '500', color: c.inkTertiary }}
+              style={{ fontSize: 12, fontWeight: '700', color: c.ink }}
             />
             <TextWidget
               text={`${data.routineCompleted}/${data.routineTotal}`}
-              style={{ fontSize: 11, fontWeight: '600', color: c.inkSecondary }}
+              style={{ fontSize: 11, fontWeight: '600', color: c.inkTertiary }}
             />
           </FlexWidget>
-          <ProgressBar
-            filled={data.routineCompleted}
-            total={data.routineTotal}
-            color={c.primary}
-            bg={c.surfaceMuted}
-          />
+
+          <FlexWidget style={{ flexDirection: 'column', flexGap: 3, width: 'match_parent' }}>
+            <ProgressBar
+              filled={data.routineCompleted}
+              total={data.routineTotal}
+              color={c.primary}
+              bg={c.surfaceMuted}
+            />
+            <TextWidget
+              text={rateText(data.routineCompleted, data.routineTotal)}
+              style={{ fontSize: 10, fontWeight: '600', color: c.primary }}
+            />
+          </FlexWidget>
+
+          <FlexWidget style={{ flexDirection: 'column', flexGap: 6, flex: 1 }}>
+            {routineItems.length > 0 ? (
+              routineItems.map((item) => (
+                <FlexWidget
+                  key={item.id}
+                  style={{ flexDirection: 'row', alignItems: 'center', flexGap: 6 }}
+                  clickAction="TOGGLE_ROUTINE"
+                  clickActionData={{ id: item.id }}
+                >
+                  <FlexWidget
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: 3,
+                      backgroundColor: c.surface,
+                      borderWidth: 1,
+                      borderColor: c.inkDisabled,
+                    }}
+                  />
+                  <TextWidget
+                    text={item.title}
+                    maxLines={1}
+                    truncate="END"
+                    style={{ fontSize: 12, color: c.ink }}
+                  />
+                </FlexWidget>
+              ))
+            ) : (
+              <TextWidget
+                text="모두 완료!"
+                style={{ fontSize: 11, color: c.primary, fontWeight: '500' }}
+              />
+            )}
+          </FlexWidget>
         </FlexWidget>
 
-        {/* Todo */}
-        <FlexWidget style={{ flexDirection: 'column', flexGap: 4 }}>
+        {/* Divider */}
+        <FlexWidget
+          style={{
+            width: 1,
+            height: 'match_parent',
+            backgroundColor: c.surfaceMuted,
+          }}
+        />
+
+        {/* Right: Todos */}
+        <FlexWidget
+          style={{
+            flexDirection: 'column',
+            flex: 1,
+            flexGap: 8,
+          }}
+        >
           <FlexWidget
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
+              alignItems: 'center',
               width: 'match_parent',
             }}
           >
             <TextWidget
               text="할일"
-              style={{ fontSize: 11, fontWeight: '500', color: c.inkTertiary }}
+              style={{ fontSize: 12, fontWeight: '700', color: c.ink }}
             />
             <TextWidget
               text={`${data.todoCompleted}/${data.todoTotal}`}
-              style={{ fontSize: 11, fontWeight: '600', color: c.inkSecondary }}
+              style={{ fontSize: 11, fontWeight: '600', color: c.inkTertiary }}
             />
           </FlexWidget>
-          <ProgressBar
-            filled={data.todoCompleted}
-            total={data.todoTotal}
-            color={c.accent}
-            bg={c.surfaceMuted}
-          />
+
+          <FlexWidget style={{ flexDirection: 'column', flexGap: 3, width: 'match_parent' }}>
+            <ProgressBar
+              filled={data.todoCompleted}
+              total={data.todoTotal}
+              color={c.accent}
+              bg={c.surfaceMuted}
+            />
+            <TextWidget
+              text={rateText(data.todoCompleted, data.todoTotal)}
+              style={{ fontSize: 10, fontWeight: '600', color: c.accent }}
+            />
+          </FlexWidget>
+
+          <FlexWidget style={{ flexDirection: 'column', flexGap: 6, flex: 1 }}>
+            {todoItems.length > 0 ? (
+              todoItems.map((item) => (
+                <FlexWidget
+                  key={item.id}
+                  style={{ flexDirection: 'row', alignItems: 'center', flexGap: 6 }}
+                  clickAction="TOGGLE_TODO"
+                  clickActionData={{ id: item.id }}
+                >
+                  <FlexWidget
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: 3,
+                      backgroundColor: c.surface,
+                      borderWidth: 1,
+                      borderColor: c.inkDisabled,
+                    }}
+                  />
+                  <TextWidget
+                    text={item.title}
+                    maxLines={1}
+                    truncate="END"
+                    style={{ fontSize: 12, color: c.ink }}
+                  />
+                </FlexWidget>
+              ))
+            ) : (
+              <TextWidget
+                text="모두 완료!"
+                style={{ fontSize: 11, color: c.accent, fontWeight: '500' }}
+              />
+            )}
+          </FlexWidget>
         </FlexWidget>
       </FlexWidget>
+
+      {/* Bottom: Streak */}
+      {data.streak > 0 && (
+        <FlexWidget
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            width: 'match_parent',
+          }}
+        >
+          <TextWidget
+            text={`🔥 ${data.streak}일 연속`}
+            style={{ fontSize: 11, fontWeight: '600', color: c.ink }}
+          />
+        </FlexWidget>
+      )}
     </FlexWidget>
   );
 }

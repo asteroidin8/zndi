@@ -38,22 +38,25 @@ function buildWidgetData(
   const todoTotal = activeTodos.length;
 
   const checklist: ChecklistItem[] = [
-    ...todayRoutines.slice(0, 3).map((r) => ({
-      id: r.id,
-      title: r.name,
-      done: isCompleted(r.id, todayStr),
-      type: 'routine' as const,
-    })),
+    ...todayRoutines
+      .filter((r) => !isCompleted(r.id, todayStr))
+      .slice(0, 2)
+      .map((r) => ({
+        id: r.id,
+        title: r.name,
+        done: false,
+        type: 'routine' as const,
+      })),
     ...activeTodos
       .filter((t) => !t.completedAt)
-      .slice(0, 3)
+      .slice(0, 2)
       .map((t) => ({
         id: t.id,
         title: t.title,
         done: false,
         type: 'todo' as const,
       })),
-  ].slice(0, 5);
+  ];
 
   const elapsedMs = status === 'fasting' && startedAt ? Date.now() - startedAt : 0;
   const goalMs = goalHours * 3_600_000;
