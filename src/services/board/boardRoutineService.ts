@@ -1,4 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
+import { File } from 'expo-file-system';
 
 import { getSupabase } from '@/lib/supabase';
 import { useBoardStore } from '@/stores/useBoardStore';
@@ -108,6 +109,11 @@ export async function takePhoto(): Promise<string | null> {
   return result.assets[0].uri;
 }
 
+async function readUriAsArrayBuffer(uri: string): Promise<ArrayBuffer> {
+  const file = new File(uri);
+  return file.arrayBuffer();
+}
+
 async function uploadPhoto(
   boardId: string,
   userId: string,
@@ -121,8 +127,7 @@ async function uploadPhoto(
   const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
 
   try {
-    const response = await fetch(uri);
-    const arrayBuffer = await response.arrayBuffer();
+    const arrayBuffer = await readUriAsArrayBuffer(uri);
 
     const { error } = await supabase.storage
       .from('board-photos')
