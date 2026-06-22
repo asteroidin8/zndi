@@ -6,6 +6,14 @@ import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
 
+export async function checkNicknameTaken(nickname: string, _currentUserId: string): Promise<boolean> {
+  const supabase = getSupabase();
+  if (!supabase) return false;
+  const { data, error } = await supabase.rpc('is_nickname_available', { name: nickname });
+  if (error) return false;
+  return data === false;
+}
+
 /** 로컬 Zustand → Supabase upsert (클라우드 백업) */
 export async function pushLocalToCloud(userId: string): Promise<{ error?: string }> {
   const supabase = getSupabase();

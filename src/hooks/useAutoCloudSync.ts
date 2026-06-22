@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { useAuth } from '@/contexts/AuthProvider';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { pushLocalToCloud, pullCloudToLocal } from '@/services/sync/cloudSync';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
@@ -12,13 +13,20 @@ const PUSH_DEBOUNCE_MS = 2500;
 
 /** 로그인 시 로컬 변경을 debounce push (항상 ON) */
 export function useAutoCloudSync() {
-  const { user } = useAuth();
+  const { user, configured } = useAuth();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialPullUserRef = useRef<string | null>(null);
 
+  if (__DEV__) {
+    console.log('[zndi:sync] configured:', configured, 'supabase:', isSupabaseConfigured(), 'user:', user?.id ?? 'null');
+  }
+
   useEffect(() => {
     const userId = user?.id;
-    if (!userId) return;
+    if (!userId) {
+      if (__DEV__) console.log('[zndi:sync] skip — no user');
+      return;
+    }
 
     if (initialPullUserRef.current !== userId) {
       initialPullUserRef.current = userId;

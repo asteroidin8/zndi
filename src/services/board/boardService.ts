@@ -90,34 +90,39 @@ export async function joinBoard(
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
 
-  const { data: boardData, error: findError } = await supabase
-    .from('boards')
-    .select('*')
-    .eq('invite_code', inviteCode.toUpperCase())
-    .single();
-  if (findError || !boardData) return { error: '초대 코드를 찾을 수 없어요.' };
+  const { data: lookupData, error: lookupError } = await supabase
+    .rpc('lookup_board_by_invite', { code: inviteCode.toUpperCase() });
+  if (lookupError || !lookupData) return { error: '초대 코드를 찾을 수 없어요.' };
 
-  const board = rowToBoard(boardData);
+  const lookup = lookupData as { id: string; name: string; max_members: number; member_count: number };
+  if (!lookup.id) return { error: '초대 코드를 찾을 수 없어요.' };
 
-  const { data: existingMembers } = await supabase
-    .from('board_members')
-    .select('user_id')
-    .eq('board_id', board.id);
+  const boardId = lookup.id;
 
-  if (existingMembers) {
-    if (existingMembers.some((m) => m.user_id === userId)) {
-      return { error: '이미 참여 중인 보드예요.' };
-    }
-    if (existingMembers.length >= board.maxMembers) {
-      return { error: '보드 인원이 가득 찼어요.' };
-    }
+  const myBoards = useBoardStore.getState().boards;
+  if (myBoards.some((b) => b.id === boardId)) {
+    return { error: '이미 참여 중인 보드예요.' };
+  }
+  if (lookup.member_count >= lookup.max_members) {
+    return { error: '보드 인원이 가득 찼어요.' };
   }
 
   const { error: joinError } = await supabase
     .from('board_members')
-    .insert({ board_id: board.id, user_id: userId, nickname });
-  if (joinError) return { error: joinError.message };
+    .insert({ board_id: boardId, user_id: userId, nickname });
+  if (joinError) {
+    if (joinError.code === '23505') return { error: '이미 참여 중인 보드예요.' };
+    return { error: joinError.message };
+  }
 
+  const board: Board = {
+    id: boardId,
+    name: lookup.name,
+    inviteCode: inviteCode.toUpperCase(),
+    ownerId: '',
+    maxMembers: lookup.max_members,
+    createdAt: new Date().toISOString(),
+  };
   return { board };
 }
 

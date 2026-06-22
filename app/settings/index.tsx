@@ -21,6 +21,7 @@ import { useUserStore } from '@/stores/useUserStore';
 import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
 import { getRoutineStreakDays } from '@/utils/homeDailyBoard';
 import { getGrassLevel } from '@/utils/grassLevel';
+import { checkNicknameTaken } from '@/services/sync/cloudSync';
 
 const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
   { value: 'system', label: '시스템' },
@@ -47,6 +48,21 @@ export default function MyScreen() {
   const [busy, setBusy] = useState(false);
   const [editingNickname, setEditingNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState(profile.nickname ?? '');
+  const [nicknameError, setNicknameError] = useState<string | null>(null);
+
+  async function handleNicknameSave() {
+    const trimmed = nicknameInput.trim() || null;
+    setNicknameError(null);
+    if (trimmed && user?.id) {
+      const taken = await checkNicknameTaken(trimmed, user.id);
+      if (taken) {
+        setNicknameError('이미 사용 중인 닉네임이에요');
+        return;
+      }
+    }
+    setNickname(trimmed);
+    setEditingNickname(false);
+  }
   const [emailMode, setEmailMode] = useState(false);
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -145,22 +161,26 @@ export default function MyScreen() {
         {configured && !loading && user ? (
           <View style={{ alignItems: 'center', gap: spacing.sm }}>
             {editingNickname ? (
-              <TextInput
-                value={nicknameInput}
-                onChangeText={setNicknameInput}
-                placeholder="닉네임 입력"
-                placeholderTextColor={c.inkDisabled}
-                autoFocus
-                returnKeyType="done"
-                onSubmitEditing={() => { setNickname(nicknameInput.trim() || null); setEditingNickname(false); }}
-                onBlur={() => { setNickname(nicknameInput.trim() || null); setEditingNickname(false); }}
-                style={{
-                  fontSize: 20, fontWeight: '700', color: c.ink,
-                  textAlign: 'center', minWidth: 120,
-                  borderBottomWidth: 1, borderBottomColor: c.primary,
-                  paddingVertical: spacing.xs,
-                }}
-              />
+              <View style={{ alignItems: 'center', gap: spacing.xs }}>
+                <TextInput
+                  value={nicknameInput}
+                  onChangeText={(t) => { setNicknameInput(t); setNicknameError(null); }}
+                  placeholder="닉네임 입력"
+                  placeholderTextColor={c.inkDisabled}
+                  autoFocus
+                  returnKeyType="done"
+                  onSubmitEditing={handleNicknameSave}
+                  style={{
+                    fontSize: 20, fontWeight: '700', color: c.ink,
+                    textAlign: 'center', minWidth: 120,
+                    borderBottomWidth: 1, borderBottomColor: nicknameError ? c.danger : c.primary,
+                    paddingVertical: spacing.xs,
+                  }}
+                />
+                {nicknameError && (
+                  <AppText variant="caption" style={{ color: c.danger }}>{nicknameError}</AppText>
+                )}
+              </View>
             ) : (
               <Pressable onPress={() => { setNicknameInput(profile.nickname ?? ''); setEditingNickname(true); }}>
                 <AppText variant="title" style={{ fontWeight: '700' }}>

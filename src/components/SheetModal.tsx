@@ -57,7 +57,7 @@ export function SheetModal({ visible, onClose, title, headerRight, footer, child
     <Modal visible transparent animationType="none" onRequestClose={onClose}>
       <KeyboardAvoidingView
         style={{ flex: 1, justifyContent: 'flex-end' }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 6 : 0}
       >
         <Animated.View
