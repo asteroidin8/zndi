@@ -40,6 +40,45 @@ export function getGrassNeonGlow(hex: string): string {
   return `${hex}80`;
 }
 
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace('#', '');
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  return '#' + [r, g, b].map((v) => Math.min(255, Math.max(0, Math.round(v))).toString(16).padStart(2, '0')).join('');
+}
+
+function lighten(hex: string, amount: number): string {
+  const [r, g, b] = hexToRgb(hex);
+  return rgbToHex(r + (255 - r) * amount, g + (255 - g) * amount, b + (255 - b) * amount);
+}
+
+export type GrassDerivedColors = {
+  primary: string;
+  primaryContainer: string;
+  accent: string;
+  neonGlow: string;
+  border: string;
+  borderStrong: string;
+};
+
+export function deriveThemeColors(id: GrassColorId, isDark: boolean): GrassDerivedColors | null {
+  if (id === 'green') return null;
+  const hex = getGrassColor(id);
+  const [r, g, b] = hexToRgb(hex);
+  const accent = lighten(hex, 0.3);
+  const neonGlow = isDark ? lighten(hex, 0.4) : rgbToHex(r * 0.8, g * 0.8, b * 0.8);
+  return {
+    primary: hex,
+    primaryContainer: isDark ? accent : hex,
+    accent,
+    neonGlow,
+    border: isDark ? `rgba(${r}, ${g}, ${b}, 0.15)` : `rgba(${r}, ${g}, ${b}, 0.25)`,
+    borderStrong: isDark ? `rgba(${r}, ${g}, ${b}, 0.3)` : `rgba(${r}, ${g}, ${b}, 0.4)`,
+  };
+}
+
 export const GRASS_OPACITY = [0, 0.2, 0.4, 0.65, 1.0] as const;
 
 export function getCellBorderRadius(shape: GrassCellShape, size: number): number {
