@@ -230,16 +230,14 @@ export async function pushDailyProgress(
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
 
-  const { error } = await supabase.from('board_daily_progress').upsert({
-    board_id: boardId,
-    user_id: userId,
-    date,
-    routine_completed: data.routineCompleted,
-    routine_total: data.routineTotal,
-    todo_completed: data.todoCompleted,
-    todo_total: data.todoTotal,
-    streak: data.streak,
-    updated_at: new Date().toISOString(),
+  const { error } = await supabase.rpc('upsert_board_progress', {
+    p_board_id: boardId,
+    p_date: date,
+    p_routine_completed: data.routineCompleted,
+    p_routine_total: data.routineTotal,
+    p_todo_completed: data.todoCompleted,
+    p_todo_total: data.todoTotal,
+    p_streak: data.streak,
   });
   if (error) return { error: error.message };
 

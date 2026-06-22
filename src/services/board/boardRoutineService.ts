@@ -31,17 +31,16 @@ function rowToLog(row: Record<string, unknown>, photoUrl: string): BoardVerifica
 
 export async function createBoardRoutine(
   boardId: string,
-  userId: string,
+  _userId: string,
   name: string,
 ): Promise<{ routine?: BoardRoutine; error?: string }> {
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
 
-  const { data, error } = await supabase
-    .from('board_routines')
-    .insert({ board_id: boardId, name, created_by: userId })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('create_board_routine', {
+    p_board_id: boardId,
+    p_name: name,
+  });
   if (error) return { error: error.message };
 
   const routine = rowToRoutine(data as Record<string, unknown>);
@@ -117,23 +116,26 @@ async function uploadPhoto(
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
 
-  const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+  const ext = uri.split('.').pop()?.split('?')[0]?.toLowerCase() ?? 'jpg';
   const fileName = `${userId}/${boardId}/${Date.now()}.${ext}`;
-  const contentType = ext === 'png' ? 'image/png' : 'image/jpeg';
+  const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
 
-  const formData = new FormData();
-  formData.append('', {
-    uri,
-    name: fileName.replace(/\//g, '_'),
-    type: contentType,
-  } as unknown as Blob);
+  try {
+    const response = await fetch(uri);
+    const arrayBuffer = await response.arrayBuffer();
 
-  const { error } = await supabase.storage
-    .from('board-photos')
-    .upload(fileName, formData, { contentType: 'multipart/form-data' });
-  if (error) return { error: error.message };
+    const { error } = await supabase.storage
+      .from('board-photos')
+      .upload(fileName, arrayBuffer, {
+        contentType: mimeType,
+        upsert: false,
+      });
+    if (error) return { error: error.message };
 
-  return { path: fileName };
+    return { path: fileName };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : '사진 업로드 실패' };
+  }
 }
 
 function getPhotoUrl(path: string): string {
@@ -156,17 +158,12 @@ export async function submitVerification(
   const { path, error: uploadError } = await uploadPhoto(boardId, userId, photoUri);
   if (uploadError || !path) return { error: uploadError ?? '사진 업로드 실패' };
 
-  const { data, error } = await supabase
-    .from('board_verification_logs')
-    .insert({
-      board_id: boardId,
-      routine_id: routineId,
-      user_id: userId,
-      photo_path: path,
-      memo: memo || null,
-    })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('insert_verification_log', {
+    p_board_id: boardId,
+    p_routine_id: routineId,
+    p_photo_path: path,
+    p_memo: memo || null,
+  });
   if (error) return { error: error.message };
 
   const photoUrl = getPhotoUrl(path);
