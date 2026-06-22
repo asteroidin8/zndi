@@ -17,7 +17,7 @@ import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { SheetModal, SheetPrimaryButton } from '@/components/SheetModal';
 import { PageHeader } from '@/components/settings/MyScreenUI';
-import { getGrassColor, getGrassNeonGlow, getCellBorderRadius } from '@/constants/grassTheme';
+import { getGrassColor, getCellBorderRadius } from '@/constants/grassTheme';
 import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -82,6 +82,9 @@ export default function BoardDetailScreen() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [memo, setMemo] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const grassColor = useSettingsStore((s) => s.grassColor);
+  const grassCellShape = useSettingsStore((s) => s.grassShape);
 
   const weekDates = useMemo(() => getWeekDates(), []);
   const todayStr = localDateStr();
@@ -216,8 +219,7 @@ export default function BoardDetailScreen() {
     ]);
   }
 
-  const grassHex = getGrassColor(useSettingsStore.getState().grassColor);
-  const grassCellShape = useSettingsStore((s) => s.grassShape);
+  const grassHex = getGrassColor(grassColor);
   const grassOpacity = [0, 0.2, 0.4, 0.65, 1];
 
   const tabs: { key: Tab; label: string }[] = [
