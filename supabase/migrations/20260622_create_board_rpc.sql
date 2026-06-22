@@ -40,6 +40,8 @@ BEGIN
 END;
 $$;
 
+GRANT EXECUTE ON FUNCTION public.create_board(text, text, text) TO authenticated;
+
 -- GRANT
 GRANT ALL ON public.boards TO authenticated;
 GRANT ALL ON public.board_members TO authenticated;
