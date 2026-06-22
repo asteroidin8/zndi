@@ -22,6 +22,7 @@ import { DAY_LABELS } from '@/constants/statsLabels';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useEditMode } from '@/hooks/useEditMode';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { appAlert } from '@/stores/useAlertStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import {
   type Routine,
@@ -112,7 +113,7 @@ export default function RoutineScreen() {
   function handleBulkDelete() {
     const count = selectedIds.size;
     if (count === 0) return;
-    Alert.alert(
+    appAlert(
       `${count}개 삭제`,
       `선택한 ${count}개의 루틴을 삭제할까요?`,
       [
@@ -183,14 +184,14 @@ export default function RoutineScreen() {
       'plain-text',
       group.name,
     ) ??
-      Alert.alert('그룹 관리', group.name, [
+      appAlert('그룹 관리', group.name, [
         { text: '삭제', style: 'destructive', onPress: () => removeGroup(group.id) },
         { text: '닫기' },
       ]);
   }
 
   function handleDeleteGroup(group: RoutineGroup) {
-    Alert.alert(
+    appAlert(
       '그룹 삭제',
       `"${group.name}" 그룹을 삭제할까요?\n그룹 안의 루틴은 유지됩니다.`,
       [

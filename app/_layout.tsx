@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { LogBox, useColorScheme, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { AppAlert } from '@/components/AppAlert';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { CloudSyncBridge } from '@/components/CloudSyncBridge';
 import { AuthProvider } from '@/contexts/AuthProvider';
@@ -75,6 +76,7 @@ export default function RootLayout() {
         <AuthProvider>
           <CloudSyncBridge />
           <AppContent />
+          <AppAlert />
         </AuthProvider>
       </AppErrorBoundary>
     </SafeGestureRoot>

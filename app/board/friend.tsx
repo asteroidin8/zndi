@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 
@@ -11,6 +11,7 @@ import { getGrassColor, getCellBorderRadius, GRASS_OPACITY } from '@/constants/g
 import { spacing } from '@/constants/spacing';
 import { WEEKDAY_SHORT } from '@/constants/statsLabels';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { appAlert } from '@/stores/useAlertStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { EMPTY_FRIEND_PROGRESS, useFollowStore } from '@/stores/useFollowStore';
 import {
@@ -68,7 +69,7 @@ export default function FriendProfileScreen() {
   const grassOpacity = GRASS_OPACITY;
 
   function handleUnfollow() {
-    Alert.alert('팔로우 취소', `${nickname}님을 언팔로우할까요?`, [
+    appAlert('팔로우 취소', `${nickname}님을 언팔로우할까요?`, [
       { text: '취소', style: 'cancel' },
       {
         text: '언팔로우',

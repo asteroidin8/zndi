@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
@@ -14,16 +14,20 @@ import { StatsDayDetailModal } from '@/components/stats/StatsDayDetailModal';
 import { StatsMonthGrid } from '@/components/stats/StatsMonthGrid';
 import { STATS_LABELS } from '@/constants/statsLabels';
 import { spacing } from '@/constants/spacing';
+import { useAuth } from '@/contexts/AuthProvider';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useShareGrass } from '@/hooks/useShareGrass';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import type { FastingRecord } from '@/types';
+import { appAlert } from '@/stores/useAlertStore';
+import { useBoardStore } from '@/stores/useBoardStore';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { type StatsCardId, useStatsCardStore } from '@/stores/useStatsCardStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
+import { buildBoardRoutineData, countBoardCompletionsForDate, countBoardRoutinesTotal } from '@/utils/boardRoutineStats';
 import { buildMonthGrassMap } from '@/utils/calendarGrass';
 import { formatMetric } from '@/utils/formatMetric';
 import { localDateStr } from '@/utils/dateFormat';
@@ -68,6 +72,9 @@ export default function StatsScreen() {
   const { isCompleted } = useRoutineCompletionStore();
   const { profile } = useUserStore();
   const { cards } = useStatsCardStore();
+  const { user } = useAuth();
+  const boardRoutines = useBoardStore((s) => s.routines);
+  const boardLogs = useBoardStore((s) => s.logs);
 
   const now = new Date();
   const [viewYear, setViewYear] = useState(now.getFullYear());
@@ -87,14 +94,21 @@ export default function StatsScreen() {
 
   const completedFasts = records.filter((r) => r.result === 'completed').length;
 
-  const todayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, now));
+  const boardTotal = countBoardRoutinesTotal(boardRoutines);
   const todayDateStr = localDateStr(now);
-  const completedRoutinesToday = todayRoutines.filter((r) => isCompleted(r.id, todayDateStr)).length;
+
+  const todayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, now));
+  const personalCompletedToday = todayRoutines.filter((r) => isCompleted(r.id, todayDateStr)).length;
+  const boardCompletedToday = user && boardTotal > 0
+    ? countBoardCompletionsForDate(boardLogs, user.id, todayDateStr)
+    : 0;
+  const totalTodayRoutines = todayRoutines.length + boardTotal;
+  const completedRoutinesToday = personalCompletedToday + boardCompletedToday;
 
   const completedTodos = todos.filter((t) => t.completedAt !== null).length;
   const completionRate = todos.length > 0 ? Math.round((completedTodos / todos.length) * 100) : 0;
 
-  const isDataEmpty = records.length === 0 && routines.length === 0 && todos.length === 0;
+  const isDataEmpty = records.length === 0 && routines.length === 0 && todos.length === 0 && boardTotal === 0;
 
   const hasWeight = profile.weightKg != null && profile.targetWeightKg != null;
 
@@ -121,7 +135,7 @@ export default function StatsScreen() {
             key="routine"
             icon="RotateCcw"
             title={L.sectionRoutine}
-            metric={`${completedRoutinesToday}/${todayRoutines.length}${L.countUnit}`}
+            metric={`${completedRoutinesToday}/${totalTodayRoutines}${L.countUnit}`}
             onPress={() => router.push('/stats/routine')}
           />
         );
@@ -168,7 +182,11 @@ export default function StatsScreen() {
   }
   const isCurrentMonth = viewYear === now.getFullYear() && viewMonth === now.getMonth();
 
-  const grassMap = buildMonthGrassMap(viewYear, viewMonth, routines, isCompleted, todos);
+  const boardData = useMemo(
+    () => (user ? buildBoardRoutineData(boardRoutines, boardLogs, user.id) : undefined),
+    [boardRoutines, boardLogs, user],
+  );
+  const grassMap = buildMonthGrassMap(viewYear, viewMonth, routines, isCompleted, todos, boardData);
   const { gridRef, share } = useShareGrass();
 
   return (
@@ -305,7 +323,7 @@ export default function StatsScreen() {
         }}
         onDelete={() => {
           if (!editingRecord) return;
-          Alert.alert(L.deleteAlertTitle, L.deleteAlertMessage, [
+          appAlert(L.deleteAlertTitle, L.deleteAlertMessage, [
             { text: L.cancel, style: 'cancel' },
             {
               text: L.delete,

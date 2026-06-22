@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Alert, Dimensions, Pressable, ScrollView, View } from 'react-native';
+import { Dimensions, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
@@ -13,6 +13,7 @@ import { PageHeader } from '@/components/settings/MyScreenUI';
 import { STATS_LABELS } from '@/constants/statsLabels';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { appAlert } from '@/stores/useAlertStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { formatMetric } from '@/utils/formatMetric';
 
@@ -65,7 +66,7 @@ export default function WeightDetailScreen() {
   }
 
   function handleDelete(id: string) {
-    Alert.alert(L.deleteAlertTitle, L.deleteAlertMessage, [
+    appAlert(L.deleteAlertTitle, L.deleteAlertMessage, [
       { text: L.cancel, style: 'cancel' },
       {
         text: L.delete,

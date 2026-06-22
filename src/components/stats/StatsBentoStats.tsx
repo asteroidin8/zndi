@@ -1,12 +1,16 @@
+import { useMemo } from 'react';
 import { View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { spacing } from '@/constants/spacing';
 import { STATS_BENTO } from '@/constants/copy';
+import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useBoardStore } from '@/stores/useBoardStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
+import { buildBoardRoutineData } from '@/utils/boardRoutineStats';
 import { getMonthRoutineStats } from '@/utils/contributionGrid';
 import { getRoutineStreakDays } from '@/utils/homeDailyBoard';
 
@@ -28,8 +32,17 @@ function StatCard({ label, value, glow }: { label: string; value: string; glow?:
 export function StatsBentoStats() {
   const { routines } = useRoutineStore();
   const { isCompleted } = useRoutineCompletionStore();
-  const streak = getRoutineStreakDays(routines, isCompleted);
-  const month = getMonthRoutineStats(routines, isCompleted);
+  const { user } = useAuth();
+  const boardRoutines = useBoardStore((s) => s.routines);
+  const boardLogs = useBoardStore((s) => s.logs);
+
+  const boardData = useMemo(
+    () => (user ? buildBoardRoutineData(boardRoutines, boardLogs, user.id) : undefined),
+    [boardRoutines, boardLogs, user],
+  );
+
+  const streak = getRoutineStreakDays(routines, isCompleted, boardData);
+  const month = getMonthRoutineStats(routines, isCompleted, undefined, boardData);
   const rate = month.daysWithRoutines > 0 ? Math.round(month.rate * 100) : 0;
 
   return (

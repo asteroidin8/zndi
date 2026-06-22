@@ -23,8 +23,6 @@ const FEATURES: FeatureRow[] = [
   { label: '셀 모양', free: '기본 1종', pro: '전체' },
   { label: '셀 애니메이션', free: false, pro: true },
   { label: '클라우드 동기화', free: true, pro: true },
-  { label: '통계 상세 분석', free: false, pro: true },
-  { label: '광고 제거', free: false, pro: true },
 ];
 
 function CheckOrText({ value, accent }: { value: string | boolean; accent?: boolean }) {

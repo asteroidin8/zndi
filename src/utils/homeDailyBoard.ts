@@ -1,6 +1,7 @@
 import { DAY_LABELS } from '@/constants/statsLabels';
 import type { Routine } from '@/stores/useRoutineStore';
 import type { Todo } from '@/stores/useTodoStore';
+import type { BoardRoutineData } from './boardRoutineStats';
 import { localDateStr } from './dateFormat';
 import { isRoutineScheduledForDate } from './routineSchedule';
 
@@ -72,6 +73,7 @@ export function getWeekDayDots(
 export function getRoutineStreakDays(
   routines: Routine[],
   isCompleted: (routineId: string, date: string) => boolean,
+  boardData?: BoardRoutineData,
 ) {
   let streak = 0;
   const cursor = new Date();
@@ -81,13 +83,16 @@ export function getRoutineStreakDays(
     const dateStr = toDateStr(cursor);
     const dayOfWeek = cursor.getDay();
     const { completed, total } = getRoutineProgressForDate(dateStr, dayOfWeek, routines, isCompleted);
+    const boardCompleted = boardData?.getCompleted(dateStr) ?? 0;
+    const totalCompleted = completed + boardCompleted;
+    const totalCount = total + (boardData?.total ?? 0);
 
-    if (total === 0) {
+    if (totalCount === 0) {
       cursor.setDate(cursor.getDate() - 1);
       continue;
     }
 
-    if (completed >= total) {
+    if (totalCompleted >= totalCount) {
       streak++;
     } else if (i === 0) {
       // 오늘은 아직 진행 중일 수 있음

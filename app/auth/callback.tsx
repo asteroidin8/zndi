@@ -2,12 +2,13 @@ import { useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { useURL } from 'expo-linking';
 import { useEffect, useRef } from 'react';
-import { ActivityIndicator, Alert, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { handleAuthCallbackUrl } from '@/services/auth/authSession';
+import { appAlert } from '@/stores/useAlertStore';
 import { getSupabase } from '@/lib/supabase';
 
 export default function AuthCallbackScreen() {
@@ -42,7 +43,7 @@ export default function AuthCallbackScreen() {
       if (cancelled) return;
 
       if (result.error) {
-        Alert.alert('로그인 실패', result.error, [{ text: '확인', onPress: () => router.replace('/settings') }]);
+        appAlert('로그인 실패', result.error, [{ text: '확인', onPress: () => router.replace('/settings') }]);
         return;
       }
       router.replace('/settings');

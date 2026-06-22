@@ -1,11 +1,13 @@
 import type { Routine } from '@/stores/useRoutineStore';
 
+import type { BoardRoutineData } from './boardRoutineStats';
 import { getRoutineProgressForDate, toDateStr } from './homeDailyBoard';
 
 export function getMonthRoutineStats(
   routines: Routine[],
   isCompleted: (routineId: string, date: string) => boolean,
   refDate = new Date(),
+  boardData?: BoardRoutineData,
 ) {
   const year = refDate.getFullYear();
   const month = refDate.getMonth();
@@ -22,9 +24,12 @@ export function getMonthRoutineStats(
       routines,
       isCompleted,
     );
-    if (total > 0) {
+    const boardCompleted = boardData?.getCompleted(dateStr) ?? 0;
+    const totalCompleted = completed + boardCompleted;
+    const totalCount = total + (boardData?.total ?? 0);
+    if (totalCount > 0) {
       daysWithRoutines++;
-      if (completed >= total) daysFullyComplete++;
+      if (totalCompleted >= totalCount) daysFullyComplete++;
     }
   }
 

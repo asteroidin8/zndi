@@ -4,6 +4,7 @@ import type { Routine } from '@/stores/useRoutineStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import type { Todo } from '@/stores/useTodoStore';
 
+import type { BoardRoutineData } from './boardRoutineStats';
 import { localDateStr } from './dateFormat';
 import { getRoutineProgressForDate, toDateStr } from './homeDailyBoard';
 
@@ -39,13 +40,17 @@ export function getDailyGrassActivity(
   routines: Routine[],
   isCompleted: (routineId: string, date: string) => boolean,
   todos: Todo[],
+  boardData?: BoardRoutineData,
 ): DailyGrassActivity {
-  const { completed: routineCompleted, total: routineTotal } = getRoutineProgressForDate(
+  const { completed: personalCompleted, total: personalTotal } = getRoutineProgressForDate(
     dateStr,
     dayOfWeek,
     routines,
     isCompleted,
   );
+  const boardCompleted = boardData?.getCompleted(dateStr) ?? 0;
+  const routineCompleted = personalCompleted + boardCompleted;
+  const routineTotal = personalTotal + (boardData?.total ?? 0);
   const todosCompleted = countTodosCompletedOnDate(todos, dateStr);
   const score = routineCompleted + todosCompleted;
 
@@ -64,6 +69,7 @@ export function buildMonthGrassMap(
   routines: Routine[],
   isCompleted: (routineId: string, date: string) => boolean,
   todos: Todo[],
+  boardData?: BoardRoutineData,
 ): Map<string, DailyGrassActivity> {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const map = new Map<string, DailyGrassActivity>();
@@ -73,7 +79,7 @@ export function buildMonthGrassMap(
     const dateStr = toDateStr(date);
     map.set(
       dateStr,
-      getDailyGrassActivity(dateStr, date.getDay(), routines, isCompleted, todos),
+      getDailyGrassActivity(dateStr, date.getDay(), routines, isCompleted, todos, boardData),
     );
   }
 

@@ -1,18 +1,17 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { ProgressBar } from '@/components/ProgressBar';
-import { ProLockModal } from '@/components/ProLockModal';
 import { DangerRow, GroupCard, InsetDivider, Row } from '@/components/settings/MyScreenUI';
-import { GRASS_COLORS, GRASS_CELL_SKINS, GRASS_ANIMATIONS, getCellBorderRadius, getCellTransform } from '@/constants/grassTheme';
 import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { appAlert } from '@/stores/useAlertStore';
 import { useProStore } from '@/stores/useProStore';
 import type { ThemeMode, TimeFormat } from '@/stores/useSettingsStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
@@ -39,8 +38,8 @@ const TIME_FORMAT_OPTIONS: { value: TimeFormat; label: string }[] = [
 
 export default function MyScreen() {
   const c = useThemeColors();
-  const { themeMode, setThemeMode, timeFormat, setTimeFormat, grassColor, setGrassColor, grassShape, setGrassShape, grassAnimation, setGrassAnimation } = useSettingsStore();
-  const { isPro, isColorUnlocked, isShapeUnlocked, isAnimationUnlocked } = useProStore();
+  const { themeMode, setThemeMode, timeFormat, setTimeFormat } = useSettingsStore();
+  const { isPro } = useProStore();
   const { configured, loading, user, signInGoogle, sendEmailOtp, verifyEmailOtp, signOut } = useAuth();
   const { profile, setNickname } = useUserStore();
   const { routines } = useRoutineStore();
@@ -53,8 +52,6 @@ export default function MyScreen() {
   const [editingNickname, setEditingNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState(profile.nickname ?? '');
   const [nicknameError, setNicknameError] = useState<string | null>(null);
-  const [proLockVisible, setProLockVisible] = useState(false);
-
   async function handleNicknameSave() {
     const trimmed = nicknameInput.trim() || null;
     setNicknameError(null);
@@ -78,9 +75,9 @@ export default function MyScreen() {
     try {
       const result = await signInGoogle();
       if (result.cancelled) return;
-      if (result.error) Alert.alert('로그인 실패', result.error);
+      if (result.error) appAlert('로그인 실패', result.error);
     } catch {
-      Alert.alert('로그인 실패', '로그인 중 오류가 발생했어요.');
+      appAlert('로그인 실패', '로그인 중 오류가 발생했어요.');
     } finally {
       setBusy(false);
     }
@@ -91,7 +88,7 @@ export default function MyScreen() {
     setBusy(true);
     const result = await sendEmailOtp(email);
     setBusy(false);
-    if (result.error) Alert.alert('이메일 전송 실패', result.error);
+    if (result.error) appAlert('이메일 전송 실패', result.error);
     else setOtpSent(true);
   }
 
@@ -99,22 +96,22 @@ export default function MyScreen() {
     setBusy(true);
     const result = await verifyEmailOtp(email, otp);
     setBusy(false);
-    if (result.error) Alert.alert('인증 실패', result.error);
+    if (result.error) appAlert('인증 실패', result.error);
     else { setEmailMode(false); setOtpSent(false); setOtp(''); }
   }
 
   function handleLogout() {
-    Alert.alert('로그아웃', '계정에서 로그아웃할까요?', [
+    appAlert('로그아웃', '계정에서 로그아웃할까요?', [
       { text: '취소', style: 'cancel' },
       { text: '로그아웃', style: 'destructive', onPress: async () => {
         const result = await signOut();
-        if (result.error) Alert.alert('로그아웃 실패', result.error);
+        if (result.error) appAlert('로그아웃 실패', result.error);
       }},
     ]);
   }
 
   function handleDataReset() {
-    Alert.alert(
+    appAlert(
       '데이터 초기화',
       '단식·루틴·할 일 기록과 프로필, 앱 설정이 모두 삭제됩니다.\n이 작업은 되돌릴 수 없어요.',
       [
@@ -323,221 +320,12 @@ export default function MyScreen() {
           <Row label="알림" icon="Bell" onPress={() => router.push('/settings/notifications')} />
         </GroupCard>
 
-        {/* ── 테마 상점 ── */}
-        <View
-          style={{
-            backgroundColor: c.surfaceSubtle,
-            borderRadius: radius.lg,
-            borderWidth: 1,
-            borderColor: c.border,
-            overflow: 'hidden',
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.card, borderBottomWidth: 1, borderBottomColor: c.borderNeutral }}>
-            <AppIcon name="Palette" size={16} color={c.primary} />
-            <AppText variant="body" style={{ fontWeight: '700', flex: 1 }}>테마 상점</AppText>
-          </View>
-
-          {/* 컬러 */}
-          <View style={{ padding: spacing.card, gap: spacing.sm }}>
-            <AppText variant="caption" tone="tertiary" style={{ fontWeight: '600' }}>컬러</AppText>
-            <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
-              {GRASS_COLORS.map((preset) => {
-                const selected = grassColor === preset.id;
-                const locked = !isColorUnlocked(preset.id);
-                return (
-                  <Pressable
-                    key={preset.id}
-                    onPress={() => {
-                      if (locked) { setProLockVisible(true); return; }
-                      setGrassColor(preset.id);
-                    }}
-                    style={{
-                      alignItems: 'center',
-                      gap: 4,
-                      padding: 6,
-                      borderRadius: radius.md,
-                      borderWidth: selected ? 2 : 0,
-                      borderColor: selected ? preset.hex : 'transparent',
-                      opacity: locked ? 0.4 : 1,
-                    }}
-                  >
-                    <View style={{ position: 'relative' }}>
-                      <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: preset.hex }} />
-                      {locked && (
-                        <View style={{ position: 'absolute', top: -4, right: -4 }}>
-                          <AppIcon name="Lock" size={12} color={c.inkTertiary} />
-                        </View>
-                      )}
-                    </View>
-                    <AppText variant="caption" tone={selected ? 'secondary' : 'tertiary'} style={{ fontSize: 10, fontWeight: selected ? '700' : '400' }}>
-                      {preset.name}
-                    </AppText>
-                    {preset.price != null && locked && (
-                      <AppText variant="caption" tone="disabled" style={{ fontSize: 8 }}>
-                        {preset.price.toLocaleString()}
-                      </AppText>
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-
-          <View style={{ height: 1, backgroundColor: c.borderNeutral }} />
-
-          {/* 셀 모양 */}
-          <View style={{ padding: spacing.card, gap: spacing.sm }}>
-            <AppText variant="caption" tone="tertiary" style={{ fontWeight: '600' }}>셀 모양</AppText>
-            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-              {GRASS_CELL_SKINS.map((skin) => {
-                const selected = grassShape === skin.id;
-                const locked = !isShapeUnlocked(skin.id);
-                const previewSize = 28;
-                const previewRadius = getCellBorderRadius(skin.id, previewSize);
-                const transform = getCellTransform(skin.id);
-                const displaySize = skin.id === 'diamond' ? 22 : previewSize;
-                const activeHex = GRASS_COLORS.find((p) => p.id === grassColor)?.hex ?? '#22C55E';
-                return (
-                  <Pressable
-                    key={skin.id}
-                    onPress={() => {
-                      if (locked) { setProLockVisible(true); return; }
-                      setGrassShape(skin.id);
-                    }}
-                    style={{
-                      flex: 1,
-                      alignItems: 'center',
-                      gap: 6,
-                      paddingVertical: spacing.md,
-                      borderRadius: radius.md,
-                      borderWidth: selected ? 2 : 1,
-                      borderColor: selected ? activeHex : c.border,
-                      backgroundColor: selected ? `${activeHex}10` : 'transparent',
-                      opacity: locked ? 0.4 : 1,
-                    }}
-                  >
-                    <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-                      <View
-                        style={{
-                          width: displaySize,
-                          height: displaySize,
-                          borderRadius: previewRadius,
-                          backgroundColor: activeHex,
-                          ...(transform.rotate ? { transform: [{ rotate: transform.rotate }] } : {}),
-                        }}
-                      />
-                      {locked && (
-                        <View style={{ position: 'absolute', top: -6, right: -8 }}>
-                          <AppIcon name="Lock" size={12} color={c.inkTertiary} />
-                        </View>
-                      )}
-                    </View>
-                    <AppText variant="caption" style={{ fontSize: 10, fontWeight: selected ? '700' : '400', color: selected ? activeHex : c.inkTertiary }}>
-                      {skin.name}
-                    </AppText>
-                    {skin.price != null && locked && (
-                      <AppText variant="caption" tone="disabled" style={{ fontSize: 8 }}>
-                        {skin.price.toLocaleString()}
-                      </AppText>
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-
-          <View style={{ height: 1, backgroundColor: c.borderNeutral }} />
-
-          {/* 애니메이션 */}
-          <View style={{ padding: spacing.card, gap: spacing.sm }}>
-            <AppText variant="caption" tone="tertiary" style={{ fontWeight: '600' }}>애니메이션</AppText>
-            <View style={{ gap: spacing.xs }}>
-              {GRASS_ANIMATIONS.map((anim) => {
-                const selected = grassAnimation === anim.id;
-                const locked = !isAnimationUnlocked(anim.id);
-                const activeHex = GRASS_COLORS.find((p) => p.id === grassColor)?.hex ?? '#22C55E';
-                return (
-                  <Pressable
-                    key={anim.id}
-                    onPress={() => {
-                      if (locked) { setProLockVisible(true); return; }
-                      setGrassAnimation(anim.id);
-                    }}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: spacing.sm,
-                      paddingVertical: spacing.sm,
-                      paddingHorizontal: spacing.md,
-                      borderRadius: radius.md,
-                      borderWidth: selected ? 2 : 1,
-                      borderColor: selected ? activeHex : c.border,
-                      backgroundColor: selected ? `${activeHex}10` : 'transparent',
-                      opacity: locked ? 0.5 : 1,
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: 5,
-                        backgroundColor: anim.id === 'none' ? c.surfaceMuted : activeHex,
-                      }}
-                    />
-                    <View style={{ flex: 1 }}>
-                      <AppText variant="caption" style={{ fontWeight: selected ? '700' : '500', color: selected ? activeHex : c.ink }}>
-                        {anim.name}
-                      </AppText>
-                      <AppText variant="caption" tone="tertiary" style={{ fontSize: 10 }}>
-                        {anim.desc}
-                      </AppText>
-                    </View>
-                    {locked && anim.price != null && (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <AppIcon name="Lock" size={10} color={c.inkTertiary} />
-                        <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>
-                          {anim.price.toLocaleString()}
-                        </AppText>
-                      </View>
-                    )}
-                    {selected && !locked && (
-                      <AppIcon name="Check" size={14} color={activeHex} />
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        </View>
-
-        {/* ── 멤버십 ── */}
-        <Pressable
-          onPress={() => router.push('/settings/membership')}
-          style={({ pressed }) => ({
-            backgroundColor: isPro ? `${c.primary}10` : c.surfaceSubtle,
-            borderRadius: radius.lg,
-            borderWidth: 1,
-            borderColor: isPro ? `${c.primary}30` : c.border,
-            padding: spacing.card,
-            opacity: pressed ? 0.88 : 1,
-          })}
-          accessibilityRole="button"
-          accessibilityLabel="멤버십"
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-            <AppIcon name="Crown" size={18} color={isPro ? c.primary : c.inkTertiary} />
-            <View style={{ flex: 1 }}>
-              <AppText variant="body" style={{ fontWeight: '700' }}>
-                {isPro ? 'Pro 멤버십' : '멤버십'}
-              </AppText>
-              <AppText variant="caption" tone="tertiary">
-                {isPro ? '모든 테마와 기능을 이용 중이에요' : 'Pro로 모든 테마와 기능을 잠금 해제하세요'}
-              </AppText>
-            </View>
-            <AppIcon name="ChevronRight" size={16} color={c.inkDisabled} />
-          </View>
-        </Pressable>
+        {/* ── 테마 상점 · 멤버십 ── */}
+        <GroupCard>
+          <Row label="테마 상점" icon="Palette" onPress={() => router.push('/settings/theme-shop')} />
+          <InsetDivider />
+          <Row label="멤버십" icon="Crown" value={isPro ? 'Pro' : undefined} onPress={() => router.push('/settings/membership')} />
+        </GroupCard>
 
         {/* ── 설정 카드 2 ── */}
         <GroupCard>
@@ -556,11 +344,6 @@ export default function MyScreen() {
         </GroupCard>
       </ScrollView>
 
-      <ProLockModal
-        visible={proLockVisible}
-        onClose={() => setProLockVisible(false)}
-        onGoToShop={() => router.push('/settings/membership')}
-      />
     </SafeAreaView>
   );
 }

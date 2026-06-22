@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Dimensions, Pressable, ScrollView, View } from 'react-native';
+import { Dimensions, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
@@ -13,6 +13,7 @@ import { PageHeader } from '@/components/settings/MyScreenUI';
 import { STATS_LABELS, WEEKDAY_SHORT } from '@/constants/statsLabels';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { appAlert } from '@/stores/useAlertStore';
 import type { FastingRecord } from '@/types';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { type DailyFastingSummary, formatMinutes, groupFastingByDay } from '@/utils/statsHelper';
@@ -150,7 +151,7 @@ export default function FastingDetailScreen() {
         }}
         onDelete={() => {
           if (!editingRecord) return;
-          Alert.alert(L.deleteAlertTitle, L.deleteAlertMessage, [
+          appAlert(L.deleteAlertTitle, L.deleteAlertMessage, [
             { text: L.cancel, style: 'cancel' },
             {
               text: L.delete,
