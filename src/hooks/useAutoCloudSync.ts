@@ -27,14 +27,25 @@ export function useAutoCloudSync() {
         useTodoStore.getState().todos.length > 0 ||
         Object.keys(useRoutineCompletionStore.getState().completions).length > 0;
       if (!hasLocalData) {
-        void pullCloudToLocal(userId);
+        pullCloudToLocal(userId).then((res) => {
+          if (res.error) console.warn('[zndi] pull failed:', res.error);
+          else if (__DEV__) console.log('[zndi] pull complete');
+        });
+      } else {
+        pushLocalToCloud(userId).then((res) => {
+          if (res.error) console.warn('[zndi] initial push failed:', res.error);
+          else if (__DEV__) console.log('[zndi] initial push complete');
+        });
       }
     }
 
     const schedulePush = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
-        void pushLocalToCloud(userId);
+        pushLocalToCloud(userId).then((res) => {
+          if (res.error) console.warn('[zndi] push failed:', res.error);
+          else if (__DEV__) console.log('[zndi] push complete');
+        });
       }, PUSH_DEBOUNCE_MS);
     };
 
