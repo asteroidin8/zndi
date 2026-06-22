@@ -11,7 +11,7 @@ import { getGrassColor, getCellBorderRadius } from '@/constants/grassTheme';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useSettingsStore } from '@/stores/useSettingsStore';
-import { useFollowStore } from '@/stores/useFollowStore';
+import { EMPTY_FRIEND_PROGRESS, useFollowStore } from '@/stores/useFollowStore';
 import {
   fetchFriendProgress,
   unfollowUser,
@@ -52,7 +52,7 @@ function ratioToLevel(ratio: number): number {
 export default function FriendProfileScreen() {
   const c = useThemeColors();
   const { userId, nickname } = useLocalSearchParams<{ userId: string; nickname: string }>();
-  const progress = useFollowStore((s) => s.friendProgress[userId ?? ''] ?? []);
+  const progress = useFollowStore((s) => s.friendProgress[userId ?? ''] ?? EMPTY_FRIEND_PROGRESS);
 
   useEffect(() => {
     if (userId) void fetchFriendProgress(userId);

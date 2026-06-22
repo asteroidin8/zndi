@@ -2,6 +2,12 @@ import { create } from 'zustand';
 
 import type { Board, BoardDailyProgress, BoardMember, BoardRoutine, BoardVerificationLog } from '@/types';
 
+/** Zustand selector에서 ?? [] 사용 시 매 렌더 새 참조 → 무한 리렌더 방지 */
+export const EMPTY_BOARD_MEMBERS: BoardMember[] = [];
+export const EMPTY_BOARD_PROGRESS: BoardDailyProgress[] = [];
+export const EMPTY_BOARD_ROUTINES: BoardRoutine[] = [];
+export const EMPTY_BOARD_LOGS: BoardVerificationLog[] = [];
+
 type BoardStore = {
   boards: Board[];
   members: Record<string, BoardMember[]>;

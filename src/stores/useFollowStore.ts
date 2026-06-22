@@ -2,6 +2,8 @@ import { create } from 'zustand';
 
 import type { FollowUser, UserDailyProgress } from '@/types';
 
+export const EMPTY_FRIEND_PROGRESS: UserDailyProgress[] = [];
+
 type FollowStore = {
   following: FollowUser[];
   followers: FollowUser[];

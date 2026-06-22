@@ -21,7 +21,13 @@ import { getGrassColor, getCellBorderRadius } from '@/constants/grassTheme';
 import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { useBoardStore } from '@/stores/useBoardStore';
+import {
+  EMPTY_BOARD_LOGS,
+  EMPTY_BOARD_MEMBERS,
+  EMPTY_BOARD_PROGRESS,
+  EMPTY_BOARD_ROUTINES,
+  useBoardStore,
+} from '@/stores/useBoardStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { leaveBoard } from '@/services/board/boardService';
 import {
@@ -69,10 +75,10 @@ export default function BoardDetailScreen() {
   const { user } = useAuth();
   const { id } = useLocalSearchParams<{ id: string }>();
   const board = useBoardStore((s) => s.boards.find((b) => b.id === id));
-  const members = useBoardStore((s) => s.members[id ?? ''] ?? []);
-  const progress = useBoardStore((s) => s.progress[id ?? ''] ?? []);
-  const routines = useBoardStore((s) => s.routines[id ?? ''] ?? []);
-  const logs = useBoardStore((s) => s.logs[id ?? ''] ?? []);
+  const members = useBoardStore((s) => s.members[id ?? ''] ?? EMPTY_BOARD_MEMBERS);
+  const progress = useBoardStore((s) => s.progress[id ?? ''] ?? EMPTY_BOARD_PROGRESS);
+  const routines = useBoardStore((s) => s.routines[id ?? ''] ?? EMPTY_BOARD_ROUTINES);
+  const logs = useBoardStore((s) => s.logs[id ?? ''] ?? EMPTY_BOARD_LOGS);
 
   const [tab, setTab] = useState<Tab>('members');
   const [showCreateRoutine, setShowCreateRoutine] = useState(false);
