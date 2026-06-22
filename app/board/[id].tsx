@@ -25,7 +25,6 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import {
   EMPTY_BOARD_LOGS,
   EMPTY_BOARD_MEMBERS,
-  EMPTY_BOARD_PROGRESS,
   EMPTY_BOARD_ROUTINES,
   useBoardStore,
 } from '@/stores/useBoardStore';
@@ -67,7 +66,6 @@ export default function BoardDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const board = useBoardStore((s) => s.boards.find((b) => b.id === id));
   const members = useBoardStore((s) => s.members[id ?? ''] ?? EMPTY_BOARD_MEMBERS);
-  const progress = useBoardStore((s) => s.progress[id ?? ''] ?? EMPTY_BOARD_PROGRESS);
   const routines = useBoardStore((s) => s.routines[id ?? ''] ?? EMPTY_BOARD_ROUTINES);
   const logs = useBoardStore((s) => s.logs[id ?? ''] ?? EMPTY_BOARD_LOGS);
 
@@ -92,26 +90,40 @@ export default function BoardDetailScreen() {
     void fetchVerificationLogs(id);
   }, [id]);
 
+  const todayRoutineTotal = routines.length;
+
+  function hasVerified(userId: string, routineId: string, date: string): boolean {
+    return logs.some(
+      (l) => l.userId === userId && l.routineId === routineId && localDateStr(new Date(l.createdAt)) === date,
+    );
+  }
+
   const memberStats = useMemo(() => {
+    if (todayRoutineTotal === 0) {
+      return members.map((member) => ({
+        member,
+        rate: 0,
+        streak: 0,
+        weekGrass: weekDates.map(() => 0),
+      }));
+    }
+
     return members.map((member) => {
-      const memberProgress = progress.filter((p) => p.userId === member.userId);
-      const todayEntry = memberProgress.find((p) => p.date === todayStr);
-      const todayTotal = (todayEntry?.routineTotal ?? 0) + (todayEntry?.todoTotal ?? 0);
-      const todayCompleted = (todayEntry?.routineCompleted ?? 0) + (todayEntry?.todoCompleted ?? 0);
-      const rate = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
-      const streak = todayEntry?.streak ?? 0;
+      const todayVerified = routines.filter((r) =>
+        hasVerified(member.userId, r.id, todayStr),
+      ).length;
+      const rate = Math.round((todayVerified / todayRoutineTotal) * 100);
 
       const weekGrass = weekDates.map((date) => {
-        const entry = memberProgress.find((p) => p.date === date);
-        if (!entry) return 0;
-        const total = entry.routineTotal + entry.todoTotal;
-        if (total === 0) return 0;
-        return ratioToLevel((entry.routineCompleted + entry.todoCompleted) / total);
+        const verified = routines.filter((r) =>
+          hasVerified(member.userId, r.id, date),
+        ).length;
+        return ratioToLevel(verified / todayRoutineTotal);
       });
 
-      return { member, rate, streak, weekGrass };
+      return { member, rate, streak: 0, weekGrass };
     });
-  }, [members, progress, weekDates, todayStr]);
+  }, [members, routines, logs, weekDates, todayStr, todayRoutineTotal]);
 
   if (!board) {
     return (
@@ -370,39 +382,61 @@ export default function BoardDetailScreen() {
                 </AppText>
               </View>
             ) : (
-              routines.map((routine) => (
-                <Card key={routine.id}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.gap }}>
-                    <AppIcon name="RotateCcw" size={16} color={c.primary} />
-                    <AppText variant="body" style={{ flex: 1, fontWeight: '600' }}>
-                      {routine.name}
-                    </AppText>
-                    <Pressable
-                      onPress={() => openVerify(routine.id)}
-                      hitSlop={8}
-                      style={{
-                        paddingHorizontal: 12,
-                        paddingVertical: 6,
-                        borderRadius: radius.sm,
-                        backgroundColor: c.primary,
-                      }}
-                    >
-                      <AppText variant="caption" style={{ color: '#fff', fontWeight: '700' }}>
-                        인증
+              routines.map((routine) => {
+                const verified = user?.id ? hasVerified(user.id, routine.id, todayStr) : false;
+                return (
+                  <Card key={routine.id}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.gap }}>
+                      <AppIcon name={verified ? 'CheckCircle' : 'RotateCcw'} size={16} color={verified ? c.accent : c.primary} />
+                      <AppText variant="body" style={{ flex: 1, fontWeight: '600' }}>
+                        {routine.name}
                       </AppText>
-                    </Pressable>
-                    {(routine.createdBy === user?.id || isOwner) && (
-                      <Pressable
-                        onPress={() => handleDeleteRoutine(routine.id, routine.name)}
-                        hitSlop={8}
-                        style={{ padding: 4 }}
-                      >
-                        <AppIcon name="Trash2" size={14} color={c.danger} />
-                      </Pressable>
-                    )}
-                  </View>
-                </Card>
-              ))
+                      {verified ? (
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 4,
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            borderRadius: radius.sm,
+                            backgroundColor: c.surfaceMuted,
+                          }}
+                        >
+                          <AppIcon name="Check" size={12} color={c.primary} />
+                          <AppText variant="caption" style={{ color: c.primary, fontWeight: '700' }}>
+                            완료
+                          </AppText>
+                        </View>
+                      ) : (
+                        <Pressable
+                          onPress={() => openVerify(routine.id)}
+                          hitSlop={8}
+                          style={{
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            borderRadius: radius.sm,
+                            backgroundColor: c.primary,
+                          }}
+                        >
+                          <AppText variant="caption" style={{ color: '#fff', fontWeight: '700' }}>
+                            인증
+                          </AppText>
+                        </Pressable>
+                      )}
+                      {(routine.createdBy === user?.id || isOwner) && (
+                        <Pressable
+                          onPress={() => handleDeleteRoutine(routine.id, routine.name)}
+                          hitSlop={8}
+                          style={{ padding: 4 }}
+                        >
+                          <AppIcon name="Trash2" size={14} color={c.danger} />
+                        </Pressable>
+                      )}
+                    </View>
+                  </Card>
+                );
+              })
             )}
           </View>
         )}
