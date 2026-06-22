@@ -287,6 +287,7 @@ export default function StatsScreen() {
           year={viewYear}
           month={viewMonth}
           grassMap={grassMap}
+          nickname={profile.nickname}
         />
       </View>
 
