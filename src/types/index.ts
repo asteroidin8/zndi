@@ -100,6 +100,22 @@ export type BoardDailyProgress = {
   streak: number;
 };
 
+// ── Follow ──
+export type FollowUser = {
+  userId: string;
+  nickname: string;
+};
+
+export type UserDailyProgress = {
+  userId: string;
+  date: string;
+  routineCompleted: number;
+  routineTotal: number;
+  todoCompleted: number;
+  todoTotal: number;
+  streak: number;
+};
+
 // ── Settings ──
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type HintKey = 'swipeActions' | 'longPressEdit';
