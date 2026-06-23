@@ -49,6 +49,7 @@ type GroupPosition = 'first' | 'middle' | 'last' | 'only';
 
 type ListItem =
   | { type: 'group-header'; key: string; group: TodoGroup; completedCount: number; totalCount: number; hasVisibleItems: boolean }
+  | { type: 'group-empty'; key: string; groupId: string }
   | { type: 'todo'; key: string; todo: Todo; groupPosition: GroupPosition | null }
   | { type: 'ungrouped-header'; key: string };
 
@@ -192,10 +193,14 @@ export default function TodoScreen() {
         hasVisibleItems: visibleCount > 0,
       });
       if (!group.collapsed) {
-        for (let i = 0; i < groupActive.length; i++) {
-          const pos: GroupPosition =
-            groupActive.length === 1 ? 'only' : i === 0 ? 'first' : i === groupActive.length - 1 ? 'last' : 'middle';
-          items.push({ type: 'todo', key: groupActive[i].id, todo: groupActive[i], groupPosition: pos });
+        if (groupActive.length === 0) {
+          items.push({ type: 'group-empty', key: `ge-${group.id}`, groupId: group.id });
+        } else {
+          for (let i = 0; i < groupActive.length; i++) {
+            const pos: GroupPosition =
+              groupActive.length === 1 ? 'only' : i === 0 ? 'first' : i === groupActive.length - 1 ? 'last' : 'middle';
+            items.push({ type: 'todo', key: groupActive[i].id, todo: groupActive[i], groupPosition: pos });
+          }
         }
       }
     }
@@ -329,6 +334,8 @@ export default function TodoScreen() {
       } else if (item.type === 'ungrouped-header') {
         currentGroupId = null;
         order = 0;
+      } else if (item.type === 'group-empty') {
+        // skip empty placeholder
       } else {
         updates.push({ id: item.todo.id, groupId: currentGroupId, order });
         order++;
@@ -354,6 +361,30 @@ export default function TodoScreen() {
           onRename={() => handleRenameGroup(item.group)}
           onDelete={() => handleDeleteGroup(item.group)}
         />
+      );
+    }
+
+    if (item.type === 'group-empty') {
+      const isTarget = isDragging && dragTargetGroupId === item.groupId && dragSourceGroupRef.current !== item.groupId;
+      return (
+        <View
+          style={{
+            marginHorizontal: spacing.screen,
+            paddingVertical: spacing.card,
+            paddingHorizontal: spacing.screen,
+            backgroundColor: isTarget ? `${c.primary}08` : c.surfaceSubtle,
+            borderWidth: 1,
+            borderTopWidth: 0,
+            borderColor: isTarget ? c.primary : c.borderNeutral,
+            borderBottomLeftRadius: radius.md,
+            borderBottomRightRadius: radius.md,
+            alignItems: 'center',
+          }}
+        >
+          <AppText variant="caption" tone="disabled">
+            할일을 여기로 드래그하세요
+          </AppText>
+        </View>
       );
     }
 
@@ -709,8 +740,6 @@ export default function TodoScreen() {
           style={{
             fontSize: 16,
             color: c.ink,
-            borderBottomWidth: 1,
-            borderBottomColor: c.border,
             paddingVertical: spacing.sm,
           }}
         />

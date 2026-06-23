@@ -25,3 +25,6 @@ alter table public.todo_groups enable row level security;
 
 create policy "routine_groups_own" on public.routine_groups for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "todo_groups_own" on public.todo_groups for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+GRANT ALL ON public.routine_groups TO authenticated;
+GRANT ALL ON public.todo_groups TO authenticated;
