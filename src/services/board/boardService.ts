@@ -219,15 +219,6 @@ export async function updateMyNicknameInBoards(
   userId: string,
   nickname: string,
 ): Promise<{ error?: string }> {
-  const supabase = getSupabase();
-  if (!supabase) return { error: 'Supabase 미설정' };
-
-  const { error } = await supabase
-    .from('board_members')
-    .update({ nickname })
-    .eq('user_id', userId);
-  if (error) return { error: error.message };
-
   const store = useBoardStore.getState();
   const updatedMembers: Record<string, BoardMember[]> = {};
   for (const [boardId, memberList] of Object.entries(store.members)) {
@@ -236,6 +227,15 @@ export async function updateMyNicknameInBoards(
     );
   }
   useBoardStore.setState({ members: { ...store.members, ...updatedMembers } });
+
+  const supabase = getSupabase();
+  if (!supabase) return { error: 'Supabase 미설정' };
+
+  const { error } = await supabase
+    .from('board_members')
+    .update({ nickname })
+    .eq('user_id', userId);
+  if (error) return { error: error.message };
 
   return {};
 }
