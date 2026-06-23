@@ -23,7 +23,9 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
 
   const { profile, weightRecords } = useUserStore.getState();
   const routines = useRoutineStore.getState().routines;
+  const routineGroups = useRoutineStore.getState().groups;
   const todos = useTodoStore.getState().todos;
+  const todoGroups = useTodoStore.getState().groups;
   const completions = useRoutineCompletionStore.getState().completions;
   const records = useFastingStore.getState().records;
 
@@ -41,6 +43,20 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
   });
   if (profileError) return { error: profileError.message };
 
+  if (routineGroups.length > 0) {
+    const { error } = await supabase.from('routine_groups').upsert(
+      routineGroups.map((g) => ({
+        user_id: userId,
+        id: g.id,
+        name: g.name,
+        sort_order: g.order,
+        collapsed: g.collapsed,
+        updated_at: now,
+      })),
+    );
+    if (error) return { error: error.message };
+  }
+
   if (routines.length > 0) {
     const { error } = await supabase.from('routines').upsert(
       routines.map((r) => ({
@@ -55,6 +71,20 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
         sort_order: r.order,
         group_id: r.groupId ?? null,
         created_at: r.createdAt,
+        updated_at: now,
+      })),
+    );
+    if (error) return { error: error.message };
+  }
+
+  if (todoGroups.length > 0) {
+    const { error } = await supabase.from('todo_groups').upsert(
+      todoGroups.map((g) => ({
+        user_id: userId,
+        id: g.id,
+        name: g.name,
+        sort_order: g.order,
+        collapsed: g.collapsed,
         updated_at: now,
       })),
     );
@@ -137,9 +167,11 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
 
-  const [profileRes, routinesRes, todosRes, completionsRes, fastingRes, weightRes] = await Promise.all([
+  const [profileRes, routineGroupsRes, routinesRes, todoGroupsRes, todosRes, completionsRes, fastingRes, weightRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
+    supabase.from('routine_groups').select('*').eq('user_id', userId),
     supabase.from('routines').select('*').eq('user_id', userId),
+    supabase.from('todo_groups').select('*').eq('user_id', userId),
     supabase.from('todos').select('*').eq('user_id', userId),
     supabase.from('routine_completions').select('*').eq('user_id', userId),
     supabase.from('fasting_records').select('*').eq('user_id', userId),
@@ -167,6 +199,19 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
     });
   }
 
+  if (routineGroupsRes.data?.length) {
+    useRoutineStore.setState({
+      groups: routineGroupsRes.data
+        .map((g: Record<string, unknown>) => ({
+          id: g.id as string,
+          name: g.name as string,
+          order: g.sort_order as number,
+          collapsed: (g.collapsed as boolean) ?? false,
+        }))
+        .sort((a, b) => a.order - b.order),
+    });
+  }
+
   if (routinesRes.data?.length) {
     useRoutineStore.setState({
       routines: routinesRes.data
@@ -181,6 +226,19 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
           createdAt: r.created_at,
           order: r.sort_order,
           groupId: (r as Record<string, unknown>).group_id as string | null ?? null,
+        }))
+        .sort((a, b) => a.order - b.order),
+    });
+  }
+
+  if (todoGroupsRes.data?.length) {
+    useTodoStore.setState({
+      groups: todoGroupsRes.data
+        .map((g: Record<string, unknown>) => ({
+          id: g.id as string,
+          name: g.name as string,
+          order: g.sort_order as number,
+          collapsed: (g.collapsed as boolean) ?? false,
         }))
         .sort((a, b) => a.order - b.order),
     });

@@ -106,7 +106,16 @@ export default function MyScreen() {
       { text: '취소', style: 'cancel' },
       { text: '로그아웃', style: 'destructive', onPress: async () => {
         const result = await signOut();
-        if (result.error) appAlert('로그아웃 실패', result.error);
+        if (result.error) {
+          appAlert('로그아웃 실패', result.error);
+          return;
+        }
+        await resetUserData();
+        useSettingsStore.setState({
+          grassColor: 'green',
+          grassShape: 'default',
+          grassAnimation: 'none',
+        });
       }},
     ]);
   }

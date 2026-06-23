@@ -137,7 +137,8 @@ export default function TodoScreen() {
   const showSwipeHint = !seenHints.swipeActions && todos.length > 0;
 
   const sortedGroups = [...groups].sort((a, b) => a.order - b.order);
-  const ungroupedActive = activeTodos.filter((t) => !t.groupId);
+  const groupIds = useMemo(() => new Set(groups.map((g) => g.id)), [groups]);
+  const ungroupedActive = activeTodos.filter((t) => !t.groupId || !groupIds.has(t.groupId));
   const hasGroups = groups.length > 0;
 
   const visibleTodoIds = useMemo(() => {

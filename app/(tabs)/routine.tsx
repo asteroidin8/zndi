@@ -109,8 +109,9 @@ export default function RoutineScreen() {
 
   const hasGroups = groups.length > 0;
   const sortedGroups = useMemo(() => [...groups].sort((a, b) => a.order - b.order), [groups]);
+  const groupIds = useMemo(() => new Set(groups.map((g) => g.id)), [groups]);
   const allRoutinesSorted = useMemo(() => [...routines].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)), [routines]);
-  const ungroupedRoutines = useMemo(() => allRoutinesSorted.filter((r) => (r.groupId ?? null) === null), [allRoutinesSorted]);
+  const ungroupedRoutines = useMemo(() => allRoutinesSorted.filter((r) => !r.groupId || !groupIds.has(r.groupId)), [allRoutinesSorted, groupIds]);
 
   const todayRoutines = useMemo(() => ungroupedRoutines.filter((r) => isRoutineScheduledForDate(r, todayDate)), [ungroupedRoutines, todayDate]);
   const otherRoutines = useMemo(() => ungroupedRoutines.filter((r) => !isRoutineScheduledForDate(r, todayDate)), [ungroupedRoutines, todayDate]);
