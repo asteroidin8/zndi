@@ -39,9 +39,9 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: spacing.md,
+        paddingVertical: 10,
         gap: spacing.item,
-        minHeight: size.touchTarget,
+        minHeight: 44,
         opacity: isCompleted ? opacity.completed : 1,
       }}
     >

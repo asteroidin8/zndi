@@ -69,7 +69,7 @@ export default function PrivacyScreen() {
           개인정보처리방침
         </AppText>
       </View>
-      <Divider />
+      <Divider strong />
       <ScrollView
         contentContainerStyle={{
           padding: spacing.screen,

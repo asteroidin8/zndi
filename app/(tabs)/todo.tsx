@@ -423,7 +423,6 @@ export default function TodoScreen() {
                   onPress={() => setEditTarget(todo)}
                 />
               </View>
-              {(gp !== 'last' && gp !== 'only') && <Divider />}
             </View>
           </SwipeActions>
         </View>
@@ -780,7 +779,7 @@ function Header({
           })}
         </View>
       )}
-      <Divider />
+      <Divider strong />
     </>
   );
 }
