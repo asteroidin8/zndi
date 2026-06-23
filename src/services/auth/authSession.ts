@@ -81,6 +81,21 @@ export async function verifyEmailOtp(email: string, token: string): Promise<{ er
   }
 }
 
+export async function deleteAccount(): Promise<{ error?: string }> {
+  try {
+    const supabase = getSupabase();
+    if (!supabase) return { error: 'Supabase 클라이언트를 만들 수 없어요.' };
+
+    const { error: rpcError } = await supabase.rpc('delete_own_account');
+    if (rpcError) return { error: rpcError.message };
+
+    await supabase.auth.signOut();
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : '계정 삭제 중 오류가 발생했어요.' };
+  }
+}
+
 export async function signOut(): Promise<{ error?: string }> {
   try {
     const supabase = getSupabase();

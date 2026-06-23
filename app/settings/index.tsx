@@ -22,6 +22,7 @@ import { useUserStore } from '@/stores/useUserStore';
 import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
 import { getRoutineStreakDays } from '@/utils/homeDailyBoard';
 import { getGrassLevel } from '@/utils/grassLevel';
+import { deleteAccount } from '@/services/auth/authSession';
 import { resetUserData } from '@/utils/resetUserData';
 import { checkNicknameTaken } from '@/services/sync/cloudSync';
 
@@ -108,6 +109,33 @@ export default function MyScreen() {
         if (result.error) appAlert('로그아웃 실패', result.error);
       }},
     ]);
+  }
+
+  function handleDeleteAccount() {
+    appAlert(
+      '회원 탈퇴',
+      '계정과 모든 데이터가 영구적으로 삭제됩니다.\n클라우드에 저장된 데이터도 함께 삭제돼요.\n이 작업은 되돌릴 수 없어요.',
+      [
+        { text: '취소', style: 'cancel' },
+        { text: '탈퇴', style: 'destructive', onPress: async () => {
+          const result = await deleteAccount();
+          if (result.error) {
+            appAlert('탈퇴 실패', result.error);
+            return;
+          }
+          await resetUserData();
+          await cancelNotificationsByPrefix(NOTIFICATION_ID.routinePrefix);
+          await cancelNotificationsByPrefix(NOTIFICATION_ID.todoPrefix);
+          await Notifications.dismissNotificationAsync(NOTIFICATION_ID.fasting).catch(() => {});
+          await useSettingsStore.persist.clearStorage();
+          useSettingsStore.setState({
+            foregroundServiceEnabled: true, themeMode: 'dark',
+            routineNotificationsEnabled: false, todoNotificationsEnabled: false,
+            onboardingCompleted: false, seenHints: {},
+          });
+        }},
+      ],
+    );
   }
 
   function handleDataReset() {
@@ -351,6 +379,12 @@ export default function MyScreen() {
             </>
           )}
           <DangerRow label="데이터 초기화" onPress={handleDataReset} />
+          {user && (
+            <>
+              <InsetDivider />
+              <DangerRow label="회원 탈퇴" onPress={handleDeleteAccount} />
+            </>
+          )}
         </GroupCard>
       </ScrollView>
 

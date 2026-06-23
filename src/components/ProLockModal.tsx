@@ -85,7 +85,7 @@ export function ProLockModal({ visible, onClose, onGoToShop }: Props) {
           </AppText>
 
           <AppText variant="caption" tone="secondary" style={{ textAlign: 'center', lineHeight: 20 }}>
-            구독 또는 개별 구매로{'\n'}잠금 해제할 수 있어요
+            구독으로 잠금 해제할 수 있어요
           </AppText>
 
           {onGoToShop && (
