@@ -34,6 +34,7 @@ export function useAutoCloudSync() {
     const userId = user?.id;
     if (!userId) {
       if (__DEV__) console.log('[zndi:sync] skip — no user');
+      initialPullUserRef.current = null;
       return;
     }
 

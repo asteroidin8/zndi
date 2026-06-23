@@ -10,6 +10,7 @@ import {
   signOut,
   verifyEmailOtp,
 } from '@/services/auth/authSession';
+import { resetUserData } from '@/utils/resetUserData';
 
 type AuthContextValue = {
   configured: boolean;
@@ -44,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(next);
       if (event === 'SIGNED_OUT') {
         setLoading(false);
+        void resetUserData();
       }
     });
 

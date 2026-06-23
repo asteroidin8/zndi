@@ -23,6 +23,7 @@ import { useUserStore } from '@/stores/useUserStore';
 import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
 import { getRoutineStreakDays } from '@/utils/homeDailyBoard';
 import { getGrassLevel } from '@/utils/grassLevel';
+import { resetUserData } from '@/utils/resetUserData';
 import { checkNicknameTaken } from '@/services/sync/cloudSync';
 
 const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
@@ -117,24 +118,11 @@ export default function MyScreen() {
       [
         { text: '취소', style: 'cancel' },
         { text: '초기화', style: 'destructive', onPress: async () => {
-          await Promise.all([
-            useFastingStore.persist.clearStorage(),
-            useRoutineStore.persist.clearStorage(),
-            useTodoStore.persist.clearStorage(),
-            useUserStore.persist.clearStorage(),
-            useSettingsStore.persist.clearStorage(),
-            useRoutineCompletionStore.persist.clearStorage(),
-          ]);
+          await resetUserData();
           await cancelNotificationsByPrefix(NOTIFICATION_ID.routinePrefix);
           await cancelNotificationsByPrefix(NOTIFICATION_ID.todoPrefix);
           await Notifications.dismissNotificationAsync(NOTIFICATION_ID.fasting).catch(() => {});
-          useFastingStore.setState({ status: 'idle', startedAt: null, records: [], goalHours: 16 });
-          useRoutineStore.setState({ routines: [], groups: [] });
-          useTodoStore.setState({ todos: [], groups: [], lastArchiveDate: null });
-          useRoutineCompletionStore.setState({ completions: {} });
-          useUserStore.setState({
-            profile: { heightCm: null, weightKg: null, targetWeightKg: null, ageYears: null, isMale: null, nickname: null },
-          });
+          await useSettingsStore.persist.clearStorage();
           useSettingsStore.setState({
             foregroundServiceEnabled: true, themeMode: 'dark',
             routineNotificationsEnabled: false, todoNotificationsEnabled: false,
