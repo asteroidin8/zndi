@@ -85,6 +85,11 @@ export default function BoardDetailScreen() {
   const weekDates = useMemo(() => getWeekDates(), []);
   const todayStr = localDateStr();
 
+  const memberNicknames = useMemo(
+    () => new Map(members.map((m) => [m.userId, m.nickname])),
+    [members],
+  );
+
   useEffect(() => {
     if (!id) return;
     void fetchBoardRoutines(id);
@@ -467,12 +472,12 @@ export default function BoardDetailScreen() {
                         }}
                       >
                         <AppText variant="caption" style={{ color: '#fff', fontWeight: '700', fontSize: 11 }}>
-                          {getInitial(log.nickname ?? '?')}
+                          {getInitial(memberNicknames.get(log.userId) ?? log.nickname ?? '?')}
                         </AppText>
                       </View>
                       <View style={{ flex: 1 }}>
                         <AppText variant="body" style={{ fontWeight: '600' }}>
-                          {log.nickname ?? '멤버'}
+                          {memberNicknames.get(log.userId) ?? log.nickname ?? '멤버'}
                         </AppText>
                         <AppText variant="caption" tone="tertiary">
                           {log.routineName ?? '루틴'} · {formatLogTime(log.createdAt)}
