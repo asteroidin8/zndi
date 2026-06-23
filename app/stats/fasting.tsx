@@ -7,6 +7,7 @@ import { AppText } from '@/components/AppText';
 import { BarChart, type BarChartItem } from '@/components/BarChart';
 import { EmptyState } from '@/components/EmptyState';
 import { FastingRecordEditModal } from '@/components/FastingRecordEditModal';
+import { deleteCloudRecord } from '@/services/sync/cloudSync';
 import { StatsDayDetailModal } from '@/components/stats/StatsDayDetailModal';
 import { StatsSummaryCard } from '@/components/stats/StatsSummaryCard';
 import { PageHeader } from '@/components/settings/MyScreenUI';
@@ -158,6 +159,7 @@ export default function FastingDetailScreen() {
               style: 'destructive',
               onPress: () => {
                 removeRecord(editingRecord.id);
+                void deleteCloudRecord('fasting_records', editingRecord.id);
                 setEditingRecord(null);
               },
             },

@@ -63,6 +63,7 @@ type GroupPosition = 'first' | 'middle' | 'last' | 'only';
 
 type ListItem =
   | { type: 'group-header'; key: string; group: RoutineGroup; completedCount: number; totalCount: number; hasVisibleItems: boolean }
+  | { type: 'group-empty'; key: string; groupId: string }
   | { type: 'routine'; key: string; routine: Routine; groupPosition: GroupPosition | null; sectionLabel: string | null }
   | { type: 'ungrouped-header'; key: string };
 
@@ -161,7 +162,7 @@ export default function RoutineScreen() {
     setModalVisible(true);
   }
 
-  function handleSave(data: { name: string; repeatType: import('@/types').RepeatType; repeatDays: Weekday[]; monthDates: number[]; section: string | null; reminderTime: string | null; groupId: string | null }) {
+  function handleSave(data: { name: string; repeatType: import('@/types').RepeatType; repeatDays: Weekday[]; monthDates: number[]; repeatInterval: number; section: string | null; reminderTime: string | null; groupId: string | null }) {
     if (editTarget) {
       updateRoutine(editTarget.id, data);
     } else {
@@ -241,14 +242,18 @@ export default function RoutineScreen() {
 
       if (!group.collapsed) {
         const sorted = sortBySection(groupRoutines);
-        let prevSection: string | null | undefined;
-        for (let i = 0; i < sorted.length; i++) {
-          const pos: GroupPosition =
-            sorted.length === 1 ? 'only' : i === 0 ? 'first' : i === sorted.length - 1 ? 'last' : 'middle';
-          const curSection = sorted[i].section ?? null;
-          const showLabel = curSection !== null && curSection !== prevSection;
-          items.push({ type: 'routine', key: sorted[i].id, routine: sorted[i], groupPosition: pos, sectionLabel: showLabel ? curSection : null });
-          prevSection = curSection;
+        if (sorted.length === 0) {
+          items.push({ type: 'group-empty', key: `ge-${group.id}`, groupId: group.id });
+        } else {
+          let prevSection: string | null | undefined;
+          for (let i = 0; i < sorted.length; i++) {
+            const pos: GroupPosition =
+              sorted.length === 1 ? 'only' : i === 0 ? 'first' : i === sorted.length - 1 ? 'last' : 'middle';
+            const curSection = sorted[i].section ?? null;
+            const showLabel = curSection !== null && curSection !== prevSection;
+            items.push({ type: 'routine', key: sorted[i].id, routine: sorted[i], groupPosition: pos, sectionLabel: showLabel ? curSection : null });
+            prevSection = curSection;
+          }
         }
       }
     }
@@ -311,6 +316,8 @@ export default function RoutineScreen() {
       } else if (item.type === 'ungrouped-header') {
         currentGroupId = null;
         order = 0;
+      } else if (item.type === 'group-empty') {
+        // skip empty placeholder
       } else {
         updates.push({ id: item.routine.id, groupId: currentGroupId, order });
         order++;
@@ -410,6 +417,30 @@ export default function RoutineScreen() {
           onRename={() => handleRenameGroup(item.group)}
           onDelete={() => handleDeleteGroup(item.group)}
         />
+      );
+    }
+
+    if (item.type === 'group-empty') {
+      const isTarget = isDragging && dragTargetGroupId === item.groupId && dragSourceGroupRef.current !== item.groupId;
+      return (
+        <View
+          style={{
+            marginHorizontal: spacing.screen,
+            paddingVertical: spacing.card,
+            paddingHorizontal: spacing.screen,
+            backgroundColor: isTarget ? `${c.primary}08` : c.surfaceSubtle,
+            borderWidth: 1,
+            borderTopWidth: 0,
+            borderColor: isTarget ? c.primary : c.borderNeutral,
+            borderBottomLeftRadius: radius.md,
+            borderBottomRightRadius: radius.md,
+            alignItems: 'center',
+          }}
+        >
+          <AppText variant="caption" tone="disabled">
+            루틴을 여기로 드래그하세요
+          </AppText>
+        </View>
       );
     }
 
@@ -735,8 +766,6 @@ export default function RoutineScreen() {
           style={{
             fontSize: 16,
             color: c.ink,
-            borderBottomWidth: 1,
-            borderBottomColor: c.border,
             paddingVertical: spacing.sm,
           }}
         />

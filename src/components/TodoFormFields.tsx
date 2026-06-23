@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { Keyboard, Pressable, ScrollView, TextInput, View } from 'react-native';
 
 import { AppText } from './AppText';
 import { radius, spacing } from '@/constants/spacing';
+import { useProStore } from '@/stores/useProStore';
 import { type TodoPriority, useTodoStore } from '@/stores/useTodoStore';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { getPriorityColor, localDateStr } from '@/utils/dateFormat';
@@ -86,8 +88,9 @@ type Props = {
   onDueDateChange: (d: string | null) => void;
   groupId: string | null;
   onGroupIdChange: (id: string | null) => void;
+  section: string;
+  onSectionChange: (s: string) => void;
   onDatePickerOpen: () => void;
-  onSubmit: () => void;
 };
 
 export function TodoFormFields({
@@ -99,11 +102,13 @@ export function TodoFormFields({
   onDueDateChange,
   groupId,
   onGroupIdChange,
+  section,
+  onSectionChange,
   onDatePickerOpen,
-  onSubmit,
 }: Props) {
   const c = useThemeColors();
-  const { groups } = useTodoStore();
+  const { todos, groups } = useTodoStore();
+  const isPro = useProStore((s) => s.isPro);
 
   const today = todayStr();
   const shortcutDates = DUE_SHORTCUTS.map((s) => shiftDate(today, s.offset));
@@ -119,7 +124,7 @@ export function TodoFormFields({
         placeholderTextColor={c.inkDisabled}
         autoFocus
         returnKeyType="done"
-        onSubmitEditing={onSubmit}
+        onSubmitEditing={() => Keyboard.dismiss()}
         style={{
           fontSize: 16,
           color: c.ink,
@@ -197,6 +202,15 @@ export function TodoFormFields({
         </View>
       )}
 
+      {/* 섹션 */}
+      <SectionField
+        section={section}
+        onSectionChange={onSectionChange}
+        todos={todos}
+        isPro={isPro}
+        c={c}
+      />
+
       {/* 마감일 */}
       <View style={{ gap: spacing.sm }}>
         <AppText variant="caption" tone="tertiary">마감일</AppText>
@@ -220,6 +234,92 @@ export function TodoFormFields({
           />
         </View>
       </View>
+    </View>
+  );
+}
+
+function SectionField({
+  section,
+  onSectionChange,
+  todos,
+  isPro,
+  c,
+}: {
+  section: string;
+  onSectionChange: (s: string) => void;
+  todos: import('@/types').Todo[];
+  isPro: boolean;
+  c: ReturnType<typeof useThemeColors>;
+}) {
+  const existingSections = useMemo(() => {
+    const set = new Set<string>();
+    for (const t of todos) {
+      if (t.section) set.add(t.section);
+    }
+    return Array.from(set).sort();
+  }, [todos]);
+
+  function handlePress() {
+    if (!isPro) {
+      const { appAlert } = require('@/stores/useAlertStore');
+      appAlert('Pro 기능', '섹션 기능은 Pro 기능이에요.\n설정 > 멤버십에서 업그레이드할 수 있어요.');
+      return;
+    }
+  }
+
+  if (!isPro) {
+    return (
+      <Pressable onPress={handlePress} style={{ gap: spacing.sm }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+          <AppText variant="caption" tone="tertiary">섹션</AppText>
+          <AppText variant="caption" style={{ color: c.inkDisabled, fontSize: 10 }}>PRO</AppText>
+        </View>
+        <TextInput
+          placeholder="예: 아침, 점심, 저녁"
+          placeholderTextColor={c.inkDisabled}
+          editable={false}
+          style={{
+            fontSize: 14,
+            color: c.ink,
+            borderBottomWidth: 1,
+            borderBottomColor: c.border,
+            paddingVertical: spacing.sm,
+          }}
+        />
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={{ gap: spacing.sm }}>
+      <AppText variant="caption" tone="tertiary">섹션</AppText>
+      {existingSections.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} nestedScrollEnabled>
+          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+            {existingSections.map((s) => (
+              <Chip
+                key={s}
+                label={s}
+                selected={section === s}
+                onPress={() => onSectionChange(section === s ? '' : s)}
+              />
+            ))}
+          </View>
+        </ScrollView>
+      )}
+      <TextInput
+        value={section}
+        onChangeText={onSectionChange}
+        placeholder="예: 아침, 점심, 저녁"
+        placeholderTextColor={c.inkDisabled}
+        style={{
+          fontSize: 14,
+          color: c.ink,
+          borderBottomWidth: 1,
+          borderBottomColor: c.border,
+          paddingVertical: spacing.sm,
+        }}
+      />
     </View>
   );
 }

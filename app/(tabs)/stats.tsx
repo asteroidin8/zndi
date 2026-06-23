@@ -8,6 +8,7 @@ import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
 import { FastingRecordEditModal } from '@/components/FastingRecordEditModal';
+import { deleteCloudRecord } from '@/services/sync/cloudSync';
 import { ShareableGrassGrid } from '@/components/stats/ShareableGrassGrid';
 import { StatsBentoStats } from '@/components/stats/StatsBentoStats';
 import { StatsDayDetailModal } from '@/components/stats/StatsDayDetailModal';
@@ -330,6 +331,7 @@ export default function StatsScreen() {
               style: 'destructive',
               onPress: () => {
                 removeRecord(editingRecord.id);
+                void deleteCloudRecord('fasting_records', editingRecord.id);
                 setEditingRecord(null);
               },
             },

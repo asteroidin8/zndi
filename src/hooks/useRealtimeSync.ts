@@ -38,6 +38,7 @@ export function useRealtimeSync() {
               createdAt: Number(row.created_at),
               order: Number(row.sort_order),
               groupId: (row.group_id as string | null) ?? null,
+              repeatInterval: (row.repeat_interval as number | undefined) ?? 1,
             });
             return { routines: next.sort((a, b) => a.order - b.order) };
           });
@@ -70,6 +71,7 @@ export function useRealtimeSync() {
               pinnedToHome: Boolean(row.pinned_to_home),
               pinOrder: Number(row.pin_order),
               groupId: (row.group_id as string | null) ?? null,
+              section: (row.section as string | null) ?? null,
             });
             return { todos: next.sort((a, b) => a.order - b.order) };
           });

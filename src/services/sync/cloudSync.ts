@@ -66,6 +66,7 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
         repeat_type: r.repeatType ?? 'weekly',
         repeat_days: r.repeatDays,
         month_dates: r.monthDates ?? [],
+        repeat_interval: r.repeatInterval ?? 1,
         section: r.section ?? null,
         reminder_time: r.reminderTime,
         sort_order: r.order,
@@ -106,6 +107,7 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
         pinned_to_home: t.pinnedToHome,
         pin_order: t.pinOrder,
         group_id: t.groupId ?? null,
+        section: t.section ?? null,
         updated_at: now,
       })),
     );
@@ -159,6 +161,17 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
 
   return {};
   });
+}
+
+export async function deleteCloudRecord(
+  table: string,
+  id: string,
+): Promise<{ error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return {};
+  const { error } = await supabase.from(table).delete().eq('id', id);
+  if (error) return { error: error.message };
+  return {};
 }
 
 /** Supabase → 로컸 pull (최초 로그인·복원) */
@@ -221,6 +234,7 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
           repeatType: ((r as Record<string, unknown>).repeat_type as string ?? 'weekly') as import('@/types').RepeatType,
           repeatDays: r.repeat_days as Weekday[],
           monthDates: ((r as Record<string, unknown>).month_dates as number[]) ?? [],
+          repeatInterval: ((r as Record<string, unknown>).repeat_interval as number) ?? 1,
           section: ((r as Record<string, unknown>).section as string | null) ?? null,
           reminderTime: r.reminder_time,
           createdAt: r.created_at,
@@ -259,6 +273,7 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
           pinnedToHome: t.pinned_to_home,
           pinOrder: t.pin_order,
           groupId: (t as Record<string, unknown>).group_id as string | null ?? null,
+          section: ((t as Record<string, unknown>).section as string | null) ?? null,
         }))
         .sort((a, b) => a.order - b.order),
     });

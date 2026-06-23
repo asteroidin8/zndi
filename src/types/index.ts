@@ -22,11 +22,12 @@ export type Todo = {
   pinnedToHome: boolean;
   pinOrder: number;
   groupId: string | null;
+  section: string | null;
 };
 
 // ── Routine ──
 export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-export type RepeatType = 'daily' | 'weekly' | 'monthly';
+export type RepeatType = 'daily' | 'weekly' | 'monthly' | 'yearly';
 export type RoutineGroup = ItemGroup;
 
 export type Routine = {
@@ -35,6 +36,7 @@ export type Routine = {
   repeatType: RepeatType;
   repeatDays: Weekday[];
   monthDates: number[];
+  repeatInterval: number;
   section: string | null;
   reminderTime: string | null;
   createdAt: number;

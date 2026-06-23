@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { BackHandler, Platform, Pressable, ToastAndroid, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TabBarIcon } from '@/components/TabBarIcon';
@@ -35,6 +35,25 @@ export default function TabLayout() {
   const [activeTab, setActiveTab] = useState<TabIndex>(HOME_INDEX as TabIndex);
   const [scrollTick, setScrollTick] = useState<Record<number, number>>({});
   const activeTodoCount = useTodoStore((s) => s.todos.filter((t) => !t.completedAt).length);
+  const backPressedOnce = useRef(false);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (activeTab !== HOME_INDEX) {
+        setActiveTab(HOME_INDEX as TabIndex);
+        return true;
+      }
+      if (!backPressedOnce.current) {
+        backPressedOnce.current = true;
+        ToastAndroid.show('한 번 더 누르면 종료돼요', ToastAndroid.SHORT);
+        setTimeout(() => { backPressedOnce.current = false; }, 2000);
+        return true;
+      }
+      return false;
+    });
+    return () => sub.remove();
+  }, [activeTab]);
 
   function navigateTo(index: TabIndex) {
     if (activeTab !== index) {

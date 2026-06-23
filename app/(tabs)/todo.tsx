@@ -43,13 +43,33 @@ const PRIORITY_SECTIONS: { key: TodoPriority; label: string }[] = [
 
 const PRIORITY_ORDER: Record<TodoPriority, number> = { high: 0, mid: 1, low: 2 };
 
+const SECTION_TIME_ORDER: Record<string, number> = {
+  '새벽': 0, '아침': 1, '오전': 2, '점심': 3, '오후': 4, '저녁': 5, '밤': 6,
+};
+
+function sectionSortKey(section: string | null): number {
+  if (!section) return 999;
+  return SECTION_TIME_ORDER[section] ?? 500;
+}
+
+function sortBySection(todos: Todo[]): Todo[] {
+  return [...todos].sort((a, b) => {
+    const ka = sectionSortKey(a.section);
+    const kb = sectionSortKey(b.section);
+    if (ka !== kb) return ka - kb;
+    if (ka === 500 && a.section !== b.section) return (a.section ?? '').localeCompare(b.section ?? '');
+    return (a.order ?? 0) - (b.order ?? 0);
+  });
+}
+
 // ── Unified drag list types ──
 
 type GroupPosition = 'first' | 'middle' | 'last' | 'only';
 
 type ListItem =
   | { type: 'group-header'; key: string; group: TodoGroup; completedCount: number; totalCount: number; hasVisibleItems: boolean }
-  | { type: 'todo'; key: string; todo: Todo; groupPosition: GroupPosition | null }
+  | { type: 'group-empty'; key: string; groupId: string }
+  | { type: 'todo'; key: string; todo: Todo; groupPosition: GroupPosition | null; sectionLabel: string | null }
   | { type: 'ungrouped-header'; key: string };
 
 // ── Small components ──
@@ -192,21 +212,33 @@ export default function TodoScreen() {
         hasVisibleItems: visibleCount > 0,
       });
       if (!group.collapsed) {
-        for (let i = 0; i < groupActive.length; i++) {
-          const pos: GroupPosition =
-            groupActive.length === 1 ? 'only' : i === 0 ? 'first' : i === groupActive.length - 1 ? 'last' : 'middle';
-          items.push({ type: 'todo', key: groupActive[i].id, todo: groupActive[i], groupPosition: pos });
+        if (groupActive.length === 0) {
+          items.push({ type: 'group-empty', key: `ge-${group.id}`, groupId: group.id });
+        } else {
+          const sorted = sortBySection(groupActive);
+          for (let i = 0; i < sorted.length; i++) {
+            const pos: GroupPosition =
+              sorted.length === 1 ? 'only' : i === 0 ? 'first' : i === sorted.length - 1 ? 'last' : 'middle';
+            const curSection = sorted[i].section ?? null;
+            const prevSection = i > 0 ? (sorted[i - 1].section ?? null) : undefined;
+            const showLabel = curSection !== null && curSection !== prevSection;
+            items.push({ type: 'todo', key: sorted[i].id, todo: sorted[i], groupPosition: pos, sectionLabel: showLabel ? curSection : null });
+          }
         }
       }
     }
 
     items.push({ type: 'ungrouped-header', key: 'ungrouped-header' });
-    const sorted = [...ungroupedActive].sort((a, b) => {
+    const ungroupedSorted = sortBySection([...ungroupedActive].sort((a, b) => {
       if (a.priority !== b.priority) return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
       return (a.order ?? 0) - (b.order ?? 0);
-    });
-    for (const todo of sorted) {
-      items.push({ type: 'todo', key: todo.id, todo, groupPosition: null });
+    }));
+    for (let i = 0; i < ungroupedSorted.length; i++) {
+      const todo = ungroupedSorted[i];
+      const curSection = todo.section ?? null;
+      const prevSection = i > 0 ? (ungroupedSorted[i - 1].section ?? null) : undefined;
+      const showLabel = curSection !== null && curSection !== prevSection;
+      items.push({ type: 'todo', key: todo.id, todo, groupPosition: null, sectionLabel: showLabel ? curSection : null });
     }
 
     return items;
@@ -217,7 +249,7 @@ export default function TodoScreen() {
 
   // ── Handlers ──
 
-  function handleAdd({ title, priority, dueDate, pinnedToHome, groupId }: TodoCreatePayload) {
+  function handleAdd({ title, priority, dueDate, pinnedToHome, groupId, section }: TodoCreatePayload) {
     const samePriorityCount = todos.filter((t) => t.priority === priority && !t.completedAt).length;
     const maxPinOrder = todos.reduce(
       (max, t) => (t.pinnedToHome ? Math.max(max, t.pinOrder) : max),
@@ -235,11 +267,12 @@ export default function TodoScreen() {
       pinnedToHome,
       pinOrder: pinnedToHome ? maxPinOrder + 1 : 0,
       groupId,
+      section,
     });
     setAddModalVisible(false);
   }
 
-  function handleEditSave(updates: Pick<Todo, 'title' | 'priority' | 'dueDate' | 'pinnedToHome' | 'groupId'>) {
+  function handleEditSave(updates: Pick<Todo, 'title' | 'priority' | 'dueDate' | 'pinnedToHome' | 'groupId' | 'section'>) {
     if (!editTarget) return;
     updateTodo(editTarget.id, updates);
     setEditTarget(null);
@@ -329,6 +362,8 @@ export default function TodoScreen() {
       } else if (item.type === 'ungrouped-header') {
         currentGroupId = null;
         order = 0;
+      } else if (item.type === 'group-empty') {
+        // skip empty placeholder
       } else {
         updates.push({ id: item.todo.id, groupId: currentGroupId, order });
         order++;
@@ -357,12 +392,37 @@ export default function TodoScreen() {
       );
     }
 
+    if (item.type === 'group-empty') {
+      const isTarget = isDragging && dragTargetGroupId === item.groupId && dragSourceGroupRef.current !== item.groupId;
+      return (
+        <View
+          style={{
+            marginHorizontal: spacing.screen,
+            paddingVertical: spacing.card,
+            paddingHorizontal: spacing.screen,
+            backgroundColor: isTarget ? `${c.primary}08` : c.surfaceSubtle,
+            borderWidth: 1,
+            borderTopWidth: 0,
+            borderColor: isTarget ? c.primary : c.borderNeutral,
+            borderBottomLeftRadius: radius.md,
+            borderBottomRightRadius: radius.md,
+            alignItems: 'center',
+          }}
+        >
+          <AppText variant="caption" tone="disabled">
+            할일을 여기로 드래그하세요
+          </AppText>
+        </View>
+      );
+    }
+
     if (item.type === 'ungrouped-header') {
       return <UngroupedHeader count={ungroupedActive.length} />;
     }
 
     const todo = item.todo;
     const gp = item.groupPosition;
+    const sectionLabel = item.sectionLabel;
     const isGrouped = gp !== null;
 
     const cardWrapStyle = isGrouped
@@ -378,29 +438,38 @@ export default function TodoScreen() {
         }
       : undefined;
 
+    const sectionHeader = sectionLabel ? (
+      <View style={{ paddingHorizontal: spacing.screen, paddingTop: spacing.sm, paddingBottom: 2 }}>
+        <AppText variant="caption" tone="tertiary" style={{ fontWeight: '600' }}>{sectionLabel}</AppText>
+      </View>
+    ) : null;
+
     if (editMode) {
       const selected = selectedIds.has(todo.id);
       return (
-        <View style={cardWrapStyle}>
-          <Pressable
-            onPress={() => toggleSelection(todo.id)}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingVertical: spacing.md,
-              paddingHorizontal: spacing.screen,
-              gap: spacing.item,
-              backgroundColor: selected ? `${c.primary}15` : 'transparent',
-            }}
-          >
-            <AppIcon
-              name={selected ? 'CheckSquare' : 'Square'}
-              size={20}
-              color={selected ? c.primary : c.inkDisabled}
-            />
-            <AppText variant="body" style={{ flex: 1 }}>{todo.title}</AppText>
-          </Pressable>
-        </View>
+        <>
+          {sectionHeader}
+          <View style={cardWrapStyle}>
+            <Pressable
+              onPress={() => toggleSelection(todo.id)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingVertical: spacing.md,
+                paddingHorizontal: spacing.screen,
+                gap: spacing.item,
+                backgroundColor: selected ? `${c.primary}15` : 'transparent',
+              }}
+            >
+              <AppIcon
+                name={selected ? 'CheckSquare' : 'Square'}
+                size={20}
+                color={selected ? c.primary : c.inkDisabled}
+              />
+              <AppText variant="body" style={{ flex: 1 }}>{todo.title}</AppText>
+            </Pressable>
+          </View>
+        </>
       );
     }
 
@@ -415,6 +484,7 @@ export default function TodoScreen() {
 
     return (
       <ScaleDecorator activeScale={1.04}>
+        {sectionHeader}
         <View style={dragElevationStyle}>
           <SwipeActions
             onDelete={() => {
@@ -709,8 +779,6 @@ export default function TodoScreen() {
           style={{
             fontSize: 16,
             color: c.ink,
-            borderBottomWidth: 1,
-            borderBottomColor: c.border,
             paddingVertical: spacing.sm,
           }}
         />

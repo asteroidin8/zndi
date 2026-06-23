@@ -8,7 +8,7 @@ import type { Todo, TodoPriority } from '@/stores/useTodoStore';
 type Props = {
   visible: boolean;
   todo: Todo | null;
-  onSave: (updates: Pick<Todo, 'title' | 'priority' | 'dueDate' | 'pinnedToHome' | 'groupId'>) => void;
+  onSave: (updates: Pick<Todo, 'title' | 'priority' | 'dueDate' | 'pinnedToHome' | 'groupId' | 'section'>) => void;
   onDelete: () => void;
   onClose: () => void;
 };
@@ -18,6 +18,7 @@ export function TodoEditModal({ visible, todo, onSave, onDelete, onClose }: Prop
   const [priority, setPriority] = useState<TodoPriority>('mid');
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
+  const [section, setSection] = useState('');
   const [datePickerVisible, setDatePickerVisible] = useState(false);
 
   useEffect(() => {
@@ -26,13 +27,14 @@ export function TodoEditModal({ visible, todo, onSave, onDelete, onClose }: Prop
       setPriority(todo.priority);
       setDueDate(todo.dueDate);
       setGroupId(todo.groupId ?? null);
+      setSection(todo.section ?? '');
       setDatePickerVisible(false);
     }
   }, [todo]);
 
   function handleSave() {
     if (!title.trim()) return;
-    onSave({ title: title.trim(), priority, dueDate, pinnedToHome: false, groupId });
+    onSave({ title: title.trim(), priority, dueDate, pinnedToHome: false, groupId, section: section.trim() || null });
   }
 
   return (
@@ -57,8 +59,9 @@ export function TodoEditModal({ visible, todo, onSave, onDelete, onClose }: Prop
           onDueDateChange={setDueDate}
           groupId={groupId}
           onGroupIdChange={setGroupId}
+          section={section}
+          onSectionChange={setSection}
           onDatePickerOpen={() => setDatePickerVisible(true)}
-          onSubmit={handleSave}
         />
       </SheetModal>
 

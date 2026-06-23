@@ -11,6 +11,7 @@ export type TodoCreatePayload = {
   dueDate: string | null;
   pinnedToHome: boolean;
   groupId: string | null;
+  section: string | null;
 };
 
 type Props = {
@@ -24,6 +25,7 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
   const [priority, setPriority] = useState<TodoPriority>('mid');
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
+  const [section, setSection] = useState('');
   const [datePickerVisible, setDatePickerVisible] = useState(false);
 
   function reset() {
@@ -31,11 +33,12 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
     setPriority('mid');
     setDueDate(null);
     setGroupId(null);
+    setSection('');
   }
 
   function handleSave() {
     if (!title.trim()) return;
-    onSave({ title: title.trim(), priority, dueDate, pinnedToHome: false, groupId });
+    onSave({ title: title.trim(), priority, dueDate, pinnedToHome: false, groupId, section: section.trim() || null });
     reset();
   }
 
@@ -61,8 +64,9 @@ export function TodoModal({ visible, onSave, onClose }: Props) {
           onDueDateChange={setDueDate}
           groupId={groupId}
           onGroupIdChange={setGroupId}
+          section={section}
+          onSectionChange={setSection}
           onDatePickerOpen={() => setDatePickerVisible(true)}
-          onSubmit={handleSave}
         />
       </SheetModal>
 

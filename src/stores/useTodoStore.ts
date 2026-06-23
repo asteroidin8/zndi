@@ -150,7 +150,16 @@ export const useTodoStore = create<TodoStore>()(
     }),
     {
       name: 'todo-store',
+      version: 1,
       storage: createJSONStorage(() => AsyncStorage),
+      migrate: (persisted, version) => {
+        const state = persisted as Record<string, unknown>;
+        if (version < 1) {
+          const todos = (state.todos ?? []) as Record<string, unknown>[];
+          state.todos = todos.map((t) => ({ ...t, section: t.section ?? null }));
+        }
+        return state as TodoStore;
+      },
     },
   ),
 );

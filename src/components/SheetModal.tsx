@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import {
-  KeyboardAvoidingView,
+  Dimensions,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -55,11 +54,7 @@ export function SheetModal({ visible, onClose, title, headerRight, footer, child
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        style={{ flex: 1, justifyContent: 'flex-end' }}
-        behavior="padding"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 6 : 0}
-      >
+      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
         <Animated.View
           style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }, backdropStyle]}
         >
@@ -77,6 +72,7 @@ export function SheetModal({ visible, onClose, title, headerRight, footer, child
               backgroundColor: c.surface,
               borderTopLeftRadius: radius.sheet,
               borderTopRightRadius: radius.sheet,
+              maxHeight: Dimensions.get('window').height * 0.88,
               paddingTop: spacing.card,
               paddingBottom: Math.max(insets.bottom, spacing.card),
             }}
@@ -104,7 +100,7 @@ export function SheetModal({ visible, onClose, title, headerRight, footer, child
 
             {scrollable ? (
               <ScrollView
-                style={{ maxHeight: '80%' }}
+                style={{ flexShrink: 1 }}
                 contentContainerStyle={{ paddingHorizontal: spacing.screen }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
@@ -131,7 +127,7 @@ export function SheetModal({ visible, onClose, title, headerRight, footer, child
             ) : null}
           </View>
         </Animated.View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }

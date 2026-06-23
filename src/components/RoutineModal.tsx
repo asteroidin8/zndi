@@ -7,15 +7,33 @@ import { TimePickerModal } from './TimePickerModal';
 import { radius, spacing } from '@/constants/spacing';
 import { DAY_LABELS } from '@/constants/statsLabels';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useProStore } from '@/stores/useProStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import type { RepeatType, Routine, Weekday } from '@/types';
 import { formatTimeDisplay } from '@/utils/dateFormat';
+
 const ALL_DAYS: Weekday[] = [0, 1, 2, 3, 4, 5, 6];
+
 const PRESET_OPTIONS: { type: RepeatType; label: string }[] = [
   { type: 'daily', label: '매일' },
   { type: 'weekly', label: '매주' },
   { type: 'monthly', label: '매월' },
+];
+
+const INTERVAL_OPTIONS: { type: RepeatType; suffix: string }[] = [
+  { type: 'daily', suffix: '일마다' },
+  { type: 'weekly', suffix: '주마다' },
+  { type: 'monthly', suffix: '개월마다' },
+  { type: 'yearly', suffix: '년마다' },
+];
+
+const MONTH_ROWS = [
+  [1, 2, 3, 4, 5, 6, 7],
+  [8, 9, 10, 11, 12, 13, 14],
+  [15, 16, 17, 18, 19, 20, 21],
+  [22, 23, 24, 25, 26, 27, 28],
+  [29, 30, 31],
 ];
 
 type SavePayload = {
@@ -23,6 +41,7 @@ type SavePayload = {
   repeatType: RepeatType;
   repeatDays: Weekday[];
   monthDates: number[];
+  repeatInterval: number;
   section: string | null;
   reminderTime: string | null;
   groupId: string | null;
@@ -39,15 +58,18 @@ type Props = {
 export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Props) {
   const c = useThemeColors();
   const { routines, groups } = useRoutineStore();
+  const isPro = useProStore((s) => s.isPro);
   const timeFormat = useSettingsStore((s) => s.timeFormat ?? '24h');
   const [name, setName] = useState(initial?.name ?? '');
   const [repeatType, setRepeatType] = useState<RepeatType>(initial?.repeatType ?? 'weekly');
   const [days, setDays] = useState<Weekday[]>(initial?.repeatDays ?? [1, 2, 3, 4, 5]);
   const [monthDates, setMonthDates] = useState<number[]>(initial?.monthDates ?? []);
+  const [repeatInterval, setRepeatInterval] = useState(initial?.repeatInterval ?? 1);
   const [section, setSection] = useState<string>(initial?.section ?? '');
   const [reminderTime, setReminderTime] = useState<string | null>(initial?.reminderTime ?? null);
   const [groupId, setGroupId] = useState<string | null>(initial?.groupId ?? null);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
+  const [useInterval, setUseInterval] = useState(() => (initial?.repeatInterval ?? 1) > 1 || initial?.repeatType === 'yearly');
 
   const existingSections = useMemo(() => {
     const set = new Set<string>();
@@ -63,9 +85,11 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
     setRepeatType(initial?.repeatType ?? 'weekly');
     setDays(initial?.repeatDays ?? [1, 2, 3, 4, 5]);
     setMonthDates(initial?.monthDates ?? []);
+    setRepeatInterval(initial?.repeatInterval ?? 1);
     setSection(initial?.section ?? '');
     setReminderTime(initial?.reminderTime ?? null);
     setGroupId(initial?.groupId ?? null);
+    setUseInterval((initial?.repeatInterval ?? 1) > 1 || initial?.repeatType === 'yearly');
   }, [visible, initial]);
 
   function toggleDay(day: Weekday) {
@@ -83,15 +107,27 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
   function handleSave() {
     if (!name.trim()) return;
     const finalDays = repeatType === 'daily' ? ALL_DAYS.slice() : days;
+    const finalInterval = useInterval ? Math.max(1, repeatInterval) : 1;
     const trimmedSection = section.trim() || null;
-    onSave({ name: name.trim(), repeatType, repeatDays: finalDays, monthDates, section: trimmedSection, reminderTime, groupId });
+    onSave({
+      name: name.trim(),
+      repeatType,
+      repeatDays: finalDays,
+      monthDates,
+      repeatInterval: finalInterval,
+      section: trimmedSection,
+      reminderTime,
+      groupId,
+    });
     setName('');
     setRepeatType('weekly');
     setDays([1, 2, 3, 4, 5]);
     setMonthDates([]);
+    setRepeatInterval(1);
     setSection('');
     setReminderTime(null);
     setGroupId(null);
+    setUseInterval(false);
   }
 
   const canSave = !!name.trim() && (repeatType !== 'monthly' || monthDates.length > 0);
@@ -110,6 +146,15 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
     color: selected ? c.ink : c.inkTertiary,
     fontWeight: selected ? '700' as const : '400' as const,
   });
+
+  function handleIntervalChange(text: string) {
+    const n = parseInt(text, 10);
+    if (Number.isNaN(n) || n < 1) {
+      setRepeatInterval(1);
+    } else {
+      setRepeatInterval(Math.min(n, 99));
+    }
+  }
 
   return (
     <>
@@ -130,6 +175,8 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
           placeholder="되고 싶은 내 모습을 입력해보세요"
           placeholderTextColor={c.inkDisabled}
           autoFocus
+          returnKeyType="done"
+          onSubmitEditing={() => Keyboard.dismiss()}
           style={{
             fontSize: 16,
             color: c.ink,
@@ -143,34 +190,114 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
         <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
           반복
         </AppText>
-        <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.card }}>
-          {PRESET_OPTIONS.map((opt) => (
-            <Pressable
-              key={opt.type}
-              onPress={() => setRepeatType(opt.type)}
-              style={{
-                flex: 1,
-                paddingVertical: spacing.sm,
-                borderRadius: radius.sm,
-                borderWidth: 1,
-                borderColor: repeatType === opt.type ? c.ink : c.border,
-                backgroundColor: repeatType === opt.type ? c.surfaceSubtle : 'transparent',
-                alignItems: 'center',
-              }}
-            >
-              <AppText
-                variant="caption"
+
+        {/* Free presets */}
+        <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm }}>
+          {PRESET_OPTIONS.map((opt) => {
+            const selected = !useInterval && repeatType === opt.type;
+            return (
+              <Pressable
+                key={opt.type}
+                onPress={() => {
+                  setUseInterval(false);
+                  setRepeatType(opt.type);
+                  setRepeatInterval(1);
+                  Keyboard.dismiss();
+                }}
                 style={{
-                  color: repeatType === opt.type ? c.ink : c.inkTertiary,
-                  fontWeight: repeatType === opt.type ? '700' : '400',
+                  flex: 1,
+                  paddingVertical: spacing.sm,
+                  borderRadius: radius.sm,
+                  borderWidth: 1,
+                  borderColor: selected ? c.ink : c.border,
+                  backgroundColor: selected ? c.surfaceSubtle : 'transparent',
+                  alignItems: 'center',
                 }}
               >
-                {opt.label}
-              </AppText>
-            </Pressable>
-          ))}
+                <AppText
+                  variant="caption"
+                  style={{
+                    color: selected ? c.ink : c.inkTertiary,
+                    fontWeight: selected ? '700' : '400',
+                  }}
+                >
+                  {opt.label}
+                </AppText>
+              </Pressable>
+            );
+          })}
         </View>
 
+        {/* Pro interval options */}
+        <View style={{ gap: spacing.xs, marginBottom: spacing.card }}>
+          {INTERVAL_OPTIONS.map((opt) => {
+            const selected = useInterval && repeatType === opt.type;
+            return (
+              <Pressable
+                key={opt.type}
+                onPress={() => {
+                  if (!isPro) {
+                    Keyboard.dismiss();
+                    onClose();
+                    setTimeout(() => {
+                      const { appAlert } = require('@/stores/useAlertStore');
+                      appAlert('Pro 기능', '반복 주기 설정은 Pro 기능이에요.\n설정 > 멤버십에서 업그레이드할 수 있어요.');
+                    }, 300);
+                    return;
+                  }
+                  setUseInterval(true);
+                  setRepeatType(opt.type);
+                  if (repeatInterval < 1) setRepeatInterval(1);
+                  Keyboard.dismiss();
+                }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingVertical: spacing.sm,
+                  paddingHorizontal: spacing.md,
+                  borderRadius: radius.sm,
+                  borderWidth: 1,
+                  borderColor: selected ? c.ink : c.border,
+                  backgroundColor: selected ? c.surfaceSubtle : 'transparent',
+                  gap: spacing.sm,
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: spacing.xs }}>
+                  {selected ? (
+                    <TextInput
+                      value={String(repeatInterval)}
+                      onChangeText={handleIntervalChange}
+                      keyboardType="number-pad"
+                      selectTextOnFocus
+                      style={{
+                        width: 32,
+                        textAlign: 'center',
+                        fontSize: 14,
+                        fontWeight: '700',
+                        color: c.ink,
+                        borderBottomWidth: 1,
+                        borderBottomColor: c.ink,
+                        paddingVertical: 2,
+                      }}
+                    />
+                  ) : (
+                    <AppText variant="caption" style={{ color: c.inkTertiary, width: 32, textAlign: 'center' }}>
+                      {repeatInterval > 1 && useInterval && repeatType === opt.type ? repeatInterval : 1}
+                    </AppText>
+                  )}
+                  <AppText variant="caption" style={chipTextStyle(selected)}>
+                    {opt.suffix}
+                  </AppText>
+                </View>
+                {!isPro && (
+                  <AppText variant="caption" style={{ color: c.inkDisabled, fontSize: 10 }}>PRO</AppText>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {/* Weekly day selection */}
         {repeatType === 'weekly' && (
           <>
             <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
@@ -204,42 +331,52 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
           </>
         )}
 
+        {/* Monthly date selection — 7-column calendar grid */}
         {repeatType === 'monthly' && (
           <>
             <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
               반복 날짜
             </AppText>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.section }}>
-              {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => (
-                <Pressable
-                  key={date}
-                  onPress={() => toggleMonthDate(date)}
-                  style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: radius.sm,
-                    borderWidth: 1,
-                    borderColor: monthDates.includes(date) ? c.ink : c.border,
-                    backgroundColor: monthDates.includes(date) ? c.surfaceSubtle : 'transparent',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <AppText
-                    variant="caption"
-                    style={{
-                      color: monthDates.includes(date) ? c.ink : c.inkTertiary,
-                      fontWeight: monthDates.includes(date) ? '700' : '400',
-                    }}
-                  >
-                    {date}
-                  </AppText>
-                </Pressable>
+            <View style={{ gap: spacing.xs, marginBottom: spacing.section }}>
+              {MONTH_ROWS.map((row, rowIdx) => (
+                <View key={rowIdx} style={{ flexDirection: 'row', gap: spacing.xs }}>
+                  {row.map((date) => (
+                    <Pressable
+                      key={date}
+                      onPress={() => toggleMonthDate(date)}
+                      style={{
+                        flex: 1,
+                        aspectRatio: 1,
+                        maxWidth: 42,
+                        borderRadius: radius.sm,
+                        borderWidth: 1,
+                        borderColor: monthDates.includes(date) ? c.ink : c.border,
+                        backgroundColor: monthDates.includes(date) ? c.surfaceSubtle : 'transparent',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <AppText
+                        variant="caption"
+                        style={{
+                          color: monthDates.includes(date) ? c.ink : c.inkTertiary,
+                          fontWeight: monthDates.includes(date) ? '700' : '400',
+                        }}
+                      >
+                        {date}
+                      </AppText>
+                    </Pressable>
+                  ))}
+                  {row.length < 7 && Array.from({ length: 7 - row.length }).map((_, i) => (
+                    <View key={`pad-${i}`} style={{ flex: 1, maxWidth: 42 }} />
+                  ))}
+                </View>
               ))}
             </View>
           </>
         )}
 
+        {/* Group selection */}
         {groups.length > 0 && (
           <>
             <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
@@ -271,44 +408,79 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
           </>
         )}
 
-        <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
-          섹션
-        </AppText>
-        {existingSections.length > 0 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            nestedScrollEnabled
-            style={{ marginBottom: spacing.sm }}
+        {/* Section */}
+        {isPro ? (
+          <>
+            <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
+              섹션
+            </AppText>
+            {existingSections.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                nestedScrollEnabled
+                style={{ marginBottom: spacing.sm }}
+              >
+                <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                  {existingSections.map((s) => (
+                    <Pressable
+                      key={s}
+                      onPress={() => setSection(section === s ? '' : s)}
+                      style={chipStyle(section === s)}
+                    >
+                      <AppText variant="caption" style={chipTextStyle(section === s)}>{s}</AppText>
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
+            )}
+            <TextInput
+              value={section}
+              onChangeText={setSection}
+              placeholder="예: 아침, 점심, 저녁"
+              placeholderTextColor={c.inkDisabled}
+              style={{
+                fontSize: 14,
+                color: c.ink,
+                borderBottomWidth: 1,
+                borderBottomColor: c.border,
+                paddingVertical: spacing.sm,
+                marginBottom: spacing.section,
+              }}
+            />
+          </>
+        ) : (
+          <Pressable
+            onPress={() => {
+              Keyboard.dismiss();
+              onClose();
+              setTimeout(() => {
+                const { appAlert } = require('@/stores/useAlertStore');
+                appAlert('Pro 기능', '섹션 기능은 Pro 기능이에요.\n설정 > 멤버십에서 업그레이드할 수 있어요.');
+              }, 300);
+            }}
+            style={{ marginBottom: spacing.section }}
           >
-            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-              {existingSections.map((s) => (
-                <Pressable
-                  key={s}
-                  onPress={() => setSection(section === s ? '' : s)}
-                  style={chipStyle(section === s)}
-                >
-                  <AppText variant="caption" style={chipTextStyle(section === s)}>{s}</AppText>
-                </Pressable>
-              ))}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.sm }}>
+              <AppText variant="caption" tone="tertiary">섹션</AppText>
+              <AppText variant="caption" style={{ color: c.inkDisabled, fontSize: 10 }}>PRO</AppText>
             </View>
-          </ScrollView>
+            <TextInput
+              placeholder="예: 아침, 점심, 저녁"
+              placeholderTextColor={c.inkDisabled}
+              editable={false}
+              style={{
+                fontSize: 14,
+                color: c.ink,
+                borderBottomWidth: 1,
+                borderBottomColor: c.border,
+                paddingVertical: spacing.sm,
+              }}
+            />
+          </Pressable>
         )}
-        <TextInput
-          value={section}
-          onChangeText={setSection}
-          placeholder="예: 아침, 점심, 저녁"
-          placeholderTextColor={c.inkDisabled}
-          style={{
-            fontSize: 14,
-            color: c.ink,
-            borderBottomWidth: 1,
-            borderBottomColor: c.border,
-            paddingVertical: spacing.sm,
-            marginBottom: spacing.section,
-          }}
-        />
 
+        {/* Reminder */}
         <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
           알림
         </AppText>

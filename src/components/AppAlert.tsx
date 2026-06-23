@@ -19,6 +19,7 @@ export function AppAlert() {
   const { visible, title, message, buttons, prompt, hide } = useAlertStore();
   const [promptText, setPromptText] = useState('');
   const inputRef = useRef<TextInput>(null);
+  const promptInitRef = useRef(false);
 
   const backdropOpacity = useSharedValue(0);
   const cardOpacity = useSharedValue(0);
@@ -29,16 +30,21 @@ export function AppAlert() {
       backdropOpacity.value = withTiming(1, ENTER);
       cardOpacity.value = withTiming(1, ENTER);
       cardScale.value = withTiming(1, ENTER);
-      if (prompt) {
-        setPromptText(prompt.defaultValue);
-        setTimeout(() => inputRef.current?.focus(), 200);
-      }
     } else {
       backdropOpacity.value = withTiming(0, EXIT);
       cardOpacity.value = withTiming(0, EXIT);
       cardScale.value = withTiming(0.97, EXIT);
+      promptInitRef.current = false;
     }
-  }, [visible, backdropOpacity, cardOpacity, cardScale, prompt]);
+  }, [visible, backdropOpacity, cardOpacity, cardScale]);
+
+  useEffect(() => {
+    if (visible && prompt && !promptInitRef.current) {
+      promptInitRef.current = true;
+      setPromptText(prompt.defaultValue);
+      setTimeout(() => inputRef.current?.focus(), 200);
+    }
+  }, [visible, prompt]);
 
   const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.value }));
   const cardStyle = useAnimatedStyle(() => ({
@@ -110,31 +116,33 @@ export function AppAlert() {
             <View style={{ height: 1, backgroundColor: c.surfaceMuted }} />
 
             <View style={{ flexDirection: 'row' }}>
-              <Pressable
-                onPress={hide}
-                style={({ pressed }) => ({
-                  flex: 1,
-                  paddingVertical: 14,
-                  alignItems: 'center',
-                  opacity: pressed ? 0.5 : 1,
-                })}
-              >
-                <AppText variant="body" tone="tertiary">취소</AppText>
-              </Pressable>
+              <View style={{ flex: 1 }}>
+                <Pressable
+                  onPress={hide}
+                  style={({ pressed }) => ({
+                    paddingVertical: 14,
+                    alignItems: 'center',
+                    opacity: pressed ? 0.5 : 1,
+                  })}
+                >
+                  <AppText variant="body" tone="tertiary">취소</AppText>
+                </Pressable>
+              </View>
 
               <View style={{ width: 1, backgroundColor: c.surfaceMuted }} />
 
-              <Pressable
-                onPress={handlePromptSubmit}
-                style={({ pressed }) => ({
-                  flex: 1,
-                  paddingVertical: 14,
-                  alignItems: 'center',
-                  opacity: pressed ? 0.5 : 1,
-                })}
-              >
-                <AppText variant="body" style={{ fontWeight: '700', color: c.primary }}>확인</AppText>
-              </Pressable>
+              <View style={{ flex: 1 }}>
+                <Pressable
+                  onPress={handlePromptSubmit}
+                  style={({ pressed }) => ({
+                    paddingVertical: 14,
+                    alignItems: 'center',
+                    opacity: pressed ? 0.5 : 1,
+                  })}
+                >
+                  <AppText variant="body" style={{ fontWeight: '700', color: c.primary }}>확인</AppText>
+                </Pressable>
+              </View>
             </View>
           </Animated.View>
         </View>

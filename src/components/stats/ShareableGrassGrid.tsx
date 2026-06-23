@@ -49,19 +49,19 @@ export const ShareableGrassGrid = forwardRef<View, Props>(function ShareableGras
       }}
     >
       <View style={{ alignItems: 'center', gap: 4 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <AppText variant="title" style={{ fontSize: 18, fontWeight: '700', color: grassHex }}>
+        <AppText variant="body" style={{ fontWeight: '600' }}>
+          {year}년 {month + 1}월
+        </AppText>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <AppText variant="caption" style={{ fontWeight: '700', color: grassHex }}>
             zndi
           </AppText>
-          <AppText variant="body" style={{ fontWeight: '600' }}>
-            {year}년 {month + 1}월
-          </AppText>
+          {nickname ? (
+            <AppText variant="caption" tone="tertiary" style={{ fontWeight: '500' }}>
+              by {nickname}
+            </AppText>
+          ) : null}
         </View>
-        {nickname ? (
-          <AppText variant="caption" tone="tertiary" style={{ fontWeight: '500' }}>
-            by {nickname}
-          </AppText>
-        ) : null}
       </View>
 
       <View style={{ alignItems: 'center' }}>
