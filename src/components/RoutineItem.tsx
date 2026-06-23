@@ -2,7 +2,7 @@ import { Pressable, View } from 'react-native';
 
 import { CompletionCheckbox } from './CompletionCheckbox';
 import { AppText } from './AppText';
-import { opacity, size, spacing } from '@/constants/spacing';
+import { opacity, spacing } from '@/constants/spacing';
 import { feedbackComplete, feedbackUncomplete } from '@/utils/microFeedback';
 import type { Routine } from '@/stores/useRoutineStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
