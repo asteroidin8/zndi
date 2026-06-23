@@ -215,6 +215,31 @@ export async function fetchBoardProgress(boardId: string): Promise<{ error?: str
   return {};
 }
 
+export async function updateMyNicknameInBoards(
+  userId: string,
+  nickname: string,
+): Promise<{ error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { error: 'Supabase 미설정' };
+
+  const { error } = await supabase
+    .from('board_members')
+    .update({ nickname })
+    .eq('user_id', userId);
+  if (error) return { error: error.message };
+
+  const store = useBoardStore.getState();
+  const updatedMembers: Record<string, BoardMember[]> = {};
+  for (const [boardId, memberList] of Object.entries(store.members)) {
+    updatedMembers[boardId] = memberList.map((m) =>
+      m.userId === userId ? { ...m, nickname } : m,
+    );
+  }
+  useBoardStore.setState({ members: { ...store.members, ...updatedMembers } });
+
+  return {};
+}
+
 export async function pushDailyProgress(
   userId: string,
   boardId: string,

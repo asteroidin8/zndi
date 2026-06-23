@@ -25,6 +25,7 @@ import { getGrassLevel } from '@/utils/grassLevel';
 import { deleteAccount } from '@/services/auth/authSession';
 import { resetUserData } from '@/utils/resetUserData';
 import { checkNicknameTaken } from '@/services/sync/cloudSync';
+import { updateMyNicknameInBoards } from '@/services/board/boardService';
 
 const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
   { value: 'system', label: '시스템' },
@@ -65,6 +66,9 @@ export default function MyScreen() {
     }
     setNickname(trimmed);
     setEditingNickname(false);
+    if (trimmed && user?.id) {
+      void updateMyNicknameInBoards(user.id, trimmed);
+    }
   }
   const [emailMode, setEmailMode] = useState(false);
   const [email, setEmail] = useState('');
