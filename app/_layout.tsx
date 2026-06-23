@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { LogBox, useColorScheme, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppAlert } from '@/components/AppAlert';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
@@ -51,10 +52,11 @@ function AppContent() {
   useTodoNotifications();
   useWidgetSync();
 
+  const insets = useSafeAreaInsets();
   const borderColor = c.borderStrong;
 
   return (
-    <View style={{ flex: 1, borderTopWidth: 6, borderBottomWidth: 6, borderLeftWidth: 2, borderRightWidth: 2, borderColor }}>
+    <View style={{ flex: 1, borderTopWidth: insets.top, borderBottomWidth: insets.bottom || 6, borderLeftWidth: 2, borderRightWidth: 2, borderColor }}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
