@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Alert, FlatList, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, TextInput, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -22,7 +22,7 @@ import { UngroupedHeader } from '@/components/UngroupedHeader';
 import { radius, spacing } from '@/constants/spacing';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useEditMode } from '@/hooks/useEditMode';
-import { appAlert } from '@/stores/useAlertStore';
+import { appAlert, appPrompt } from '@/stores/useAlertStore';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { getPriorityColor } from '@/utils/dateFormat';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
@@ -252,19 +252,12 @@ export default function TodoScreen() {
   }
 
   function handleRenameGroup(group: TodoGroup) {
-    Alert.prompt?.(
+    appPrompt(
       '그룹 이름 변경',
-      '',
-      (text) => {
-        if (text?.trim()) updateGroup(group.id, { name: text.trim() });
-      },
-      'plain-text',
       group.name,
-    ) ??
-      appAlert('그룹 관리', group.name, [
-        { text: '삭제', style: 'destructive', onPress: () => removeGroup(group.id) },
-        { text: '닫기' },
-      ]);
+      (text) => updateGroup(group.id, { name: text }),
+      '그룹 이름',
+    );
   }
 
   function handleDeleteGroup(group: TodoGroup) {
