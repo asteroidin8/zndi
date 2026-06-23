@@ -16,7 +16,7 @@ export function useProGating() {
   }
 
   const closeLock = useCallback(() => setLockVisible(false), []);
-  const goToShop = useCallback(() => router.push('/settings'), []);
+  const goToShop = useCallback(() => router.push('/settings/membership'), []);
 
   return { isPro, requirePro, lockVisible, closeLock, goToShop };
 }

@@ -8,6 +8,7 @@ import { AppText } from '@/components/AppText';
 import { PageHeader } from '@/components/settings/MyScreenUI';
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { appAlert } from '@/stores/useAlertStore';
 import { useProStore } from '@/stores/useProStore';
 
 type FeatureRow = {
@@ -207,6 +208,7 @@ export default function MembershipScreen() {
             </View>
 
             <Pressable
+              onPress={() => appAlert('준비 중', '구독 기능은 곧 출시될 예정이에요!')}
               style={({ pressed }) => ({
                 backgroundColor: c.ink,
                 borderRadius: radius.lg,

@@ -6,6 +6,7 @@ import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useFastingStore } from '@/stores/useFastingStore';
+import { useProStore } from '@/stores/useProStore';
 import { getRoutineStreakDays } from '@/utils/homeDailyBoard';
 import { localDateStr } from '@/utils/dateFormat';
 import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
@@ -107,10 +108,12 @@ export function useWidgetSync() {
   const { isCompleted } = useRoutineCompletionStore();
   const todos = useTodoStore((s) => s.todos);
   const { status, startedAt, goalHours } = useFastingStore();
+  const isPro = useProStore((s) => s.isPro);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
+    if (!isPro) return;
 
     const data = buildWidgetData(routines, isCompleted, todos, status, startedAt, goalHours);
     void pushUpdate(data);
@@ -140,5 +143,5 @@ export function useWidgetSync() {
         timerRef.current = null;
       }
     };
-  }, [routines, isCompleted, todos, status, startedAt, goalHours]);
+  }, [routines, isCompleted, todos, status, startedAt, goalHours, isPro]);
 }

@@ -23,6 +23,8 @@ import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useEditMode } from '@/hooks/useEditMode';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert, appPrompt } from '@/stores/useAlertStore';
+import { useProStore } from '@/stores/useProStore';
+import { FREE_LIMITS } from '@/hooks/useProGating';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import {
   type Routine,
@@ -86,6 +88,7 @@ export default function RoutineScreen() {
     batchUpdateRoutines,
   } = useRoutineStore();
   const { toggleCompletion, isCompleted } = useRoutineCompletionStore();
+  const isPro = useProStore((s) => s.isPro);
   const { seenHints, markHintSeen } = useSettingsStore();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -179,6 +182,11 @@ export default function RoutineScreen() {
 
   function handleCreateGroup() {
     if (!newGroupName.trim()) return;
+    if (!isPro && groups.length >= FREE_LIMITS.routineGroups) {
+      setGroupModalVisible(false);
+      appAlert('Pro 기능', `Free는 루틴 그룹을 ${FREE_LIMITS.routineGroups}개까지 만들 수 있어요.\n설정 > 멤버십에서 업그레이드할 수 있어요.`);
+      return;
+    }
     addGroup({
       id: String(Date.now()),
       name: newGroupName.trim(),
