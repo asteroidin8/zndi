@@ -29,7 +29,7 @@ import {
   useBoardStore,
 } from '@/stores/useBoardStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
-import { leaveBoard } from '@/services/board/boardService';
+import { fetchBoardMembers, leaveBoard } from '@/services/board/boardService';
 import {
   createBoardRoutine,
   deleteBoardRoutine,
@@ -92,6 +92,7 @@ export default function BoardDetailScreen() {
 
   useEffect(() => {
     if (!id) return;
+    void fetchBoardMembers(id);
     void fetchBoardRoutines(id);
     void fetchVerificationLogs(id);
   }, [id]);

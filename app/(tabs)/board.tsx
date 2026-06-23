@@ -18,6 +18,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useFollowStore } from '@/stores/useFollowStore';
 import { fetchMyBoards } from '@/services/board/boardService';
 import { fetchFollowing, fetchFriendProgress } from '@/services/social/followService';
+import { getAvatarColor, getInitial } from '@/utils/avatarColor';
 import { getWeekDates, ratioToLevel } from '@/utils/boardHelpers';
 import { localDateStr } from '@/utils/dateFormat';
 
@@ -178,22 +179,78 @@ export default function BoardTabScreen() {
           ) : (
             boards.map((board) => {
               const boardMembers = members[board.id] ?? [];
+              const sorted = [...boardMembers].sort((a, b) =>
+                a.userId === board.ownerId ? -1 : b.userId === board.ownerId ? 1 : 0,
+              );
+              const AVATAR_SIZE = 28;
+              const OVERLAP = 8;
+              const maxShow = 5;
+              const visible = sorted.slice(0, maxShow);
+              const extra = sorted.length - maxShow;
               return (
                 <Card
                   key={board.id}
                   pressable
                   onPress={() => router.push(`/board/${board.id}`)}
                 >
-                  <View style={{ gap: spacing.xs }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <AppText variant="body" style={{ fontWeight: '600', flex: 1 }}>
-                        {board.name}
-                      </AppText>
-                      <AppIcon name="ChevronRight" size={16} color={c.inkDisabled} />
-                    </View>
-                    <AppText variant="caption" tone="tertiary">
-                      {boardMembers.map((m) => m.nickname).join(', ')} · {boardMembers.length}/{board.maxMembers}명
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                    <AppText variant="body" style={{ fontWeight: '600', flex: 1 }} numberOfLines={1}>
+                      {board.name}
                     </AppText>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      {visible.map((m, i) => {
+                        const isOwner = m.userId === board.ownerId;
+                        return (
+                          <View
+                            key={m.userId}
+                            style={{
+                              marginLeft: i === 0 ? 0 : -OVERLAP,
+                              zIndex: visible.length - i,
+                            }}
+                          >
+                            {isOwner && (
+                              <AppText style={{ fontSize: 10, textAlign: 'center', marginBottom: -2 }}>👑</AppText>
+                            )}
+                            <View
+                              style={{
+                                width: AVATAR_SIZE,
+                                height: AVATAR_SIZE,
+                                borderRadius: AVATAR_SIZE / 2,
+                                backgroundColor: getAvatarColor(m.userId),
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderWidth: 2,
+                                borderColor: c.surface,
+                              }}
+                            >
+                              <AppText style={{ color: '#fff', fontWeight: '700', fontSize: 11 }}>
+                                {getInitial(m.nickname)}
+                              </AppText>
+                            </View>
+                          </View>
+                        );
+                      })}
+                      {extra > 0 && (
+                        <View
+                          style={{
+                            marginLeft: -OVERLAP,
+                            width: AVATAR_SIZE,
+                            height: AVATAR_SIZE,
+                            borderRadius: AVATAR_SIZE / 2,
+                            backgroundColor: c.surfaceMuted,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderWidth: 2,
+                            borderColor: c.surface,
+                          }}
+                        >
+                          <AppText style={{ color: c.inkTertiary, fontWeight: '700', fontSize: 10 }}>
+                            +{extra}
+                          </AppText>
+                        </View>
+                      )}
+                    </View>
+                    <AppIcon name="ChevronRight" size={16} color={c.inkDisabled} />
                   </View>
                 </Card>
               );
