@@ -145,7 +145,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
               <AppText variant="caption" style={{ color: allRoutinesDone ? 'rgba(255,255,255,0.7)' : c.inkTertiary }}>
                 {completedCount}/{todayRoutines.length}
               </AppText>
-              <AppIcon name={allRoutinesDone ? 'Check' : 'ChevronRight'} size={size.iconSm} color={allRoutinesDone ? '#fff' : c.inkTertiary} />
+              <AppIcon name="ChevronRight" size={size.iconSm} color={allRoutinesDone ? '#fff' : c.inkTertiary} />
             </View>
           </Pressable>
 
@@ -232,7 +232,7 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
               <AppText variant="caption" style={{ color: allTodosDone ? 'rgba(255,255,255,0.7)' : c.inkTertiary }}>
                 {allTodosDone ? `${todayCompletedTodos.length}개 완료` : `${activeTodos.length}개`}
               </AppText>
-              <AppIcon name={allTodosDone ? 'Check' : 'ChevronRight'} size={size.iconSm} color={allTodosDone ? '#fff' : c.inkTertiary} />
+              <AppIcon name="ChevronRight" size={size.iconSm} color={allTodosDone ? '#fff' : c.inkTertiary} />
             </View>
           </Pressable>
 
