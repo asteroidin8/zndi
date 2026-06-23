@@ -51,7 +51,7 @@ function AppContent() {
   useTodoNotifications();
   useWidgetSync();
 
-  const borderColor = `${c.primary}30`;
+  const borderColor = c.borderStrong;
 
   return (
     <View style={{ flex: 1, borderLeftWidth: 2, borderRightWidth: 2, borderColor }}>
