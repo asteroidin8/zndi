@@ -74,6 +74,8 @@ export default function HomeScreen() {
           paddingBottom: spacing.section * 2,
         }}
         showsVerticalScrollIndicator={false}
+        alwaysBounceVertical={false}
+        overScrollMode="never"
       >
         <HomeTopBar />
 

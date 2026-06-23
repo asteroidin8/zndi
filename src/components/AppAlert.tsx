@@ -14,9 +14,8 @@ import { type AlertButton, useAlertStore } from '@/stores/useAlertStore';
 const ENTER = { duration: 200 };
 const EXIT = { duration: 150 };
 
-const btnBase = { flex: 1, alignItems: 'center' as const, justifyContent: 'center' as const, paddingVertical: 14 };
-const btnStack = { alignItems: 'center' as const, justifyContent: 'center' as const, paddingVertical: 14 };
-const btnPressed = { opacity: 0.5 };
+const btnBase = { flex: 1, alignItems: 'center' as const, justifyContent: 'center' as const, paddingVertical: 14 } as const;
+const btnStack = { alignItems: 'center' as const, justifyContent: 'center' as const, paddingVertical: 14 } as const;
 
 export function AppAlert() {
   const c = useThemeColors();
@@ -120,20 +119,18 @@ export function AppAlert() {
             <View style={{ height: 1, backgroundColor: c.surfaceMuted }} />
 
             <View style={{ flexDirection: 'row', minHeight: 48 }}>
-              <Pressable
-                onPress={hide}
-                style={({ pressed }) => [btnBase, pressed && btnPressed]}
-              >
-                <AppText variant="body" tone="tertiary" style={{ textAlign: 'center' }}>취소</AppText>
+              <Pressable onPress={hide} style={btnBase}>
+                {({ pressed }) => (
+                  <AppText variant="body" tone="tertiary" style={{ textAlign: 'center', opacity: pressed ? 0.5 : 1 }}>취소</AppText>
+                )}
               </Pressable>
 
               <View style={{ width: 1, backgroundColor: c.surfaceMuted }} />
 
-              <Pressable
-                onPress={handlePromptSubmit}
-                style={({ pressed }) => [btnBase, pressed && btnPressed]}
-              >
-                <AppText variant="body" style={{ fontWeight: '700', textAlign: 'center', color: c.primary }}>확인</AppText>
+              <Pressable onPress={handlePromptSubmit} style={btnBase}>
+                {({ pressed }) => (
+                  <AppText variant="body" style={{ fontWeight: '700', textAlign: 'center', color: c.primary, opacity: pressed ? 0.5 : 1 }}>확인</AppText>
+                )}
               </Pressable>
             </View>
           </Animated.View>
@@ -184,78 +181,73 @@ export function AppAlert() {
           {isSideBySide ? (
             <View style={{ flexDirection: 'row', minHeight: 48 }}>
               {cancelBtn && (
-                <Pressable
-                  onPress={() => handlePress(cancelBtn)}
-                  style={({ pressed }) => [btnBase, pressed && btnPressed]}
-                >
-                  <AppText variant="body" tone="tertiary" style={{ textAlign: 'center' }}>
-                    {cancelBtn.text}
-                  </AppText>
+                <Pressable onPress={() => handlePress(cancelBtn)} style={btnBase}>
+                  {({ pressed }) => (
+                    <AppText variant="body" tone="tertiary" style={{ textAlign: 'center', opacity: pressed ? 0.5 : 1 }}>
+                      {cancelBtn.text}
+                    </AppText>
+                  )}
                 </Pressable>
               )}
               {cancelBtn && actionBtns.length > 0 && (
                 <View style={{ width: 1, backgroundColor: c.surfaceMuted }} />
               )}
               {actionBtns.map((btn, i) => (
-                <Pressable
-                  key={i}
-                  onPress={() => handlePress(btn)}
-                  style={({ pressed }) => [btnBase, pressed && btnPressed]}
-                >
-                  <AppText
-                    variant="body"
-                    style={{
-                      fontWeight: '700',
-                      textAlign: 'center',
-                      color: btn.style === 'destructive' ? c.danger : c.primary,
-                    }}
-                  >
-                    {btn.text}
-                  </AppText>
+                <Pressable key={i} onPress={() => handlePress(btn)} style={btnBase}>
+                  {({ pressed }) => (
+                    <AppText
+                      variant="body"
+                      style={{
+                        fontWeight: '700',
+                        textAlign: 'center',
+                        color: btn.style === 'destructive' ? c.danger : c.primary,
+                        opacity: pressed ? 0.5 : 1,
+                      }}
+                    >
+                      {btn.text}
+                    </AppText>
+                  )}
                 </Pressable>
               ))}
               {!cancelBtn && actionBtns.length === 0 && (
-                <Pressable
-                  onPress={hide}
-                  style={({ pressed }) => [btnBase, pressed && btnPressed]}
-                >
-                  <AppText variant="body" style={{ fontWeight: '700', textAlign: 'center', color: c.primary }}>
-                    확인
-                  </AppText>
+                <Pressable onPress={hide} style={btnBase}>
+                  {({ pressed }) => (
+                    <AppText variant="body" style={{ fontWeight: '700', textAlign: 'center', color: c.primary, opacity: pressed ? 0.5 : 1 }}>
+                      확인
+                    </AppText>
+                  )}
                 </Pressable>
               )}
             </View>
           ) : (
             <View>
               {actionBtns.map((btn, i) => (
-                <Pressable
-                  key={i}
-                  onPress={() => handlePress(btn)}
-                  style={({ pressed }) => [btnStack, pressed && btnPressed]}
-                >
-                  <AppText
-                    variant="body"
-                    style={{
-                      fontWeight: '600',
-                      textAlign: 'center',
-                      color: btn.style === 'destructive' ? c.danger : c.ink,
-                    }}
-                  >
-                    {btn.text}
-                  </AppText>
+                <Pressable key={i} onPress={() => handlePress(btn)} style={btnStack}>
+                  {({ pressed }) => (
+                    <AppText
+                      variant="body"
+                      style={{
+                        fontWeight: '600',
+                        textAlign: 'center',
+                        color: btn.style === 'destructive' ? c.danger : c.ink,
+                        opacity: pressed ? 0.5 : 1,
+                      }}
+                    >
+                      {btn.text}
+                    </AppText>
+                  )}
                 </Pressable>
               ))}
               {actionBtns.length > 0 && cancelBtn && (
                 <View style={{ height: 1, backgroundColor: c.surfaceMuted }} />
               )}
               {cancelBtn && (
-                <Pressable
-                  onPress={() => handlePress(cancelBtn)}
-                  style={({ pressed }) => [btnStack, pressed && btnPressed]}
-                >
-                  <AppText variant="body" tone="tertiary" style={{ textAlign: 'center' }}>
-                    {cancelBtn.text}
-                  </AppText>
+                <Pressable onPress={() => handlePress(cancelBtn)} style={btnStack}>
+                  {({ pressed }) => (
+                    <AppText variant="body" tone="tertiary" style={{ textAlign: 'center', opacity: pressed ? 0.5 : 1 }}>
+                      {cancelBtn.text}
+                    </AppText>
+                  )}
                 </Pressable>
               )}
             </View>

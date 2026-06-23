@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { BackHandler, Platform, Pressable, ToastAndroid, View } from 'react-native';
+import { usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TabBarIcon } from '@/components/TabBarIcon';
@@ -35,11 +36,15 @@ export default function TabLayout() {
   const [activeTab, setActiveTab] = useState<TabIndex>(HOME_INDEX as TabIndex);
   const [scrollTick, setScrollTick] = useState<Record<number, number>>({});
   const activeTodoCount = useTodoStore((s) => s.todos.filter((t) => !t.completedAt).length);
+  const pathname = usePathname();
   const backPressedOnce = useRef(false);
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      const tabPaths = ['/', '/board', '/routine', '/todo', '/stats'];
+      if (!tabPaths.includes(pathname)) return false;
+
       if (activeTab !== HOME_INDEX) {
         setActiveTab(HOME_INDEX as TabIndex);
         return true;
@@ -53,7 +58,7 @@ export default function TabLayout() {
       return false;
     });
     return () => sub.remove();
-  }, [activeTab]);
+  }, [activeTab, pathname]);
 
   function navigateTo(index: TabIndex) {
     if (activeTab !== index) {
