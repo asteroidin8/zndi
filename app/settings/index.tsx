@@ -110,11 +110,16 @@ export default function MyScreen() {
           appAlert('로그아웃 실패', result.error);
           return;
         }
-        await resetUserData();
         useSettingsStore.setState({
           grassColor: 'green',
           grassShape: 'default',
           grassAnimation: 'none',
+        });
+        useProStore.setState({
+          isPro: false,
+          purchasedColors: [],
+          purchasedShapes: [],
+          purchasedAnimations: [],
         });
       }},
     ]);
