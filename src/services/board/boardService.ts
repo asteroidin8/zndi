@@ -226,16 +226,26 @@ export async function updateMyNicknameInBoards(
       m.userId === userId ? { ...m, nickname } : m,
     );
   }
-  useBoardStore.setState({ members: { ...store.members, ...updatedMembers } });
+  const updatedLogs: Record<string, import('@/types').BoardVerificationLog[]> = {};
+  for (const [boardId, logList] of Object.entries(store.logs)) {
+    updatedLogs[boardId] = logList.map((l) =>
+      l.userId === userId ? { ...l, nickname } : l,
+    );
+  }
+  useBoardStore.setState({
+    members: { ...store.members, ...updatedMembers },
+    logs: { ...store.logs, ...updatedLogs },
+  });
 
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
 
-  const { error } = await supabase
-    .from('board_members')
-    .update({ nickname })
-    .eq('user_id', userId);
-  if (error) return { error: error.message };
+  const [membersResult, profilesResult] = await Promise.all([
+    supabase.from('board_members').update({ nickname }).eq('user_id', userId),
+    supabase.from('profiles').update({ nickname }).eq('user_id', userId),
+  ]);
+  if (membersResult.error) return { error: membersResult.error.message };
+  if (profilesResult.error) return { error: profilesResult.error.message };
 
   return {};
 }

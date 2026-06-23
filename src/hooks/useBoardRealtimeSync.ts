@@ -44,6 +44,17 @@ export function useBoardRealtimeSync() {
               nickname: String(row!.nickname),
               joinedAt: String(row!.joined_at),
             });
+          } else if (payload.eventType === 'UPDATE' && row) {
+            const store = useBoardStore.getState();
+            const current = store.members[boardId] ?? [];
+            const updatedUserId = String(row.user_id);
+            const updatedNickname = String(row.nickname);
+            store.setMembers(
+              boardId,
+              current.map((m) =>
+                m.userId === updatedUserId ? { ...m, nickname: updatedNickname } : m,
+              ),
+            );
           }
         },
       )

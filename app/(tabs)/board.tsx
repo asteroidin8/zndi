@@ -210,7 +210,9 @@ export default function BoardTabScreen() {
                             }}
                           >
                             {isOwner && (
-                              <AppText style={{ fontSize: 10, textAlign: 'center', marginBottom: -2 }}>👑</AppText>
+                              <View style={{ alignItems: 'center', marginBottom: -2 }}>
+                                <AppIcon name="Crown" size={10} color={c.primary} />
+                              </View>
                             )}
                             <View
                               style={{
