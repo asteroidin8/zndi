@@ -85,7 +85,7 @@ export default function HomeScreen() {
           <InfoBanner
             title={`오늘 미인증 공동 루틴 ${unverifiedCount}개`}
             icon="Users"
-            onPress={() => router.push('/board')}
+            onPress={() => navigateTo(0)}
             accessibilityLabel="보드로 이동"
           />
         )}
