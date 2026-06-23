@@ -188,13 +188,13 @@ export function TodoFormFields({
           <AppText variant="caption" tone="tertiary">그룹</AppText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} nestedScrollEnabled>
             <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-              <Chip label="없음" selected={groupId === null} onPress={() => onGroupIdChange(null)} />
+              <Chip label="없음" selected={groupId === null} onPress={() => { onGroupIdChange(null); onSectionChange(''); }} />
               {groups.map((g) => (
                 <Chip
                   key={g.id}
                   label={g.name}
                   selected={groupId === g.id}
-                  onPress={() => onGroupIdChange(groupId === g.id ? null : g.id)}
+                  onPress={() => { const next = groupId === g.id ? null : g.id; onGroupIdChange(next); if (!next) onSectionChange(''); }}
                 />
               ))}
             </View>
@@ -202,14 +202,16 @@ export function TodoFormFields({
         </View>
       )}
 
-      {/* 섹션 */}
-      <SectionField
-        section={section}
-        onSectionChange={onSectionChange}
-        todos={todos}
-        isPro={isPro}
-        c={c}
-      />
+      {/* 섹션 — 그룹 선택 시에만 표시 */}
+      {groupId != null && (
+        <SectionField
+          section={section}
+          onSectionChange={onSectionChange}
+          todos={todos}
+          isPro={isPro}
+          c={c}
+        />
+      )}
 
       {/* 마감일 */}
       <View style={{ gap: spacing.sm }}>

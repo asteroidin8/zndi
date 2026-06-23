@@ -389,13 +389,13 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
               style={{ marginBottom: spacing.section }}
             >
               <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <Pressable onPress={() => setGroupId(null)} style={chipStyle(groupId === null)}>
+                <Pressable onPress={() => { setGroupId(null); setSection(''); }} style={chipStyle(groupId === null)}>
                   <AppText variant="caption" style={chipTextStyle(groupId === null)}>없음</AppText>
                 </Pressable>
                 {groups.map((g) => (
                   <Pressable
                     key={g.id}
-                    onPress={() => setGroupId(groupId === g.id ? null : g.id)}
+                    onPress={() => { const next = groupId === g.id ? null : g.id; setGroupId(next); if (!next) setSection(''); }}
                     style={chipStyle(groupId === g.id)}
                   >
                     <AppText variant="caption" style={chipTextStyle(groupId === g.id)}>
@@ -408,76 +408,78 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
           </>
         )}
 
-        {/* Section */}
-        {isPro ? (
-          <>
-            <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
-              섹션
-            </AppText>
-            {existingSections.length > 0 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                nestedScrollEnabled
-                style={{ marginBottom: spacing.sm }}
-              >
-                <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                  {existingSections.map((s) => (
-                    <Pressable
-                      key={s}
-                      onPress={() => setSection(section === s ? '' : s)}
-                      style={chipStyle(section === s)}
-                    >
-                      <AppText variant="caption" style={chipTextStyle(section === s)}>{s}</AppText>
-                    </Pressable>
-                  ))}
-                </View>
-              </ScrollView>
-            )}
-            <TextInput
-              value={section}
-              onChangeText={setSection}
-              placeholder="예: 아침, 점심, 저녁"
-              placeholderTextColor={c.inkDisabled}
-              style={{
-                fontSize: 14,
-                color: c.ink,
-                borderBottomWidth: 1,
-                borderBottomColor: c.border,
-                paddingVertical: spacing.sm,
-                marginBottom: spacing.section,
+        {/* Section — 그룹 선택 시에만 표시 */}
+        {groupId != null && (
+          isPro ? (
+            <>
+              <AppText variant="caption" tone="tertiary" style={{ marginBottom: spacing.sm }}>
+                섹션
+              </AppText>
+              {existingSections.length > 0 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  nestedScrollEnabled
+                  style={{ marginBottom: spacing.sm }}
+                >
+                  <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                    {existingSections.map((s) => (
+                      <Pressable
+                        key={s}
+                        onPress={() => setSection(section === s ? '' : s)}
+                        style={chipStyle(section === s)}
+                      >
+                        <AppText variant="caption" style={chipTextStyle(section === s)}>{s}</AppText>
+                      </Pressable>
+                    ))}
+                  </View>
+                </ScrollView>
+              )}
+              <TextInput
+                value={section}
+                onChangeText={setSection}
+                placeholder="예: 아침, 점심, 저녁"
+                placeholderTextColor={c.inkDisabled}
+                style={{
+                  fontSize: 14,
+                  color: c.ink,
+                  borderBottomWidth: 1,
+                  borderBottomColor: c.border,
+                  paddingVertical: spacing.sm,
+                  marginBottom: spacing.section,
+                }}
+              />
+            </>
+          ) : (
+            <Pressable
+              onPress={() => {
+                Keyboard.dismiss();
+                onClose();
+                setTimeout(() => {
+                  const { appAlert } = require('@/stores/useAlertStore');
+                  appAlert('Pro 기능', '섹션 기능은 Pro 기능이에요.\n설정 > 멤버십에서 업그레이드할 수 있어요.');
+                }, 300);
               }}
-            />
-          </>
-        ) : (
-          <Pressable
-            onPress={() => {
-              Keyboard.dismiss();
-              onClose();
-              setTimeout(() => {
-                const { appAlert } = require('@/stores/useAlertStore');
-                appAlert('Pro 기능', '섹션 기능은 Pro 기능이에요.\n설정 > 멤버십에서 업그레이드할 수 있어요.');
-              }, 300);
-            }}
-            style={{ marginBottom: spacing.section }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.sm }}>
-              <AppText variant="caption" tone="tertiary">섹션</AppText>
-              <AppText variant="caption" style={{ color: c.inkDisabled, fontSize: 10 }}>PRO</AppText>
-            </View>
-            <TextInput
-              placeholder="예: 아침, 점심, 저녁"
-              placeholderTextColor={c.inkDisabled}
-              editable={false}
-              style={{
-                fontSize: 14,
-                color: c.ink,
-                borderBottomWidth: 1,
-                borderBottomColor: c.border,
-                paddingVertical: spacing.sm,
-              }}
-            />
-          </Pressable>
+              style={{ marginBottom: spacing.section }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.sm }}>
+                <AppText variant="caption" tone="tertiary">섹션</AppText>
+                <AppText variant="caption" style={{ color: c.inkDisabled, fontSize: 10 }}>PRO</AppText>
+              </View>
+              <TextInput
+                placeholder="예: 아침, 점심, 저녁"
+                placeholderTextColor={c.inkDisabled}
+                editable={false}
+                style={{
+                  fontSize: 14,
+                  color: c.ink,
+                  borderBottomWidth: 1,
+                  borderBottomColor: c.border,
+                  paddingVertical: spacing.sm,
+                }}
+              />
+            </Pressable>
+          )
         )}
 
         {/* Reminder */}

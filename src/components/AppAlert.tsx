@@ -14,6 +14,10 @@ import { type AlertButton, useAlertStore } from '@/stores/useAlertStore';
 const ENTER = { duration: 200 };
 const EXIT = { duration: 150 };
 
+const btnBase = { flex: 1, alignItems: 'center' as const, justifyContent: 'center' as const, paddingVertical: 14 };
+const btnStack = { alignItems: 'center' as const, justifyContent: 'center' as const, paddingVertical: 14 };
+const btnPressed = { opacity: 0.5 };
+
 export function AppAlert() {
   const c = useThemeColors();
   const { visible, title, message, buttons, prompt, hide } = useAlertStore();
@@ -118,7 +122,7 @@ export function AppAlert() {
             <View style={{ flexDirection: 'row', minHeight: 48 }}>
               <Pressable
                 onPress={hide}
-                style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 14 }}
+                style={({ pressed }) => [btnBase, pressed && btnPressed]}
               >
                 <AppText variant="body" tone="tertiary" style={{ textAlign: 'center' }}>취소</AppText>
               </Pressable>
@@ -127,7 +131,7 @@ export function AppAlert() {
 
               <Pressable
                 onPress={handlePromptSubmit}
-                style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 14 }}
+                style={({ pressed }) => [btnBase, pressed && btnPressed]}
               >
                 <AppText variant="body" style={{ fontWeight: '700', textAlign: 'center', color: c.primary }}>확인</AppText>
               </Pressable>
@@ -182,7 +186,7 @@ export function AppAlert() {
               {cancelBtn && (
                 <Pressable
                   onPress={() => handlePress(cancelBtn)}
-                  style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 14 }}
+                  style={({ pressed }) => [btnBase, pressed && btnPressed]}
                 >
                   <AppText variant="body" tone="tertiary" style={{ textAlign: 'center' }}>
                     {cancelBtn.text}
@@ -196,7 +200,7 @@ export function AppAlert() {
                 <Pressable
                   key={i}
                   onPress={() => handlePress(btn)}
-                  style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 14 }}
+                  style={({ pressed }) => [btnBase, pressed && btnPressed]}
                 >
                   <AppText
                     variant="body"
@@ -213,7 +217,7 @@ export function AppAlert() {
               {!cancelBtn && actionBtns.length === 0 && (
                 <Pressable
                   onPress={hide}
-                  style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 14 }}
+                  style={({ pressed }) => [btnBase, pressed && btnPressed]}
                 >
                   <AppText variant="body" style={{ fontWeight: '700', textAlign: 'center', color: c.primary }}>
                     확인
@@ -227,7 +231,7 @@ export function AppAlert() {
                 <Pressable
                   key={i}
                   onPress={() => handlePress(btn)}
-                  style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 14 }}
+                  style={({ pressed }) => [btnStack, pressed && btnPressed]}
                 >
                   <AppText
                     variant="body"
@@ -247,7 +251,7 @@ export function AppAlert() {
               {cancelBtn && (
                 <Pressable
                   onPress={() => handlePress(cancelBtn)}
-                  style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 14 }}
+                  style={({ pressed }) => [btnStack, pressed && btnPressed]}
                 >
                   <AppText variant="body" tone="tertiary" style={{ textAlign: 'center' }}>
                     {cancelBtn.text}

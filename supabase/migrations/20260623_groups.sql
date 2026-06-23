@@ -23,6 +23,9 @@ create table if not exists public.todo_groups (
 alter table public.routine_groups enable row level security;
 alter table public.todo_groups enable row level security;
 
+drop policy if exists "routine_groups_own" on public.routine_groups;
+drop policy if exists "todo_groups_own" on public.todo_groups;
+
 create policy "routine_groups_own" on public.routine_groups for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "todo_groups_own" on public.todo_groups for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
