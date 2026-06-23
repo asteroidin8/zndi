@@ -190,77 +190,74 @@ export default function BoardTabScreen() {
                 <Pressable
                   key={board.id}
                   onPress={() => router.push(`/board/${board.id}`)}
-                  style={({ pressed }) => ({
-                    flexDirection: 'row',
-                    alignItems: 'center',
+                  style={{
                     paddingVertical: spacing.md,
                     paddingHorizontal: spacing.card,
                     borderRadius: radius.md,
-                    backgroundColor: pressed ? c.surfaceMuted : c.surfaceSubtle,
+                    backgroundColor: c.surfaceSubtle,
                     borderWidth: 1,
                     borderColor: c.borderNeutral,
-                    opacity: pressed ? 0.88 : 1,
-                  })}
+                  }}
                 >
-                  <AppText variant="body" style={{ fontWeight: '600', flex: 1 }} numberOfLines={1}>
-                    {board.name}
-                  </AppText>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    {visible.map((m, i) => {
-                      const isOwner = m.userId === board.ownerId;
-                      return (
-                        <View
-                          key={m.userId}
-                          style={{
-                            marginLeft: i === 0 ? 0 : -OVERLAP,
-                            zIndex: visible.length - i,
-                          }}
-                        >
-                          {isOwner && (
-                            <View style={{ alignItems: 'center', marginBottom: -2 }}>
-                              <AppIcon name="Crown" size={10} color={c.primary} />
-                            </View>
-                          )}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                    <AppText variant="body" style={{ fontWeight: '600', flex: 1 }} numberOfLines={1}>
+                      {board.name}
+                    </AppText>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      {visible.map((m, i) => {
+                        const isOwner = m.userId === board.ownerId;
+                        return (
                           <View
+                            key={m.userId}
                             style={{
-                              width: AVATAR_SIZE,
-                              height: AVATAR_SIZE,
-                              borderRadius: AVATAR_SIZE / 2,
-                              backgroundColor: getAvatarColor(m.userId),
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              borderWidth: 2,
-                              borderColor: c.surfaceSubtle,
+                              marginLeft: i === 0 ? 0 : -OVERLAP,
+                              zIndex: visible.length - i,
                             }}
                           >
-                            <AppText style={{ color: '#fff', fontWeight: '700', fontSize: 11 }}>
-                              {getInitial(m.nickname)}
-                            </AppText>
+                            {isOwner && (
+                              <View style={{ alignItems: 'center', marginBottom: -2 }}>
+                                <AppIcon name="Crown" size={10} color={c.primary} />
+                              </View>
+                            )}
+                            <View
+                              style={{
+                                width: AVATAR_SIZE,
+                                height: AVATAR_SIZE,
+                                borderRadius: AVATAR_SIZE / 2,
+                                backgroundColor: getAvatarColor(m.userId),
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderWidth: 2,
+                                borderColor: c.surfaceSubtle,
+                              }}
+                            >
+                              <AppText style={{ color: '#fff', fontWeight: '700', fontSize: 11 }}>
+                                {getInitial(m.nickname)}
+                              </AppText>
+                            </View>
                           </View>
+                        );
+                      })}
+                      {extra > 0 && (
+                        <View
+                          style={{
+                            marginLeft: -OVERLAP,
+                            width: AVATAR_SIZE,
+                            height: AVATAR_SIZE,
+                            borderRadius: AVATAR_SIZE / 2,
+                            backgroundColor: c.surfaceMuted,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderWidth: 2,
+                            borderColor: c.surfaceSubtle,
+                          }}
+                        >
+                          <AppText style={{ color: c.inkTertiary, fontWeight: '700', fontSize: 10 }}>
+                            +{extra}
+                          </AppText>
                         </View>
-                      );
-                    })}
-                    {extra > 0 && (
-                      <View
-                        style={{
-                          marginLeft: -OVERLAP,
-                          width: AVATAR_SIZE,
-                          height: AVATAR_SIZE,
-                          borderRadius: AVATAR_SIZE / 2,
-                          backgroundColor: c.surfaceMuted,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          borderWidth: 2,
-                          borderColor: c.surfaceSubtle,
-                        }}
-                      >
-                        <AppText style={{ color: c.inkTertiary, fontWeight: '700', fontSize: 10 }}>
-                          +{extra}
-                        </AppText>
-                      </View>
-                    )}
-                  </View>
-                  <View style={{ marginLeft: spacing.sm }}>
+                      )}
+                    </View>
                     <AppIcon name="ChevronRight" size={16} color={c.inkDisabled} />
                   </View>
                 </Pressable>
