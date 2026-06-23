@@ -39,6 +39,8 @@ export default function TabLayout() {
   const activeTodoCount = useTodoStore((s) => s.todos.filter((t) => !t.completedAt).length);
   const pathname = usePathname();
   const backPressedOnce = useRef(false);
+  const activeTabRef = useRef(activeTab);
+  activeTabRef.current = activeTab;
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
@@ -46,7 +48,7 @@ export default function TabLayout() {
       const tabPaths = ['/', '/board', '/routine', '/todo', '/stats'];
       if (!tabPaths.includes(pathname)) return false;
 
-      if (activeTab !== HOME_INDEX) {
+      if (activeTabRef.current !== HOME_INDEX) {
         setActiveTab(HOME_INDEX as TabIndex);
         return true;
       }
@@ -59,7 +61,7 @@ export default function TabLayout() {
       return false;
     });
     return () => sub.remove();
-  }, [activeTab, pathname]);
+  }, [pathname]);
 
   function navigateTo(index: TabIndex) {
     if (activeTab !== index) {
