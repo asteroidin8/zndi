@@ -182,13 +182,13 @@ export function AppAlert() {
           <View style={{ height: 1, backgroundColor: c.borderNeutral }} />
 
           {isSideBySide ? (
-            <View style={{ flexDirection: 'row', minHeight: 48 }}>
-              {cancelBtn ? (
+            <View style={{ flexDirection: 'row' }}>
+              {cancelBtn && (
                 <Pressable
                   onPress={() => handlePress(cancelBtn)}
                   style={({ pressed }) => ({
                     flex: 1,
-                    justifyContent: 'center',
+                    paddingVertical: 14,
                     alignItems: 'center',
                     opacity: pressed ? 0.5 : 1,
                   })}
@@ -197,17 +197,17 @@ export function AppAlert() {
                     {cancelBtn.text}
                   </AppText>
                 </Pressable>
-              ) : null}
-              {cancelBtn && actionBtns.length > 0 ? (
-                <View style={{ width: 1, alignSelf: 'stretch', backgroundColor: c.borderNeutral }} />
-              ) : null}
+              )}
+              {cancelBtn && actionBtns.length > 0 && (
+                <View style={{ width: 1, backgroundColor: c.borderNeutral }} />
+              )}
               {actionBtns.map((btn, i) => (
                 <Pressable
                   key={i}
                   onPress={() => handlePress(btn)}
                   style={({ pressed }) => ({
                     flex: 1,
-                    justifyContent: 'center',
+                    paddingVertical: 14,
                     alignItems: 'center',
                     opacity: pressed ? 0.5 : 1,
                   })}
@@ -223,12 +223,12 @@ export function AppAlert() {
                   </AppText>
                 </Pressable>
               ))}
-              {!cancelBtn && actionBtns.length === 0 ? (
+              {!cancelBtn && actionBtns.length === 0 && (
                 <Pressable
                   onPress={hide}
                   style={({ pressed }) => ({
                     flex: 1,
-                    justifyContent: 'center',
+                    paddingVertical: 14,
                     alignItems: 'center',
                     opacity: pressed ? 0.5 : 1,
                   })}
@@ -237,33 +237,34 @@ export function AppAlert() {
                     확인
                   </AppText>
                 </Pressable>
-              ) : null}
+              )}
             </View>
           ) : (
             <View>
               {actionBtns.map((btn, i) => (
-                <View key={i}>
-                  <Pressable
-                    onPress={() => handlePress(btn)}
-                    style={({ pressed }) => ({
-                      paddingVertical: 14,
-                      alignItems: 'center',
-                      opacity: pressed ? 0.5 : 1,
-                    })}
+                <Pressable
+                  key={i}
+                  onPress={() => handlePress(btn)}
+                  style={({ pressed }) => ({
+                    paddingVertical: 14,
+                    alignItems: 'center',
+                    opacity: pressed ? 0.5 : 1,
+                  })}
+                >
+                  <AppText
+                    variant="body"
+                    style={{
+                      fontWeight: '600',
+                      color: btn.style === 'destructive' ? c.danger : c.ink,
+                    }}
                   >
-                    <AppText
-                      variant="body"
-                      style={{
-                        fontWeight: '600',
-                        color: btn.style === 'destructive' ? c.danger : c.ink,
-                      }}
-                    >
-                      {btn.text}
-                    </AppText>
-                  </Pressable>
-                  <View style={{ height: 1, backgroundColor: c.borderNeutral }} />
-                </View>
+                    {btn.text}
+                  </AppText>
+                </Pressable>
               ))}
+              {actionBtns.length > 0 && cancelBtn && (
+                <View style={{ height: 1, backgroundColor: c.borderNeutral }} />
+              )}
               {cancelBtn && (
                 <Pressable
                   onPress={() => handlePress(cancelBtn)}
