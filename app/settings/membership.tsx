@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
@@ -7,7 +9,6 @@ import { PageHeader } from '@/components/settings/MyScreenUI';
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useProStore } from '@/stores/useProStore';
-import { router } from 'expo-router';
 
 type FeatureRow = {
   label: string;
@@ -23,6 +24,13 @@ const FEATURES: FeatureRow[] = [
   { label: '셀 모양', free: '기본 1종', pro: '전체' },
   { label: '셀 애니메이션', free: false, pro: true },
   { label: '클라우드 동기화', free: true, pro: true },
+];
+
+type PlanId = 'monthly' | 'yearly';
+
+const PLANS: { id: PlanId; label: string; price: string; unit: string; badge?: string; sub: string }[] = [
+  { id: 'yearly', label: '연간', price: '18,900', unit: '원/년', badge: '17% 할인', sub: '월 1,575원' },
+  { id: 'monthly', label: '월간', price: '1,900', unit: '원/월', sub: '' },
 ];
 
 function CheckOrText({ value, accent }: { value: string | boolean; accent?: boolean }) {
@@ -44,6 +52,7 @@ function CheckOrText({ value, accent }: { value: string | boolean; accent?: bool
 export default function MembershipScreen() {
   const c = useThemeColors();
   const isPro = useProStore((s) => s.isPro);
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>('yearly');
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
@@ -131,6 +140,72 @@ export default function MembershipScreen() {
 
         {!isPro && (
           <View style={{ gap: spacing.md }}>
+            <View style={{ gap: spacing.sm }}>
+              {PLANS.map((plan) => {
+                const active = selectedPlan === plan.id;
+                return (
+                  <Pressable
+                    key={plan.id}
+                    onPress={() => setSelectedPlan(plan.id)}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: spacing.sm,
+                      padding: spacing.card,
+                      borderRadius: radius.lg,
+                      borderWidth: active ? 2 : 1,
+                      borderColor: active ? c.primary : c.border,
+                      backgroundColor: active ? `${c.primary}08` : 'transparent',
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: 10,
+                        borderWidth: 2,
+                        borderColor: active ? c.primary : c.inkDisabled,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {active && (
+                        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c.primary }} />
+                      )}
+                    </View>
+
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                        <AppText variant="body" style={{ fontWeight: '700' }}>
+                          {plan.label}
+                        </AppText>
+                        {plan.badge && (
+                          <View style={{
+                            backgroundColor: c.primary,
+                            borderRadius: radius.sm,
+                            paddingHorizontal: 6,
+                            paddingVertical: 2,
+                          }}>
+                            <AppText variant="caption" style={{ fontSize: 10, fontWeight: '700', color: c.onPrimary }}>
+                              {plan.badge}
+                            </AppText>
+                          </View>
+                        )}
+                      </View>
+                      {plan.sub ? (
+                        <AppText variant="caption" tone="tertiary">{plan.sub}</AppText>
+                      ) : null}
+                    </View>
+
+                    <AppText variant="body" style={{ fontWeight: '700' }}>
+                      {plan.price}
+                      <AppText variant="caption" tone="tertiary">{plan.unit}</AppText>
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+
             <Pressable
               style={({ pressed }) => ({
                 backgroundColor: c.ink,
@@ -143,7 +218,7 @@ export default function MembershipScreen() {
               accessibilityLabel="Pro 구독하기"
             >
               <AppText variant="body" style={{ color: c.surface, fontWeight: '700' }}>
-                Pro 구독하기
+                {selectedPlan === 'yearly' ? '연간 18,900원으로 시작하기' : '월간 1,900원으로 시작하기'}
               </AppText>
             </Pressable>
             <AppText variant="caption" tone="tertiary" style={{ textAlign: 'center' }}>
