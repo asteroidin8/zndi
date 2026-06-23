@@ -54,7 +54,7 @@ function AppContent() {
   const borderColor = c.borderStrong;
 
   return (
-    <View style={{ flex: 1, borderLeftWidth: 2, borderRightWidth: 2, borderColor }}>
+    <View style={{ flex: 1, borderWidth: 2, borderColor }}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
