@@ -69,7 +69,7 @@ export default function TermsScreen() {
           이용약관
         </AppText>
       </View>
-      <Divider />
+      <Divider strong />
       <ScrollView
         contentContainerStyle={{
           padding: spacing.screen,

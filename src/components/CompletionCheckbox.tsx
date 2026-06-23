@@ -23,9 +23,9 @@ type Props = {
 export function CompletionCheckbox({
   checked,
   onToggle,
-  size = 24,
+  size = 26,
   label,
-  iconSize = 12,
+  iconSize = 14,
   shape = 'rounded',
 }: Props) {
   const c = useThemeColors();

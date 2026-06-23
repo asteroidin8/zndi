@@ -36,11 +36,21 @@ import { runAfterDragAnimation } from '@/utils/deferredReorder';
 import { formatRepeatLabel, isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
 const TAB_INDEX = 1 as const;
+const SECTION_TIME_ORDER: Record<string, number> = {
+  '새벽': 0, '아침': 1, '오전': 2, '점심': 3, '오후': 4, '저녁': 5, '밤': 6,
+};
+
+function sectionSortKey(section: string | null): number {
+  if (!section) return 999;
+  return SECTION_TIME_ORDER[section] ?? 500;
+}
+
 function sortBySection(routines: Routine[]): Routine[] {
   return [...routines].sort((a, b) => {
-    const sa = a.section ?? '';
-    const sb = b.section ?? '';
-    if (sa !== sb) return sa.localeCompare(sb);
+    const ka = sectionSortKey(a.section);
+    const kb = sectionSortKey(b.section);
+    if (ka !== kb) return ka - kb;
+    if (ka === 500 && a.section !== b.section) return (a.section ?? '').localeCompare(b.section ?? '');
     return (a.order ?? 0) - (b.order ?? 0);
   });
 }
@@ -494,7 +504,6 @@ export default function RoutineScreen() {
                     onPress={() => openEdit(routine)}
                   />
                 </View>
-                {(gp !== 'last' && gp !== 'only') && <Divider />}
               </View>
             </SwipeActions>
           </View>
@@ -566,7 +575,7 @@ export default function RoutineScreen() {
                 </AppText>
               </View>
               {todayRoutines.map(renderSelectableItem)}
-              <Divider />
+              <Divider strong />
             </>
           )}
           {otherRoutines.length > 0 && (
