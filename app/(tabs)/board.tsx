@@ -192,6 +192,7 @@ export default function BoardTabScreen() {
                   key={board.id}
                   pressable
                   onPress={() => router.push(`/board/${board.id}`)}
+                  style={{ borderLeftWidth: 3, borderLeftColor: getAvatarColor(board.id) }}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
                     <AppText variant="body" style={{ fontWeight: '600', flex: 1 }} numberOfLines={1}>

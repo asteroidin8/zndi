@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,7 +12,6 @@ import { EmptyState } from '@/components/EmptyState';
 import { GroupHeader } from '@/components/GroupHeader';
 import { RoutineItem } from '@/components/RoutineItem';
 import { RoutineModal } from '@/components/RoutineModal';
-import { SheetModal, SheetPrimaryButton } from '@/components/SheetModal';
 import { SpeedDialFab } from '@/components/SpeedDialFab';
 import { SwipeActions } from '@/components/SwipeActions';
 import { UndoSnackbar } from '@/components/UndoSnackbar';
@@ -97,8 +96,6 @@ export default function RoutineScreen() {
   const [undoTarget, setUndoTarget] = useState<Routine | null>(null);
   const [otherExpanded, setOtherExpanded] = useState(false);
   const { editMode, selectedIds, enterEditMode, exitEditMode, toggleSelection, toggleSelectAll } = useEditMode();
-  const [groupModalVisible, setGroupModalVisible] = useState(false);
-  const [newGroupName, setNewGroupName] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [dragTargetGroupId, setDragTargetGroupId] = useState<string | null>(null);
   const dragFromRef = useRef(-1);
@@ -182,21 +179,19 @@ export default function RoutineScreen() {
 
   // ── Group handlers ──
 
-  function handleCreateGroup() {
-    if (!newGroupName.trim()) return;
+  function handleAddGroup() {
     if (!isPro && groups.length >= FREE_LIMITS.routineGroups) {
-      setGroupModalVisible(false);
       appAlert('Pro 기능', `Free는 루틴 그룹을 ${FREE_LIMITS.routineGroups}개까지 만들 수 있어요.\n설정 > 멤버십에서 업그레이드할 수 있어요.`);
       return;
     }
-    addGroup({
-      id: String(Date.now()),
-      name: newGroupName.trim(),
-      order: groups.length,
-      collapsed: false,
-    });
-    setNewGroupName('');
-    setGroupModalVisible(false);
+    appPrompt('그룹 추가', '', (name) => {
+      addGroup({
+        id: String(Date.now()),
+        name: name.trim(),
+        order: groups.length,
+        collapsed: false,
+      });
+    }, '그룹 이름');
   }
 
   function handleRenameGroup(group: RoutineGroup) {
@@ -726,7 +721,7 @@ export default function RoutineScreen() {
           accessibilityLabel="추가 메뉴"
           actions={[
             { label: '루틴 추가', icon: 'Plus', onPress: openAdd },
-            { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
+            { label: '그룹 추가', icon: 'FolderPlus', onPress: handleAddGroup },
             ...(!isEmpty ? [{ label: '편집', icon: 'Pencil' as const, onPress: enterEditMode }] : []),
           ]}
         />
@@ -748,28 +743,6 @@ export default function RoutineScreen() {
         onDelete={editTarget ? () => { removeRoutine(editTarget.id); setModalVisible(false); } : undefined}
         onClose={() => setModalVisible(false)}
       />
-
-      <SheetModal
-        visible={groupModalVisible}
-        onClose={() => setGroupModalVisible(false)}
-        title="그룹 추가"
-        footer={<SheetPrimaryButton label="추가" onPress={handleCreateGroup} disabled={!newGroupName.trim()} />}
-      >
-        <TextInput
-          value={newGroupName}
-          onChangeText={setNewGroupName}
-          placeholder="그룹 이름"
-          placeholderTextColor={c.inkDisabled}
-          autoFocus
-          returnKeyType="done"
-          onSubmitEditing={handleCreateGroup}
-          style={{
-            fontSize: 16,
-            color: c.ink,
-            paddingVertical: spacing.sm,
-          }}
-        />
-      </SheetModal>
 
       <UndoSnackbar
         message="루틴이 삭제됐어요"

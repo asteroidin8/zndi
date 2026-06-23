@@ -19,13 +19,7 @@ const PRESET_OPTIONS: { type: RepeatType; label: string }[] = [
   { type: 'daily', label: '매일' },
   { type: 'weekly', label: '매주' },
   { type: 'monthly', label: '매월' },
-];
-
-const INTERVAL_OPTIONS: { type: RepeatType; suffix: string }[] = [
-  { type: 'daily', suffix: '일마다' },
-  { type: 'weekly', suffix: '주마다' },
-  { type: 'monthly', suffix: '개월마다' },
-  { type: 'yearly', suffix: '년마다' },
+  { type: 'yearly', label: '매년' },
 ];
 
 const MONTH_ROWS = [
@@ -69,7 +63,6 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
   const [reminderTime, setReminderTime] = useState<string | null>(initial?.reminderTime ?? null);
   const [groupId, setGroupId] = useState<string | null>(initial?.groupId ?? null);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
-  const [useInterval, setUseInterval] = useState(() => (initial?.repeatInterval ?? 1) > 1 || initial?.repeatType === 'yearly');
 
   const existingSections = useMemo(() => {
     const set = new Set<string>();
@@ -89,7 +82,6 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
     setSection(initial?.section ?? '');
     setReminderTime(initial?.reminderTime ?? null);
     setGroupId(initial?.groupId ?? null);
-    setUseInterval((initial?.repeatInterval ?? 1) > 1 || initial?.repeatType === 'yearly');
   }, [visible, initial]);
 
   function toggleDay(day: Weekday) {
@@ -107,14 +99,13 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
   function handleSave() {
     if (!name.trim()) return;
     const finalDays = repeatType === 'daily' ? ALL_DAYS.slice() : days;
-    const finalInterval = useInterval ? Math.max(1, repeatInterval) : 1;
     const trimmedSection = section.trim() || null;
     onSave({
       name: name.trim(),
       repeatType,
       repeatDays: finalDays,
       monthDates,
-      repeatInterval: finalInterval,
+      repeatInterval: 1,
       section: trimmedSection,
       reminderTime,
       groupId,
@@ -127,7 +118,6 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
     setSection('');
     setReminderTime(null);
     setGroupId(null);
-    setUseInterval(false);
   }
 
   const canSave = !!name.trim() && (repeatType !== 'monthly' || monthDates.length > 0);
@@ -146,15 +136,6 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
     color: selected ? c.ink : c.inkTertiary,
     fontWeight: selected ? '700' as const : '400' as const,
   });
-
-  function handleIntervalChange(text: string) {
-    const n = parseInt(text, 10);
-    if (Number.isNaN(n) || n < 1) {
-      setRepeatInterval(1);
-    } else {
-      setRepeatInterval(Math.min(n, 99));
-    }
-  }
 
   return (
     <>
@@ -191,17 +172,14 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
           반복
         </AppText>
 
-        {/* Free presets */}
-        <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm }}>
+        <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.card }}>
           {PRESET_OPTIONS.map((opt) => {
-            const selected = !useInterval && repeatType === opt.type;
+            const selected = repeatType === opt.type;
             return (
               <Pressable
                 key={opt.type}
                 onPress={() => {
-                  setUseInterval(false);
                   setRepeatType(opt.type);
-                  setRepeatInterval(1);
                   Keyboard.dismiss();
                 }}
                 style={{
@@ -223,75 +201,6 @@ export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Pr
                 >
                   {opt.label}
                 </AppText>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Pro interval options */}
-        <View style={{ gap: spacing.xs, marginBottom: spacing.card }}>
-          {INTERVAL_OPTIONS.map((opt) => {
-            const selected = useInterval && repeatType === opt.type;
-            return (
-              <Pressable
-                key={opt.type}
-                onPress={() => {
-                  if (!isPro) {
-                    Keyboard.dismiss();
-                    onClose();
-                    setTimeout(() => {
-                      const { appAlert } = require('@/stores/useAlertStore');
-                      appAlert('Pro 기능', '반복 주기 설정은 Pro 기능이에요.\n설정 > 멤버십에서 업그레이드할 수 있어요.');
-                    }, 300);
-                    return;
-                  }
-                  setUseInterval(true);
-                  setRepeatType(opt.type);
-                  if (repeatInterval < 1) setRepeatInterval(1);
-                  Keyboard.dismiss();
-                }}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingVertical: spacing.sm,
-                  paddingHorizontal: spacing.md,
-                  borderRadius: radius.sm,
-                  borderWidth: 1,
-                  borderColor: selected ? c.ink : c.border,
-                  backgroundColor: selected ? c.surfaceSubtle : 'transparent',
-                  gap: spacing.sm,
-                }}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: spacing.xs }}>
-                  {selected ? (
-                    <TextInput
-                      value={String(repeatInterval)}
-                      onChangeText={handleIntervalChange}
-                      keyboardType="number-pad"
-                      selectTextOnFocus
-                      style={{
-                        width: 32,
-                        textAlign: 'center',
-                        fontSize: 14,
-                        fontWeight: '700',
-                        color: c.ink,
-                        borderBottomWidth: 1,
-                        borderBottomColor: c.ink,
-                        paddingVertical: 2,
-                      }}
-                    />
-                  ) : (
-                    <AppText variant="caption" style={{ color: c.inkTertiary, width: 32, textAlign: 'center' }}>
-                      {repeatInterval > 1 && useInterval && repeatType === opt.type ? repeatInterval : 1}
-                    </AppText>
-                  )}
-                  <AppText variant="caption" style={chipTextStyle(selected)}>
-                    {opt.suffix}
-                  </AppText>
-                </View>
-                {!isPro && (
-                  <AppText variant="caption" style={{ color: c.inkDisabled, fontSize: 10 }}>PRO</AppText>
-                )}
               </Pressable>
             );
           })}

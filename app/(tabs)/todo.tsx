@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { FlatList, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { FlatList, Platform, Pressable, ScrollView, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,7 +11,6 @@ import { Divider } from '@/components/Divider';
 import { EditBottomBar } from '@/components/EditBottomBar';
 import { EmptyState } from '@/components/EmptyState';
 import { GroupHeader } from '@/components/GroupHeader';
-import { SheetModal, SheetPrimaryButton } from '@/components/SheetModal';
 import { SpeedDialFab } from '@/components/SpeedDialFab';
 import { SwipeActions } from '@/components/SwipeActions';
 import { TodoEditModal } from '@/components/TodoEditModal';
@@ -143,8 +142,6 @@ export default function TodoScreen() {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editTarget, setEditTarget] = useState<Todo | null>(null);
   const [undoTarget, setUndoTarget] = useState<Todo | null>(null);
-  const [groupModalVisible, setGroupModalVisible] = useState(false);
-  const [newGroupName, setNewGroupName] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [dragTargetGroupId, setDragTargetGroupId] = useState<string | null>(null);
   const dragFromRef = useRef(-1);
@@ -284,21 +281,19 @@ export default function TodoScreen() {
     setEditTarget(null);
   }
 
-  function handleCreateGroup() {
-    if (!newGroupName.trim()) return;
+  function handleAddGroup() {
     if (!isPro && groups.length >= FREE_LIMITS.todoGroups) {
-      setGroupModalVisible(false);
       appAlert('Pro 기능', `Free는 할일 그룹을 ${FREE_LIMITS.todoGroups}개까지 만들 수 있어요.\n설정 > 멤버십에서 업그레이드할 수 있어요.`);
       return;
     }
-    addGroup({
-      id: String(Date.now()),
-      name: newGroupName.trim(),
-      order: groups.length,
-      collapsed: false,
-    });
-    setNewGroupName('');
-    setGroupModalVisible(false);
+    appPrompt('그룹 추가', '', (name) => {
+      addGroup({
+        id: String(Date.now()),
+        name: name.trim(),
+        order: groups.length,
+        collapsed: false,
+      });
+    }, '그룹 이름');
   }
 
   function handleRenameGroup(group: TodoGroup) {
@@ -669,7 +664,7 @@ export default function TodoScreen() {
             accessibilityLabel="추가 메뉴"
             actions={[
               { label: '할일 추가', icon: 'Plus', onPress: () => setAddModalVisible(true) },
-              { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
+              { label: '그룹 추가', icon: 'FolderPlus', onPress: handleAddGroup },
               { label: '편집', icon: 'Pencil', onPress: enterEditMode },
             ]}
           />
@@ -756,33 +751,11 @@ export default function TodoScreen() {
           accessibilityLabel="추가 메뉴"
           actions={[
             { label: '할일 추가', icon: 'Plus', onPress: () => setAddModalVisible(true) },
-            { label: '그룹 추가', icon: 'FolderPlus', onPress: () => { setNewGroupName(''); setGroupModalVisible(true); } },
+            { label: '그룹 추가', icon: 'FolderPlus', onPress: handleAddGroup },
             { label: '편집', icon: 'Pencil', onPress: enterEditMode },
           ]}
         />
       )}
-
-      <SheetModal
-        visible={groupModalVisible}
-        onClose={() => setGroupModalVisible(false)}
-        title="그룹 추가"
-        footer={<SheetPrimaryButton label="추가" onPress={handleCreateGroup} disabled={!newGroupName.trim()} />}
-      >
-        <TextInput
-          value={newGroupName}
-          onChangeText={setNewGroupName}
-          placeholder="그룹 이름"
-          placeholderTextColor={c.inkDisabled}
-          autoFocus
-          returnKeyType="done"
-          onSubmitEditing={handleCreateGroup}
-          style={{
-            fontSize: 16,
-            color: c.ink,
-            paddingVertical: spacing.sm,
-          }}
-        />
-      </SheetModal>
 
       {modals}
     </SafeAreaView>
