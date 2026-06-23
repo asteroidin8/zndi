@@ -85,7 +85,7 @@ export default function ThemeShopScreen() {
               const previewSize = 28;
               const previewRadius = getCellBorderRadius(skin.id, previewSize);
               const transform = getCellTransform(skin.id);
-              const displaySize = skin.id === 'diamond' ? 22 : previewSize;
+              const displaySize = skin.id === 'diamond' ? 20 : previewSize;
               return (
                 <Pressable
                   key={skin.id}
@@ -105,7 +105,7 @@ export default function ThemeShopScreen() {
                     opacity: locked ? 0.4 : 1,
                   }}
                 >
-                  <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+                  <View style={{ width: previewSize, height: previewSize, alignItems: 'center', justifyContent: 'center' }}>
                     <View
                       style={{
                         width: displaySize,
@@ -116,7 +116,7 @@ export default function ThemeShopScreen() {
                       }}
                     />
                     {locked && (
-                      <View style={{ position: 'absolute', top: -6, right: -8 }}>
+                      <View style={{ position: 'absolute', top: -4, right: -6 }}>
                         <AppIcon name="Lock" size={12} color={c.inkTertiary} />
                       </View>
                     )}
@@ -137,7 +137,10 @@ export default function ThemeShopScreen() {
 
         {/* 애니메이션 */}
         <View style={{ gap: spacing.sm }}>
-          <AppText variant="caption" tone="tertiary" style={{ fontWeight: '600' }}>애니메이션</AppText>
+          <View style={{ gap: 2 }}>
+            <AppText variant="caption" tone="tertiary" style={{ fontWeight: '600' }}>애니메이션</AppText>
+            <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>잔디 칸을 완료했을 때 재생되는 효과</AppText>
+          </View>
           <View style={{ gap: spacing.xs }}>
             {GRASS_ANIMATIONS.map((anim) => {
               const selected = grassAnimation === anim.id;

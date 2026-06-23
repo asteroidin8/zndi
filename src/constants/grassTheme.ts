@@ -89,11 +89,11 @@ export type GrassAnimation = {
 };
 
 export const GRASS_ANIMATIONS: GrassAnimation[] = [
-  { id: 'none',    name: '없음',     desc: '애니메이션 없이',      price: null },
-  { id: 'glow',    name: '네온 글로우', desc: '은은하게 빛나요',    price: 1000 },
-  { id: 'pulse',   name: '펄스',     desc: '부드럽게 박동해요',     price: 1500 },
-  { id: 'sparkle', name: '반짝임',   desc: '별처럼 반짝여요',       price: 1500 },
-  { id: 'wave',    name: '웨이브',   desc: '물결처럼 흐르는 효과',   price: 2000 },
+  { id: 'none',    name: '없음',     desc: '효과 없이 색만 채워져요',           price: null },
+  { id: 'glow',    name: '네온 글로우', desc: '완료 시 칸이 은은하게 빛나요',   price: 1000 },
+  { id: 'pulse',   name: '펄스',     desc: '완료 시 칸이 부드럽게 박동해요',     price: 1500 },
+  { id: 'sparkle', name: '반짝임',   desc: '완료 시 칸 위에 별이 반짝여요',      price: 1500 },
+  { id: 'wave',    name: '웨이브',   desc: '완료 시 물결이 퍼져나가요',          price: 2000 },
 ];
 
 export const GRASS_OPACITY = [0, 0.2, 0.4, 0.65, 1.0] as const;

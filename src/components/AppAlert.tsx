@@ -182,34 +182,32 @@ export function AppAlert() {
           <View style={{ height: 1, backgroundColor: c.borderNeutral }} />
 
           {isSideBySide ? (
-            <View style={{ flexDirection: 'row' }}>
-              {cancelBtn && (
-                <>
-                  <Pressable
-                    onPress={() => handlePress(cancelBtn)}
-                    style={({ pressed }) => ({
-                      flex: 1,
-                      paddingVertical: 14,
-                      alignItems: 'center',
-                      opacity: pressed ? 0.5 : 1,
-                    })}
-                  >
-                    <AppText variant="body" tone="tertiary">
-                      {cancelBtn.text}
-                    </AppText>
-                  </Pressable>
-                  {actionBtns.length > 0 && (
-                    <View style={{ width: 1, backgroundColor: c.borderNeutral }} />
-                  )}
-                </>
-              )}
+            <View style={{ flexDirection: 'row', minHeight: 48 }}>
+              {cancelBtn ? (
+                <Pressable
+                  onPress={() => handlePress(cancelBtn)}
+                  style={({ pressed }) => ({
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    opacity: pressed ? 0.5 : 1,
+                  })}
+                >
+                  <AppText variant="body" tone="tertiary">
+                    {cancelBtn.text}
+                  </AppText>
+                </Pressable>
+              ) : null}
+              {cancelBtn && actionBtns.length > 0 ? (
+                <View style={{ width: 1, alignSelf: 'stretch', backgroundColor: c.borderNeutral }} />
+              ) : null}
               {actionBtns.map((btn, i) => (
                 <Pressable
                   key={i}
                   onPress={() => handlePress(btn)}
                   style={({ pressed }) => ({
                     flex: 1,
-                    paddingVertical: 14,
+                    justifyContent: 'center',
                     alignItems: 'center',
                     opacity: pressed ? 0.5 : 1,
                   })}
@@ -225,12 +223,12 @@ export function AppAlert() {
                   </AppText>
                 </Pressable>
               ))}
-              {!cancelBtn && actionBtns.length === 0 && (
+              {!cancelBtn && actionBtns.length === 0 ? (
                 <Pressable
                   onPress={hide}
                   style={({ pressed }) => ({
                     flex: 1,
-                    paddingVertical: 14,
+                    justifyContent: 'center',
                     alignItems: 'center',
                     opacity: pressed ? 0.5 : 1,
                   })}
@@ -239,7 +237,7 @@ export function AppAlert() {
                     확인
                   </AppText>
                 </Pressable>
-              )}
+              ) : null}
             </View>
           ) : (
             <View>
