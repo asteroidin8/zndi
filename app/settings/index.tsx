@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
 import { useProStore } from '@/stores/useProStore';
+import { getAvatarColor, getDisplayName, getInitial } from '@/utils/avatarColor';
 import type { ThemeMode, TimeFormat } from '@/stores/useSettingsStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
@@ -148,6 +149,20 @@ export default function MyScreen() {
         {/* ── 프로필 Hero ── */}
         {configured && !loading && user ? (
           <View style={{ alignItems: 'center', gap: spacing.sm }}>
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                backgroundColor: getAvatarColor(user.id),
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <AppText variant="title" style={{ color: '#fff', fontWeight: '700' }}>
+                {getInitial(getDisplayName(profile.nickname, user.id))}
+              </AppText>
+            </View>
             {editingNickname ? (
               <View style={{ alignItems: 'center', gap: spacing.xs }}>
                 <TextInput
@@ -170,10 +185,19 @@ export default function MyScreen() {
                 )}
               </View>
             ) : (
-              <Pressable onPress={() => { setNicknameInput(profile.nickname ?? ''); setEditingNickname(true); }}>
+              <Pressable
+                onPress={() => { setNicknameInput(profile.nickname ?? ''); setEditingNickname(true); }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}
+              >
                 <AppText variant="title" style={{ fontWeight: '700' }}>
                   {profile.nickname || (user.email ?? 'Google 계정')}
                 </AppText>
+                <AppIcon name="Pencil" size={14} color={c.inkTertiary} />
+              </Pressable>
+            )}
+            {!profile.nickname && !editingNickname && (
+              <Pressable onPress={() => { setNicknameInput(''); setEditingNickname(true); }}>
+                <AppText variant="caption" style={{ color: c.primary }}>닉네임을 설정하세요</AppText>
               </Pressable>
             )}
             {profile.nickname && !editingNickname && (

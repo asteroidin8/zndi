@@ -41,6 +41,7 @@ import {
   deleteVerification,
 } from '@/services/board/boardRoutineService';
 import type { BoardVerificationLog } from '@/types';
+import { getAvatarColor, getInitial } from '@/utils/avatarColor';
 import { getWeekDates, ratioToLevel } from '@/utils/boardHelpers';
 import { localDateStr } from '@/utils/dateFormat';
 
@@ -460,13 +461,13 @@ export default function BoardDetailScreen() {
                           width: 28,
                           height: 28,
                           borderRadius: 14,
-                          backgroundColor: c.primary,
+                          backgroundColor: getAvatarColor(log.userId),
                           alignItems: 'center',
                           justifyContent: 'center',
                         }}
                       >
                         <AppText variant="caption" style={{ color: '#fff', fontWeight: '700', fontSize: 11 }}>
-                          {(log.nickname ?? '?')[0]}
+                          {getInitial(log.nickname ?? '?')}
                         </AppText>
                       </View>
                       <View style={{ flex: 1 }}>

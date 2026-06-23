@@ -14,6 +14,7 @@ type Props = {
   totalCount: number;
   hasVisibleItems: boolean;
   showDelete: boolean;
+  isDropTarget?: boolean;
   onToggleCollapse: () => void;
   onRename: () => void;
   onDelete: () => void;
@@ -25,6 +26,7 @@ export function GroupHeader({
   totalCount,
   hasVisibleItems,
   showDelete,
+  isDropTarget,
   onToggleCollapse,
   onRename,
   onDelete,
@@ -42,7 +44,9 @@ export function GroupHeader({
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
 
-  const borderColor = allDone ? `${c.primary}30` : c.borderNeutral;
+  const baseBorderColor = allDone ? `${c.primary}30` : c.borderNeutral;
+  const borderColor = isDropTarget ? c.primary : baseBorderColor;
+  const bgColor = isDropTarget ? `${c.primary}08` : c.surfaceSubtle;
 
   return (
     <Pressable
@@ -61,9 +65,9 @@ export function GroupHeader({
         borderTopRightRadius: radius.md,
         borderBottomLeftRadius: openBottom ? 0 : radius.md,
         borderBottomRightRadius: openBottom ? 0 : radius.md,
-        backgroundColor: c.surfaceSubtle,
-        borderWidth: 1,
-        borderBottomWidth: openBottom ? 0 : 1,
+        backgroundColor: bgColor,
+        borderWidth: isDropTarget ? 1.5 : 1,
+        borderBottomWidth: openBottom ? 0 : (isDropTarget ? 1.5 : 1),
         borderColor,
       }}
     >

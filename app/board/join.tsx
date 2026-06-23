@@ -12,6 +12,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { joinBoard, fetchMyBoards } from '@/services/board/boardService';
+import { getDisplayName } from '@/utils/avatarColor';
 
 export default function BoardJoinScreen() {
   const c = useThemeColors();
@@ -21,7 +22,7 @@ export default function BoardJoinScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleJoin() {
-    const displayName = nickname?.trim() || '익명';
+    const displayName = getDisplayName(nickname, user?.id);
     if (!user?.id || !code.trim()) return;
     setLoading(true);
     const { board, error } = await joinBoard(user.id, code.trim(), displayName);

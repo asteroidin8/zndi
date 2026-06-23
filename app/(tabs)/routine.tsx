@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -85,6 +85,11 @@ export default function RoutineScreen() {
   const { editMode, selectedIds, enterEditMode, exitEditMode, toggleSelection, toggleSelectAll } = useEditMode();
   const [groupModalVisible, setGroupModalVisible] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragTargetGroupId, setDragTargetGroupId] = useState<string | null>(null);
+  const dragFromRef = useRef(-1);
+  const dragSourceGroupRef = useRef<string | null>(null);
+  const prevDragTargetRef = useRef<string | null>(null);
 
   const todayDate = useMemo(() => new Date(), []);
   const todayStr = useMemo(() => localDateStr(), []);
@@ -242,9 +247,40 @@ export default function RoutineScreen() {
     return items;
   }, [hasGroups, sortedGroups, allRoutinesSorted, ungroupedRoutines, todayDate, todayStr, isCompleted]);
 
+  const dragItemsRef = useRef(dragItems);
+  dragItemsRef.current = dragItems;
+
   // ── Drag handlers ──
 
+  const handleDragBegin = useCallback((index: number) => {
+    dragFromRef.current = index;
+    const item = dragItemsRef.current[index];
+    dragSourceGroupRef.current = item?.type === 'routine' ? (item.routine.groupId ?? null) : null;
+    prevDragTargetRef.current = null;
+    setIsDragging(true);
+    setDragTargetGroupId(null);
+  }, []);
+
+  const handlePlaceholderIndexChange = useCallback((placeholderIndex: number) => {
+    const items = dragItemsRef.current;
+    const from = dragFromRef.current;
+    let targetId: string | null = null;
+    for (let i = placeholderIndex; i >= 0; i--) {
+      if (i === from) continue;
+      const item = items[i];
+      if (item.type === 'group-header') { targetId = item.group.id; break; }
+      if (item.type === 'ungrouped-header') { targetId = null; break; }
+    }
+    if (targetId !== prevDragTargetRef.current) {
+      prevDragTargetRef.current = targetId;
+      setDragTargetGroupId(targetId);
+    }
+  }, []);
+
   function handleUnifiedDragEnd({ data }: { data: ListItem[] }) {
+    setIsDragging(false);
+    setDragTargetGroupId(null);
+    prevDragTargetRef.current = null;
     let currentGroupId: string | null = null;
     let order = 0;
     const updates: { id: string; groupId: string | null; order: number }[] = [];
@@ -341,7 +377,7 @@ export default function RoutineScreen() {
     );
   }
 
-  function renderUnifiedItem({ item, drag }: RenderItemParams<ListItem>) {
+  function renderUnifiedItem({ item, drag, isActive }: RenderItemParams<ListItem>) {
     if (item.type === 'group-header') {
       return (
         <GroupHeader
@@ -350,6 +386,7 @@ export default function RoutineScreen() {
           totalCount={item.totalCount}
           hasVisibleItems={item.hasVisibleItems}
           showDelete={editMode}
+          isDropTarget={isDragging && dragTargetGroupId === item.group.id && dragSourceGroupRef.current !== item.group.id}
           onToggleCollapse={() => toggleGroupCollapsed(item.group.id)}
           onRename={() => handleRenameGroup(item.group)}
           onDelete={() => handleDeleteGroup(item.group)}
@@ -422,34 +459,45 @@ export default function RoutineScreen() {
     const completed = isCompleted(routine.id, todayStr);
     const isToday = isRoutineScheduledForDate(routine, todayDate);
 
+    const dragElevationStyle = isActive ? {
+      backgroundColor: c.surface,
+      borderRadius: radius.md,
+      ...Platform.select({
+        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.15, shadowRadius: 8 },
+        android: { elevation: 8 },
+      }),
+    } : undefined;
+
     return (
       <>
         {sectionHeader}
-        <ScaleDecorator activeScale={1.02}>
-          <SwipeActions
-            onDelete={() => {
-              setUndoTarget(routine);
-              removeRoutine(routine.id);
-            }}
-            onComplete={
-              isToday
-                ? () => { if (!completed) toggleCompleted(routine.id); }
-                : undefined
-            }
-          >
-            <View style={cardWrapStyle}>
-              <View style={{ paddingHorizontal: isGrouped ? spacing.screen : 0 }}>
-                <RoutineItem
-                  routine={routine}
-                  isCompleted={isToday ? completed : false}
-                  onToggle={isToday ? () => toggleCompleted(routine.id) : undefined}
-                  onLongPress={drag}
-                  onPress={() => openEdit(routine)}
-                />
+        <ScaleDecorator activeScale={1.04}>
+          <View style={dragElevationStyle}>
+            <SwipeActions
+              onDelete={() => {
+                setUndoTarget(routine);
+                removeRoutine(routine.id);
+              }}
+              onComplete={
+                isToday
+                  ? () => { if (!completed) toggleCompleted(routine.id); }
+                  : undefined
+              }
+            >
+              <View style={cardWrapStyle}>
+                <View style={{ paddingHorizontal: isGrouped ? spacing.screen : 0 }}>
+                  <RoutineItem
+                    routine={routine}
+                    isCompleted={isToday ? completed : false}
+                    onToggle={isToday ? () => toggleCompleted(routine.id) : undefined}
+                    onLongPress={drag}
+                    onPress={() => openEdit(routine)}
+                  />
+                </View>
+                {(gp !== 'last' && gp !== 'only') && <Divider />}
               </View>
-              {(gp !== 'last' && gp !== 'only') && <Divider />}
-            </View>
-          </SwipeActions>
+            </SwipeActions>
+          </View>
         </ScaleDecorator>
       </>
     );
@@ -497,7 +545,9 @@ export default function RoutineScreen() {
         <DraggableFlatList
           data={dragItems}
           keyExtractor={(item) => item.key}
+          onDragBegin={handleDragBegin}
           onDragEnd={handleUnifiedDragEnd}
+          onPlaceholderIndexChange={handlePlaceholderIndexChange}
           renderItem={renderUnifiedItem}
           activationDistance={4}
           contentContainerStyle={{ paddingBottom: 100 }}

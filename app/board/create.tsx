@@ -12,6 +12,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { createBoard } from '@/services/board/boardService';
+import { getDisplayName } from '@/utils/avatarColor';
 
 export default function BoardCreateScreen() {
   const c = useThemeColors();
@@ -21,7 +22,7 @@ export default function BoardCreateScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleCreate() {
-    const displayName = nickname?.trim() || '익명';
+    const displayName = getDisplayName(nickname, user?.id);
     if (!user?.id || !name.trim()) return;
     setLoading(true);
     const { board, error } = await createBoard(user.id, name.trim(), displayName);

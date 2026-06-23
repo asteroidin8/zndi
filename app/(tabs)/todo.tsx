@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { FlatList, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { FlatList, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -122,6 +122,11 @@ export default function TodoScreen() {
   const [undoTarget, setUndoTarget] = useState<Todo | null>(null);
   const [groupModalVisible, setGroupModalVisible] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragTargetGroupId, setDragTargetGroupId] = useState<string | null>(null);
+  const dragFromRef = useRef(-1);
+  const dragSourceGroupRef = useRef<string | null>(null);
+  const prevDragTargetRef = useRef<string | null>(null);
   const { editMode, selectedIds, enterEditMode, exitEditMode, toggleSelection, toggleSelectAll } = useEditMode();
 
   const activeTodos = todos.filter((t) => !t.completedAt);
@@ -203,6 +208,9 @@ export default function TodoScreen() {
     return items;
   }, [hasGroups, sortedGroups, activeTodos, todos, ungroupedActive]);
 
+  const dragItemsRef = useRef(dragItems);
+  dragItemsRef.current = dragItems;
+
   // ── Handlers ──
 
   function handleAdd({ title, priority, dueDate, pinnedToHome, groupId }: TodoCreatePayload) {
@@ -271,7 +279,36 @@ export default function TodoScreen() {
     );
   }
 
+  const handleDragBegin = useCallback((index: number) => {
+    dragFromRef.current = index;
+    const item = dragItemsRef.current[index];
+    dragSourceGroupRef.current = item?.type === 'todo' ? (item.todo.groupId ?? null) : null;
+    prevDragTargetRef.current = null;
+    setIsDragging(true);
+    setDragTargetGroupId(null);
+  }, []);
+
+  const handlePlaceholderIndexChange = useCallback((placeholderIndex: number) => {
+    const items = dragItemsRef.current;
+    const from = dragFromRef.current;
+    let targetId: string | null = null;
+    for (let i = placeholderIndex; i >= 0; i--) {
+      if (i === from) continue;
+      const item = items[i];
+      if (item.type === 'group-header') { targetId = item.group.id; break; }
+      if (item.type === 'ungrouped-header') { targetId = null; break; }
+    }
+    if (targetId !== prevDragTargetRef.current) {
+      prevDragTargetRef.current = targetId;
+      setDragTargetGroupId(targetId);
+    }
+  }, []);
+
   function handleUnifiedDragEnd({ data }: { data: ListItem[] }) {
+    setIsDragging(false);
+    setDragTargetGroupId(null);
+    prevDragTargetRef.current = null;
+
     let currentGroupId: string | null = null;
     let order = 0;
     const updates: { id: string; groupId: string | null; order: number }[] = [];
@@ -294,7 +331,7 @@ export default function TodoScreen() {
 
   // ── Render items ──
 
-  function renderUnifiedItem({ item, drag }: RenderItemParams<ListItem>) {
+  function renderUnifiedItem({ item, drag, isActive }: RenderItemParams<ListItem>) {
     if (item.type === 'group-header') {
       return (
         <GroupHeader
@@ -303,6 +340,7 @@ export default function TodoScreen() {
           totalCount={item.totalCount}
           hasVisibleItems={item.hasVisibleItems}
           showDelete={editMode}
+          isDropTarget={isDragging && dragTargetGroupId === item.group.id && dragSourceGroupRef.current !== item.group.id}
           onToggleCollapse={() => toggleGroupCollapsed(item.group.id)}
           onRename={() => handleRenameGroup(item.group)}
           onDelete={() => handleDeleteGroup(item.group)}
@@ -357,27 +395,38 @@ export default function TodoScreen() {
       );
     }
 
+    const dragElevationStyle = isActive ? {
+      backgroundColor: c.surface,
+      borderRadius: radius.md,
+      ...Platform.select({
+        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.15, shadowRadius: 8 },
+        android: { elevation: 8 },
+      }),
+    } : undefined;
+
     return (
-      <ScaleDecorator activeScale={1.02}>
-        <SwipeActions
-          onDelete={() => {
-            setUndoTarget(todo);
-            removeTodo(todo.id);
-          }}
-          onComplete={() => completeTodo(todo.id)}
-        >
-          <View style={cardWrapStyle}>
-            <View style={{ paddingHorizontal: spacing.screen }}>
-              <TodoItem
-                todo={todo}
-                onToggle={() => completeTodo(todo.id)}
-                onLongPress={drag}
-                onPress={() => setEditTarget(todo)}
-              />
+      <ScaleDecorator activeScale={1.04}>
+        <View style={dragElevationStyle}>
+          <SwipeActions
+            onDelete={() => {
+              setUndoTarget(todo);
+              removeTodo(todo.id);
+            }}
+            onComplete={() => completeTodo(todo.id)}
+          >
+            <View style={cardWrapStyle}>
+              <View style={{ paddingHorizontal: spacing.screen }}>
+                <TodoItem
+                  todo={todo}
+                  onToggle={() => completeTodo(todo.id)}
+                  onLongPress={drag}
+                  onPress={() => setEditTarget(todo)}
+                />
+              </View>
+              {(gp !== 'last' && gp !== 'only') && <Divider />}
             </View>
-            {(gp !== 'last' && gp !== 'only') && <Divider />}
-          </View>
-        </SwipeActions>
+          </SwipeActions>
+        </View>
       </ScaleDecorator>
     );
   }
@@ -577,7 +626,9 @@ export default function TodoScreen() {
         <DraggableFlatList
           data={dragItems}
           keyExtractor={(item) => item.key}
+          onDragBegin={handleDragBegin}
           onDragEnd={handleUnifiedDragEnd}
+          onPlaceholderIndexChange={handlePlaceholderIndexChange}
           renderItem={renderUnifiedItem}
           activationDistance={4}
           contentContainerStyle={{ paddingBottom: 100 }}
