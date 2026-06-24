@@ -109,12 +109,38 @@
 
 ---
 
+## Soft Delete 부수 효과
+
+### 알림 정리
+
+- 루틴 soft delete 시 해당 루틴의 예약된 알림(reminderTime) 취소
+- 안 하면 삭제한 루틴의 알림이 계속 울림
+
+### 위젯 데이터
+
+- soft-deleted 항목은 홈 화면 위젯에서도 제외
+- 위젯 데이터 브릿지에서 `deletedAt == null` 필터 적용
+
+### 그룹 내 카운트
+
+- soft-deleted 항목은 그룹 진행률 바, 그룹 내 개수 표시에서 제외
+- 그룹 헤더의 "n/m" 카운트에 반영
+
+### Undo 상호작용
+
+- 기존 3초 undo 메커니즘은 soft delete와 자연스럽게 호환
+- undo = `deletedAt` 필드를 다시 `undefined`로 설정
+- undo 시 알림도 재등록
+
+---
+
 ## 클라우드 동기화
 
 - 개인 루틴/할일의 `deletedAt` 필드도 클라우드 동기화 대상
 - `pushLocalToCloud` / `pullCloudToLocal` 시 `deletedAt` 포함
 - 기기 간 soft delete 상태가 동기화되어야 통계 일관성 유지
 - 공동 루틴은 Supabase `deleted_at` 컬럼으로 서버에서 관리 (별도 동기화 불필요)
+- Supabase의 `routines`/`todos` 테이블에도 `deleted_at` 컬럼 추가 필요 (미적용 시 다른 기기에서 pull할 때 삭제 항목이 부활)
 
 ---
 
