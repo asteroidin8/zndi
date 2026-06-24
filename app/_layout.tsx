@@ -7,20 +7,15 @@ import { LogBox, useColorScheme, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { AppAlert } from '@/components/AppAlert';
+import { AppEffectsBridge } from '@/components/AppEffectsBridge';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
+import { AppFrameBorder } from '@/components/AppFrameBorder';
 import { CloudSyncBridge } from '@/components/CloudSyncBridge';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { useBoardProgressSync } from '@/hooks/useBoardProgressSync';
-import { useBoardRealtimeSync } from '@/hooks/useBoardRealtimeSync';
-import { useFastingNotification } from '@/hooks/useFastingNotification';
-import { useMidnightArchive } from '@/hooks/useMidnightArchive';
-import { useRoutineNotifications } from '@/hooks/useRoutineNotifications';
-import { useTodoNotifications } from '@/hooks/useTodoNotifications';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { initSentry } from '@/utils/sentry';
 import { setupNotificationHandler } from '@/utils/notifications';
-import { useWidgetSync } from '@/widgets/useWidgetSync';
 
 if (__DEV__) {
   LogBox.ignoreLogs([
@@ -42,18 +37,10 @@ function AppContent() {
     setupNotificationHandler();
   }, []);
 
-  useBoardRealtimeSync();
-  useBoardProgressSync();
-  useFastingNotification();
-  useMidnightArchive();
-  useRoutineNotifications();
-  useTodoNotifications();
-  useWidgetSync();
-
   const borderColor = c.borderStrong;
 
   return (
-    <View style={{ flex: 1, borderTopWidth: 4, borderBottomWidth: 4, borderLeftWidth: 2, borderRightWidth: 2, borderColor }}>
+    <AppFrameBorder color={borderColor}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
@@ -66,7 +53,7 @@ function AppContent() {
         <Stack.Screen name="privacy" options={{ presentation: 'modal' }} />
         <Stack.Screen name="terms" options={{ presentation: 'modal' }} />
       </Stack>
-    </View>
+    </AppFrameBorder>
   );
 }
 
@@ -78,6 +65,7 @@ export default function RootLayout() {
       <AppErrorBoundary>
         <AuthProvider>
           <CloudSyncBridge />
+          <AppEffectsBridge />
           <AppContent />
           <AppAlert />
         </AuthProvider>

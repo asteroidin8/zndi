@@ -6,14 +6,14 @@ import { useBoardStore } from '@/stores/useBoardStore';
 
 export function useBoardRealtimeSync() {
   const { user } = useAuth();
-  const boards = useBoardStore((s) => s.boards);
+  const boardCount = useBoardStore((s) => s.boards.length);
 
   useEffect(() => {
-    if (!user?.id || boards.length === 0) return;
+    if (!user?.id || boardCount === 0) return;
     const supabase = getSupabase();
     if (!supabase) return;
 
-    const boardIds = boards.map((b) => b.id);
+    const boardIds = useBoardStore.getState().boards.map((b) => b.id);
 
     const channel = supabase
       .channel(`boards:${user.id}`)
@@ -84,5 +84,5 @@ export function useBoardRealtimeSync() {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [user?.id, boards.length]);
+  }, [user?.id, boardCount]);
 }
