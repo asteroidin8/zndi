@@ -80,7 +80,6 @@ export default function RoutineScreen() {
     updateRoutine,
     removeRoutine,
     removeRoutines,
-    undoRemoveRoutine,
     reorderRoutines,
     addGroup,
     updateGroup,

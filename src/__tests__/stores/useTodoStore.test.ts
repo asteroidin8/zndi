@@ -57,11 +57,13 @@ describe('useTodoStore', () => {
   });
 
   describe('removeTodo', () => {
-    it('removes the todo', () => {
+    it('soft-deletes the todo with deletedAt', () => {
       useTodoStore.setState({ todos: [makeTodo({ id: 't1' }), makeTodo({ id: 't2' })] });
       useTodoStore.getState().removeTodo('t1');
-      expect(useTodoStore.getState().todos).toHaveLength(1);
-      expect(useTodoStore.getState().todos[0].id).toBe('t2');
+      const todos = useTodoStore.getState().todos;
+      expect(todos).toHaveLength(2);
+      expect(todos.find((t) => t.id === 't1')?.deletedAt).toBeTruthy();
+      expect(todos.find((t) => t.id === 't2')?.deletedAt).toBeUndefined();
     });
   });
 

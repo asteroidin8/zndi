@@ -98,7 +98,7 @@ describe('useRoutineCompletionStore', () => {
       useRoutineCompletionStore.setState({
         completions: {
           '2026-06-20:r1': Date.now(),
-          '2026-05-01:r1': Date.now(),
+          '2025-04-01:r1': Date.now(),
         },
       });
 
@@ -106,7 +106,7 @@ describe('useRoutineCompletionStore', () => {
 
       const { completions } = useRoutineCompletionStore.getState();
       expect(completions['2026-06-20:r1']).toBeTruthy();
-      expect(completions['2026-05-01:r1']).toBeUndefined();
+      expect(completions['2025-04-01:r1']).toBeUndefined();
 
       jest.useRealTimers();
     });

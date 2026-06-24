@@ -128,7 +128,6 @@ export default function TodoScreen() {
     uncompleteTodo,
     removeTodo,
     removeTodos,
-    undoRemoveTodo,
     reorderTodos,
     addGroup,
     updateGroup,
@@ -328,7 +327,7 @@ export default function TodoScreen() {
     prevDragTargetRef.current = null;
     setIsDragging(true);
     setDragTargetGroupId(null);
-  }, []);
+  }, [setIsDragging, setDragTargetGroupId]);
 
   const handlePlaceholderIndexChange = useCallback((placeholderIndex: number) => {
     const items = dragItemsRef.current;
@@ -344,7 +343,7 @@ export default function TodoScreen() {
       prevDragTargetRef.current = targetId;
       setDragTargetGroupId(targetId);
     }
-  }, []);
+  }, [setDragTargetGroupId]);
 
   function handleUnifiedDragEnd({ data }: { data: ListItem[] }) {
     setIsDragging(false);
