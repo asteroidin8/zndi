@@ -10,9 +10,13 @@ import { StatsSummaryCard } from '@/components/stats/StatsSummaryCard';
 import { PageHeader } from '@/components/settings/MyScreenUI';
 import { STATS_LABELS, WEEKDAY_SHORT } from '@/constants/statsLabels';
 import { spacing } from '@/constants/spacing';
+import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useBoardStore } from '@/stores/useBoardStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
+import { countBoardRoutinesTotal, countBoardCompletionsForDate } from '@/utils/boardRoutineStats';
+import { localDateStr } from '@/utils/dateFormat';
 import { toDateStr } from '@/utils/homeDailyBoard';
 import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
@@ -23,6 +27,10 @@ export default function RoutineDetailScreen() {
   const c = useThemeColors();
   const { routines } = useRoutineStore();
   const { getStreak, isCompleted } = useRoutineCompletionStore();
+  const { user } = useAuth();
+  const boards = useBoardStore((s) => s.boards);
+  const boardRoutines = useBoardStore((s) => s.routines);
+  const boardLogs = useBoardStore((s) => s.logs);
 
   const now = new Date();
   const todayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, now));
@@ -42,6 +50,11 @@ export default function RoutineDetailScreen() {
     };
   });
   const hasChartData = last7Days.some((d) => d.value > 0);
+
+  const boardTotal = countBoardRoutinesTotal(boardRoutines);
+  const boardCompletedToday = user
+    ? countBoardCompletionsForDate(boardLogs, user.id, localDateStr(now))
+    : 0;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
@@ -76,8 +89,8 @@ export default function RoutineDetailScreen() {
           <View style={{ gap: 8 }}>
             {routines.map((r) => {
               const streak = getStreak(r.id, r);
-              const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-              const done = isCompleted(r.id, todayStr);
+              const doneStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+              const done = isCompleted(r.id, doneStr);
               return (
                 <Card key={r.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                   <View style={{ flex: 1, gap: 2 }}>
@@ -102,6 +115,45 @@ export default function RoutineDetailScreen() {
           </View>
         ) : (
           <EmptyState inline variant="routine" message={L.noRecords} />
+        )}
+
+        {boardTotal > 0 && (
+          <View style={{ gap: spacing.sm }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <AppText variant="caption" tone="tertiary">공동 루틴</AppText>
+              <AppText variant="caption" tone="tertiary">
+                오늘 {boardCompletedToday}/{boardTotal}
+              </AppText>
+            </View>
+            {boards.map((board) => {
+              const bRoutines = boardRoutines[board.id] ?? [];
+              if (bRoutines.length === 0) return null;
+              const todayLogs = (boardLogs[board.id] ?? []).filter(
+                (l) => user && l.userId === user.id && localDateStr(new Date(l.createdAt)) === localDateStr(now),
+              );
+              const verifiedIds = new Set(todayLogs.map((l) => l.routineId));
+              return bRoutines.map((br) => (
+                <Card key={br.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <AppText variant="body" style={{ fontWeight: '600' }}>
+                      {br.name}
+                    </AppText>
+                    <AppText variant="caption" tone="tertiary">
+                      {board.name}
+                    </AppText>
+                  </View>
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: verifiedIds.has(br.id) ? c.primary : c.surfaceMuted,
+                    }}
+                  />
+                </Card>
+              ));
+            })}
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
