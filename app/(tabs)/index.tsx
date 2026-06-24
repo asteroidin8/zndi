@@ -1,17 +1,16 @@
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef } from 'react';
 import { ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DailySummaryRow } from '@/components/DailySummaryRow';
 import { FastingCard } from '@/components/FastingCard';
 import { HomeTopBar } from '@/components/home/HomeTopBar';
 import { HomeWeeklyGrass } from '@/components/home/HomeWeeklyGrass';
 import { InfoBanner } from '@/components/InfoBanner';
+import { TabScreenShell } from '@/components/TabScreenShell';
 import { spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useTabNavigation, useTabScrollToTop } from '@/contexts/TabNavigationContext';
-import { useThemeColors } from '@/hooks/useThemeColors';
 import { useBoardStore } from '@/stores/useBoardStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { fetchMyBoards } from '@/services/board/boardService';
@@ -22,7 +21,6 @@ import { isProfileIncomplete } from '@/utils/profile';
 const TAB_INDEX = 2 as const;
 
 export default function HomeScreen() {
-  const c = useThemeColors();
   const scrollRef = useRef<ScrollView>(null);
   useTabScrollToTop(TAB_INDEX, scrollRef);
 
@@ -65,7 +63,7 @@ export default function HomeScreen() {
   }, [user?.id, boards, allRoutines, allLogs]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
+    <TabScreenShell>
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={{
@@ -102,6 +100,6 @@ export default function HomeScreen() {
 
         <DailySummaryRow onRoutinePress={() => navigateTo(1)} onTodoPress={() => navigateTo(3)} />
       </ScrollView>
-    </SafeAreaView>
+    </TabScreenShell>
   );
 }
