@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { LayoutAnimation, Platform, Pressable, UIManager, View } from 'react-native';
+import { LayoutAnimation, Pressable, View } from 'react-native';
 
 import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
@@ -16,10 +16,6 @@ import { appAlert } from '@/stores/useAlertStore';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { feedbackSuccess } from '@/utils/microFeedback';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 const HOUR_ITEMS: DrumItem[] = Array.from({ length: 24 }, (_, i) => ({
   value: i,

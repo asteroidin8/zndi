@@ -1,5 +1,4 @@
 import '../global.css';
-import '@/widgets/register';
 
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
