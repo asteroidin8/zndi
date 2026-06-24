@@ -11,7 +11,7 @@ alwaysApply: true
 
 ## 작업 단위
 - 한 번에 하나의 최소 단위만 변경한다. 여러 관심사를 한 번에 수정하지 않는다.
-- **handoff 워크플로:** 구현은 `handoff.json`(READY)만 작성하고 Git은 `docs/agent/composer.md` 역할이 처리한다.
+- **handoff 워크플로:** `docs/agent/workflow.md` · 구현은 `handoff.json`(READY)만 작성하고 Git은 `docs/agent/composer.md`가 처리한다. **매 턴 `handoff.json` 먼저 읽기** — `READY`이면 Composer 우선.
 - handoff 없이 직접 작업할 때만 단위 완료 후 커밋·PR·머지까지 진행한다.
 
 ## 작업 우선순위

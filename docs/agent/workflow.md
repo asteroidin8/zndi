@@ -16,6 +16,19 @@ Reviewer (reviewer.md) — merge 전 (선택·권장)
   handoff.json (DONE | PARTIAL | BLOCKED)
 ```
 
+## 시작 (매 세션)
+
+1. [planner.md](./planner.md) checklist
+2. 역할 문서:
+
+| 역할 | 문서 |
+|------|------|
+| 구현 | [claude.md](./claude.md) |
+| Git | [composer.md](./composer.md) |
+| merge 전 검토 | [reviewer.md](./reviewer.md) |
+
+**매 턴** `handoff.json`을 먼저 읽는다. `READY`이면 Composer부터. (hook 실패 시에도 동일)
+
 ## Docs location
 
 `docs/agent/`
@@ -26,16 +39,23 @@ Reviewer (reviewer.md) — merge 전 (선택·권장)
 | [claude.md](./claude.md) | Implementation |
 | [composer.md](./composer.md) | Git Manager |
 | [reviewer.md](./reviewer.md) | merge 전 read-only 검토 |
-| [workflow.md](./workflow.md) | 이 문서 |
+| [workflow.md](./workflow.md) | 이 문서 — status · schema · hooks |
 
 ## handoff.json status
 
 | status | 의미 | 다음 행동 |
 |--------|------|-----------|
-| `READY` | Composer 처리 대기 | composer.md |
+| `READY` | Composer 처리 대기 | 검증 → **tasks[] 순 커밋** → PR → Reviewer → **squash merge** ([composer.md](./composer.md)) |
 | `DONE` | merge 완료 | 없음 |
 | `BLOCKED` | merge 불가 | Implementation 수정 → `READY` |
 | `PARTIAL` | 일부 task만 merge | `pending` task 수정 또는 새 handoff |
+
+## 필수 규칙
+
+- **Implementation:** commit/push/merge 금지 · `task.md` 갱신 · handoff는 **`tasks[]`** (2+ 관심사) · task마다 `files_changed`+`commit`
+- **Composer:** pre-merge validation · **1 task = 1 commit** · 무관 파일 제외 · **squash merge**
+- **Reviewer:** read-only · FAIL → `BLOCKED` (task id)
+- **`handoff_type: native`:** PR에 기기 재설치 체크리스트 (아래 § native)
 
 ---
 
@@ -215,7 +235,7 @@ Composer PR body **필수 문구**:
 
 - **Branch:** `feat/scope-slug` · `fix/scope-slug` · `docs/slug` · `chore/slug`
 - **PR 제목:** `batch_id` 또는 tasks title 묶음 (한국어 한 줄)
-- **Merge:** **Squash merge** only (`project-conventions.mdc`)
+- **Merge:** **Squash merge** only (`.cursor/rules/project-conventions.mdc`)
 
 ## Auto-trigger (Cursor hooks)
 
@@ -227,6 +247,11 @@ Composer PR body **필수 문구**:
 | `postToolUse` | `handoff.json` Write/Edit/StrReplace 후 |
 | `stop` | Implementation 턴 종료 → `followup_message` |
 
+| status | 동작 |
+|--------|------|
+| `READY` | Git Manager follow-up / context (완전 무인 실행은 Cursor 설정·턴 종료에 의존) |
+| `DONE` / `BLOCKED` | 없음 |
+
 Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File ...` 필수.
 
 ### 자동 실행이 안 될 때
@@ -236,6 +261,6 @@ Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File ...` 필수.
 3. **followup_message** = 다음 턴 **제안** — Always Allow / Auto-run 설정에 따라 수동 승인 필요할 수 있음
 4. **새 채팅**을 열면 `sessionStart`만 동작 — 이전 세션 stop follow-up은 해당 세션에만 적용
 5. **Output → Hooks** 채널에서 스크립트 실패(exit 1, cwd 오류) 확인
-6. hook 실패 시: 에이전트 규칙(`agent-workflow.mdc`) — **매 턴 `handoff.json` 먼저 읽기**
+6. hook 실패 시: **매 턴 `handoff.json` 먼저 읽기** (위 § 시작)
 
 세션 **시작**·**매 사용자 메시지** 시 `READY`면 Implementation 생략 → Composer 우선.
