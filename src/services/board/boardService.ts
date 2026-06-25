@@ -1,6 +1,6 @@
 import { getSupabase } from '@/lib/supabase';
 import { useBoardStore } from '@/stores/useBoardStore';
-import type { Board, BoardDailyProgress, BoardMember, BoardMemberRole } from '@/types';
+import type { Board, BoardDailyProgress, BoardMember, BoardMemberRole, BoardSystemMessageType } from '@/types';
 import { localDateStr } from '@/utils/dateFormat';
 
 function generateInviteCode(): string {
@@ -263,7 +263,7 @@ export async function fetchMyDeleteVote(
 
 export async function insertSystemMessage(
   boardId: string,
-  type: string,
+  type: BoardSystemMessageType,
   actorNickname: string,
   targetNickname?: string,
   routineName?: string,
