@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
-import { TabScreenShell } from '@/components/TabScreenShell';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { Coachmark } from '@/components/Coachmark';
@@ -561,7 +561,7 @@ export default function RoutineScreen() {
   const isEmpty = routines.length === 0 && groups.length === 0;
 
   return (
-    <TabScreenShell>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <View
         style={{
           flexDirection: 'row',
@@ -753,6 +753,6 @@ export default function RoutineScreen() {
         onUndo={() => undoTarget && addRoutine(undoTarget)}
         onDismiss={() => setUndoTarget(null)}
       />
-    </TabScreenShell>
+    </SafeAreaView>
   );
 }

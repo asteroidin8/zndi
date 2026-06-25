@@ -7,7 +7,8 @@ import { FastingCard } from '@/components/FastingCard';
 import { HomeTopBar } from '@/components/home/HomeTopBar';
 import { HomeWeeklyGrass } from '@/components/home/HomeWeeklyGrass';
 import { InfoBanner } from '@/components/InfoBanner';
-import { TabScreenShell } from '@/components/TabScreenShell';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useTabNavigation, useTabScrollToTop } from '@/contexts/TabNavigationContext';
@@ -21,6 +22,7 @@ import { isProfileIncomplete } from '@/utils/profile';
 const TAB_INDEX = 2 as const;
 
 export default function HomeScreen() {
+  const c = useThemeColors();
   const scrollRef = useRef<ScrollView>(null);
   useTabScrollToTop(TAB_INDEX, scrollRef);
 
@@ -63,7 +65,7 @@ export default function HomeScreen() {
   }, [user?.id, boards, allRoutines, allLogs]);
 
   return (
-    <TabScreenShell>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={{
@@ -100,6 +102,6 @@ export default function HomeScreen() {
 
         <DailySummaryRow onRoutinePress={() => navigateTo(1)} onTodoPress={() => navigateTo(3)} />
       </ScrollView>
-    </TabScreenShell>
+    </SafeAreaView>
   );
 }
