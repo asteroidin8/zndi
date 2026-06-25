@@ -101,7 +101,8 @@ function subscribeChannel(supabase: SupabaseClient, userId: string): RealtimeCha
 export function useRealtimeSync() {
   const { user } = useAuth();
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const wasBackgroundRef = useRef(false);
+  const backgroundAtRef = useRef<number | null>(null);
+  const MIN_BACKGROUND_MS = 5000;
 
   useEffect(() => {
     if (!user?.id) return;
@@ -125,13 +126,16 @@ export function useRealtimeSync() {
 
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
-        if (wasBackgroundRef.current) {
+        if (backgroundAtRef.current !== null) {
+          const elapsed = Date.now() - backgroundAtRef.current;
+          backgroundAtRef.current = null;
           connect();
-          void pullCloudToLocal(userId);
-          wasBackgroundRef.current = false;
+          if (elapsed >= MIN_BACKGROUND_MS) {
+            void pullCloudToLocal(userId);
+          }
         }
       } else if (state === 'background') {
-        wasBackgroundRef.current = true;
+        backgroundAtRef.current = Date.now();
         disconnect();
       }
     });
