@@ -51,7 +51,7 @@ export function GroupHeader({
       onPress={onToggleCollapse}
       onLongPress={onRename}
       accessibilityRole="button"
-      accessibilityLabel={`${group.name} 그룹, ${completedCount}/${totalCount} 완료`}
+      accessibilityLabel={`${group.name} 그룹`}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
