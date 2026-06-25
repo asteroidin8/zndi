@@ -33,7 +33,6 @@ export function GroupHeader({
 }: Props) {
   const c = useThemeColors();
   const rotation = useSharedValue(group.collapsed ? -90 : 0);
-  const allDone = totalCount > 0 && completedCount === totalCount;
   const openBottom = hasVisibleItems && !group.collapsed;
 
   useEffect(() => {
@@ -44,8 +43,7 @@ export function GroupHeader({
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
 
-  const baseBorderColor = allDone ? `${c.primary}30` : c.borderNeutral;
-  const borderColor = isDropTarget ? c.primary : baseBorderColor;
+  const borderColor = isDropTarget ? c.primary : c.borderNeutral;
   const bgColor = isDropTarget ? `${c.primary}08` : c.surfaceSubtle;
 
   return (
@@ -72,22 +70,19 @@ export function GroupHeader({
       }}
     >
       <Animated.View style={chevronStyle}>
-        <AppIcon name="ChevronDown" size={14} color={allDone ? c.primary : c.inkTertiary} />
+        <AppIcon name="ChevronDown" size={14} color={c.inkTertiary} />
       </Animated.View>
       <AppText
         variant="body"
-        style={{
-          fontWeight: '600',
-          flex: 1,
-          marginLeft: spacing.sm,
-          color: allDone ? c.primary : c.ink,
-        }}
+        style={{ fontWeight: '600', flex: 1, marginLeft: spacing.sm }}
       >
         {group.name}
       </AppText>
-      <AppText variant="caption" tone={allDone ? undefined : 'disabled'} style={allDone ? { color: c.primary, fontWeight: '700' } : undefined}>
-        {completedCount}/{totalCount}
-      </AppText>
+      {!group.collapsed && totalCount > 0 && (
+        <AppText variant="caption" tone="disabled">
+          {completedCount}/{totalCount}
+        </AppText>
+      )}
       {showDelete && (
         <Pressable
           onPress={onDelete}
