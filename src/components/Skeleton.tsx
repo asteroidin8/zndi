@@ -55,3 +55,65 @@ export function StatsSummarySkeleton() {
     </View>
   );
 }
+
+export function BoardCardSkeleton() {
+  const c = useThemeColors();
+  return (
+    <View
+      style={{
+        paddingVertical: spacing.md,
+        paddingHorizontal: spacing.card,
+        borderRadius: radius.md,
+        backgroundColor: c.surfaceSubtle,
+        borderWidth: 1,
+        borderColor: c.borderNeutral,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+      }}
+    >
+      <SkeletonBox width="50%" height={16} style={{ flex: 1 }} />
+      <View style={{ flexDirection: 'row', gap: -4 }}>
+        {[0, 1, 2].map((i) => (
+          <SkeletonBox key={i} width={28} height={28} rounded="xl" style={{ borderRadius: 14 }} />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+export function BoardListSkeleton() {
+  return (
+    <View style={{ gap: spacing.md }}>
+      {[0, 1, 2].map((i) => (
+        <BoardCardSkeleton key={i} />
+      ))}
+    </View>
+  );
+}
+
+export function FriendRowSkeleton() {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm }}>
+      <View style={{ flex: 1, gap: 6 }}>
+        <SkeletonBox width={80} height={14} />
+        <SkeletonBox width={60} height={12} />
+      </View>
+      <View style={{ flexDirection: 'row', gap: 6 }}>
+        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+          <SkeletonBox key={i} width={28} height={28} rounded="sm" />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+export function FriendListSkeleton() {
+  return (
+    <View style={{ gap: spacing.sm }}>
+      {[0, 1, 2].map((i) => (
+        <FriendRowSkeleton key={i} />
+      ))}
+    </View>
+  );
+}

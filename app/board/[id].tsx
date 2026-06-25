@@ -23,6 +23,8 @@ import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
+import { toast } from '@/stores/useToastStore';
+import { feedbackVote, feedbackRefresh, feedbackSave, feedbackError } from '@/utils/microFeedback';
 import {
   EMPTY_BOARD_LOGS,
   EMPTY_BOARD_MEMBERS,
@@ -326,12 +328,13 @@ export default function BoardDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             const { deleted, votes, total, error } = await voteDeleteBoard(id);
-            if (error) { appAlert('오류', error); return; }
+            if (error) { feedbackError(); appAlert('오류', error); return; }
             if (deleted) {
               router.back();
             } else {
               setHasVoted(true);
-              appAlert('투표 완료', `${votes}/${total}명 동의. 전원 동의 시 삭제됩니다.`);
+              feedbackVote();
+              toast(`투표 완료 · ${votes}/${total}명 동의`);
               void sendBoardPush(
                 id,
                 '보드 삭제 투표',
@@ -422,8 +425,8 @@ export default function BoardDetailScreen() {
           text: '갱신',
           onPress: async () => {
             const { newCode, error } = await refreshInviteCode(id);
-            if (error) appAlert('오류', error);
-            else if (newCode) appAlert('코드 갱신 완료', `새 초대 코드: ${newCode}`);
+            if (error) { feedbackError(); appAlert('오류', error); }
+            else if (newCode) { feedbackRefresh(); toast('초대 코드가 갱신되었어요'); }
           },
         },
       ],
@@ -484,9 +487,12 @@ export default function BoardDetailScreen() {
     try {
       const { error } = await submitVerification(id, selectedRoutineId, user.id, photoUri, memo || null);
       if (error) {
+        feedbackError();
         appAlert('오류', error);
         return;
       }
+      feedbackSave();
+      toast('인증 완료!');
       setShowVerify(false);
     } finally {
       setSubmitting(false);

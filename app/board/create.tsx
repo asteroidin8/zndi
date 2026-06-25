@@ -10,6 +10,7 @@ import { spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
+import { feedbackSuccess } from '@/utils/microFeedback';
 import { useBoardStore } from '@/stores/useBoardStore';
 import { useProStore } from '@/stores/useProStore';
 import { FREE_LIMITS, PRO_LIMITS } from '@/hooks/useProGating';
@@ -45,6 +46,7 @@ export default function BoardCreateScreen() {
     }
 
     if (board) {
+      feedbackSuccess();
       router.replace(`/board/${board.id}`);
     }
   }

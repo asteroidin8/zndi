@@ -4,6 +4,7 @@ import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 
 import { appAlert } from '@/stores/useAlertStore';
+import { feedbackShare } from '@/utils/microFeedback';
 
 async function captureGrass(gridRef: React.RefObject<View | null>): Promise<string | null> {
   if (!gridRef.current) return null;
@@ -25,6 +26,7 @@ export function useShareGrass() {
     }
 
     if (await Sharing.isAvailableAsync()) {
+      feedbackShare();
       await Sharing.shareAsync(uri, {
         mimeType: 'image/png',
         dialogTitle: 'zndi 잔디 공유',
@@ -46,6 +48,7 @@ export function useShareGrass() {
       android: `instagram-stories://share`,
     });
 
+    feedbackShare();
     if (igUrl && (await Linking.canOpenURL(igUrl))) {
       await Linking.openURL(igUrl);
     } else {
@@ -61,6 +64,7 @@ export function useShareGrass() {
     }
 
     if (await Sharing.isAvailableAsync()) {
+      feedbackShare();
       await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: '카카오톡으로 공유' });
     }
   }, []);

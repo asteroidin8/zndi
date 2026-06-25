@@ -14,6 +14,7 @@ import { QRCode } from './QRCode';
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
+import { feedbackShare } from '@/utils/microFeedback';
 
 const ENTER = { duration: 200 };
 const EXIT = { duration: 150 };
@@ -58,6 +59,7 @@ export function QRModal({ visible, onClose, title, subtitle, value, copyLabel }:
     try {
       const uri = await captureRef(qrRef, { format: 'png', quality: 1, result: 'tmpfile' });
       if (await Sharing.isAvailableAsync()) {
+        feedbackShare();
         await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'QR 코드 공유' });
       }
     } catch {

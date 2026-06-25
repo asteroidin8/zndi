@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { AppIcon } from '@/components/AppIcon';
@@ -16,6 +16,8 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useFollowStore } from '@/stores/useFollowStore';
 import { fetchMyBoards } from '@/services/board/boardService';
 import { fetchFollowing, fetchFriendProgress } from '@/services/social/followService';
+import { BoardListSkeleton, FriendListSkeleton } from '@/components/Skeleton';
+import { feedbackRefresh } from '@/utils/microFeedback';
 import { getAvatarColor, getInitial } from '@/utils/avatarColor';
 import { getWeekDates, ratioToLevel } from '@/utils/boardHelpers';
 import { localDateStr } from '@/utils/dateFormat';
@@ -31,6 +33,8 @@ export default function BoardTabScreen() {
 
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>('boards');
+  const [refreshing, setRefreshing] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const boards = useBoardStore((s) => s.boards);
   const members = useBoardStore((s) => s.members);
@@ -39,10 +43,29 @@ export default function BoardTabScreen() {
 
   useEffect(() => {
     if (user?.id) {
-      void fetchMyBoards(user.id);
-      void fetchFollowing();
+      Promise.all([fetchMyBoards(user.id), fetchFollowing()]).finally(() =>
+        setInitialLoading(false),
+      );
     }
   }, [user?.id]);
+
+  const onRefresh = useCallback(async () => {
+    if (!user?.id) return;
+    feedbackRefresh();
+    setRefreshing(true);
+    try {
+      if (tab === 'boards') {
+        await fetchMyBoards(user.id);
+      } else {
+        await fetchFollowing();
+        for (const f of following) {
+          void fetchFriendProgress(f.userId);
+        }
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  }, [user?.id, tab, following]);
 
   useEffect(() => {
     if (tab === 'friends') {
@@ -164,11 +187,21 @@ export default function BoardTabScreen() {
         ref={scrollRef}
         contentContainerStyle={[
           { padding: spacing.screen, gap: spacing.md },
-          (tab === 'boards' ? boards.length === 0 : following.length === 0) && { flexGrow: 1 },
+          (tab === 'boards' ? boards.length === 0 : following.length === 0) && !initialLoading && { flexGrow: 1 },
         ]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={c.primary}
+            colors={[c.primary]}
+          />
+        }
       >
-        {tab === 'boards' ? (
+        {initialLoading ? (
+          tab === 'boards' ? <BoardListSkeleton /> : <FriendListSkeleton />
+        ) : tab === 'boards' ? (
           boards.length === 0 ? (
             <EmptyState
               variant="stats"

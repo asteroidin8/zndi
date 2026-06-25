@@ -251,6 +251,16 @@ Lv.6  ?앺깭怨?   (1501+)
 | 7 | 통계 인사이트 Phase 1 (Pro) | [x] | 규칙 기반 5종 인사이트, 상위 2개 카드 표시 |
 | 8 | 식물 아바타 도감 | [x] | 24종 실제 식물, 3단계 희귀도, 수집 도감 UI |
 
+## v3 — 완성도
+
+| # | 작업 | 상태 | 비고 |
+|---|------|------|------|
+| 1 | 스켈레톤 로딩 | [x] | SkeletonBox 확장 — BoardCardSkeleton, FriendRowSkeleton 추가. 보드 탭 초기 로딩 시 표시 |
+| 2 | 햅틱 피드백 확대 | [x] | feedbackShare·Save·Vote·Refresh·Error 추가. 공유·인증·투표·코드갱신·보드생성·참가에 적용 |
+| 3 | Pull-to-refresh | [x] | 보드 탭 RefreshControl 추가 (보드/친구 목록 당겨서 새로고침) |
+| 4 | 범용 토스트 | [x] | useToastStore + AppToast 컴포넌트. 투표완료·코드갱신·인증완료를 alert→toast 전환 |
+| 5 | 화면 전환 애니메이션 | [x] | 설정·보드·통계 스택에 slide_from_right/slide_from_bottom 트랜지션 적용 |
+
 ### 식물 아바타 샵 현황
 
 24종 식물 아바타 (새싹 8 / 꽃 8 / 나무 8):

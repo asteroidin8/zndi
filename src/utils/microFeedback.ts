@@ -15,3 +15,8 @@ export const feedbackDelete = feedbackComplete;
 export const feedbackSuccess = () => notify(Success);
 export const feedbackBooster = () => notify(Warning);
 export const feedbackTabSwitch = () => impact(Light);
+export const feedbackShare = () => impact(Light);
+export const feedbackSave = () => impact(Light);
+export const feedbackVote = () => impact(Medium);
+export const feedbackRefresh = () => impact(Light);
+export const feedbackError = () => notify(Warning);

@@ -9,6 +9,7 @@ import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-c
 
 import { AppAlert } from '@/components/AppAlert';
 import { AppEffectsBridge } from '@/components/AppEffectsBridge';
+import { AppToast } from '@/components/AppToast';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { AppFrameBorder } from '@/components/AppFrameBorder';
 import { CloudSyncBridge } from '@/components/CloudSyncBridge';
@@ -47,7 +48,7 @@ function AppContent() {
         <Stack.Screen name="index" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="onboarding" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
-        <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="settings" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="auth/callback" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="board" />
         <Stack.Screen name="stats" />
@@ -70,6 +71,7 @@ export default function RootLayout() {
             <AppEffectsBridge />
             <AppContent />
             <AppAlert />
+            <AppToast />
           </AuthProvider>
         </AppErrorBoundary>
       </SafeGestureRoot>
