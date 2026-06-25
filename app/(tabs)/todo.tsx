@@ -193,16 +193,18 @@ export default function TodoScreen() {
         .filter((t) => t.groupId === group.id)
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       const groupCompleted = todos.filter((t) => t.groupId === group.id && !!t.completedAt);
-      const visibleCount = group.collapsed ? 0 : groupActive.length;
+      const allDone = groupActive.length === 0 && groupCompleted.length > 0;
+      const collapsed = group.collapsed || allDone;
+      const visibleCount = collapsed ? 0 : groupActive.length;
       items.push({
         type: 'group-header',
         key: `gh-${group.id}`,
-        group,
+        group: allDone ? { ...group, collapsed: true } : group,
         completedCount: groupCompleted.length,
         totalCount: groupActive.length + groupCompleted.length,
         hasVisibleItems: visibleCount > 0,
       });
-      if (!group.collapsed) {
+      if (!collapsed) {
         if (groupActive.length === 0) {
           items.push({ type: 'group-empty', key: `ge-${group.id}`, groupId: group.id });
         } else {
