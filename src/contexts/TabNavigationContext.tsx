@@ -1,17 +1,30 @@
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect, type RefObject } from 'react';
 
 export type TabIndex = 0 | 1 | 2 | 3 | 4;
 
+type ScrollTarget = { scrollTo: (opts: { y: number; animated?: boolean }) => void };
+
 interface TabNavigationContextValue {
   navigateTo: (index: TabIndex) => void;
-  scrollTick: Record<number, number>;
   scrollToTop: (index: TabIndex) => void;
   setTabBarVisible: (visible: boolean) => void;
 }
 
+const scrollHandlers = new Map<TabIndex, () => void>();
+
+export function registerTabScrollHandler(index: TabIndex, handler: () => void): () => void {
+  scrollHandlers.set(index, handler);
+  return () => {
+    scrollHandlers.delete(index);
+  };
+}
+
+export function invokeTabScrollToTop(index: TabIndex): void {
+  scrollHandlers.get(index)?.();
+}
+
 export const TabNavigationContext = createContext<TabNavigationContextValue>({
   navigateTo: () => {},
-  scrollTick: {},
   scrollToTop: () => {},
   setTabBarVisible: () => {},
 });
@@ -22,14 +35,11 @@ export function useTabNavigation() {
 
 export function useTabScrollToTop(
   tabIndex: TabIndex,
-  scrollRef: React.RefObject<{ scrollTo: (opts: { y: number; animated?: boolean }) => void } | null>,
+  scrollRef: RefObject<ScrollTarget | null>,
 ) {
-  const { scrollTick } = useTabNavigation();
-  const tick = scrollTick[tabIndex] ?? 0;
-
   useEffect(() => {
-    if (tick > 0) {
+    return registerTabScrollHandler(tabIndex, () => {
       scrollRef.current?.scrollTo({ y: 0, animated: true });
-    }
-  }, [tick, tabIndex, scrollRef]);
+    });
+  }, [tabIndex, scrollRef]);
 }
