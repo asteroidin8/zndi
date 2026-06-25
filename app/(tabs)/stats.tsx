@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
 import { AppIcon } from '@/components/AppIcon';
@@ -193,7 +192,7 @@ export default function StatsScreen() {
   const { gridRef, share } = useShareGrass();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
+    <View style={{ flex: 1 }}>
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={[
@@ -341,6 +340,6 @@ export default function StatsScreen() {
         }}
         onClose={() => setEditingRecord(null)}
       />
-    </SafeAreaView>
+    </View>
   );
 }

@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { FlatList, Platform, Pressable, ScrollView, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { AppIcon } from '@/components/AppIcon';
@@ -583,107 +582,119 @@ export default function TodoScreen() {
     </>
   );
 
-  // ── Completed tab ──
-
-  if (filter === 'completed') {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
-        <Header
-          filter={filter}
-          setFilter={setFilter}
-          activeTodos={activeTodos}
-          completedTodos={completedTodos}
-          editMode={editMode}
-          onToggleEdit={editMode ? exitEditMode : enterEditMode}
-        />
-        {completedTodos.length === 0 ? (
-          <EmptyState message="아직 완료한 일이 없어요" variant="todo" />
-        ) : editMode ? (
-          <FlatList
-            data={completedTodos}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{ paddingBottom: 100 }}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item: todo }) => {
-              const selected = selectedIds.has(todo.id);
-              return (
-                <Pressable
-                  onPress={() => toggleSelection(todo.id)}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingVertical: spacing.md,
-                    paddingHorizontal: spacing.screen,
-                    gap: spacing.item,
-                    backgroundColor: selected ? `${c.primary}15` : 'transparent',
-                  }}
-                >
-                  <AppIcon
-                    name={selected ? 'CheckSquare' : 'Square'}
-                    size={20}
-                    color={selected ? c.primary : c.inkDisabled}
-                  />
-                  <AppText
-                    variant="body"
-                    tone="tertiary"
-                    style={{ flex: 1, textDecorationLine: 'line-through' }}
-                  >
-                    {todo.title}
-                  </AppText>
-                </Pressable>
-              );
-            }}
-          />
-        ) : (
-          <FlatList
-            data={completedTodos}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{ paddingBottom: 100 }}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item: todo, index: i }) => (
-              <AnimatedListItem itemKey={todo.id} index={i}>
-                <SwipeActions
-                  onDelete={() => { setUndoTarget(todo); removeTodo(todo.id); }}
-                  onComplete={() => uncompleteTodo(todo.id)}
-                  completeLabel="되돌리기"
-                >
-                  <View style={{ paddingHorizontal: spacing.screen }}>
-                    <TodoItem todo={todo} onToggle={() => uncompleteTodo(todo.id)} onPress={() => setEditTarget(todo)} />
-                    {i < completedTodos.length - 1 && <Divider />}
-                  </View>
-                </SwipeActions>
-              </AnimatedListItem>
-            )}
-          />
-        )}
-        {editMode ? (
-          <EditBottomBar
-            selectedCount={selectedIds.size}
-            totalCount={completedTodos.length}
-            onSelectAll={handleSelectAll}
-            onDelete={handleBulkDelete}
-          />
-        ) : (
-          <SpeedDialFab
-            accessibilityLabel="추가 메뉴"
-            actions={[
-              { label: '할일 추가', icon: 'Plus', onPress: () => setAddModalVisible(true) },
-              { label: '그룹 추가', icon: 'FolderPlus', onPress: handleAddGroup },
-              { label: '편집', icon: 'Pencil', onPress: enterEditMode },
-            ]}
-          />
-        )}
-        {modals}
-      </SafeAreaView>
-    );
-  }
-
-  // ── Active tab ──
-
   const hasTodos = activeTodos.length > 0;
 
+  const contentArea = filter === 'completed' ? (
+    completedTodos.length === 0 ? (
+      <EmptyState message="아직 완료한 일이 없어요" variant="todo" />
+    ) : editMode ? (
+      <FlatList
+        data={completedTodos}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item: todo }) => {
+          const selected = selectedIds.has(todo.id);
+          return (
+            <Pressable
+              onPress={() => toggleSelection(todo.id)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingVertical: spacing.md,
+                paddingHorizontal: spacing.screen,
+                gap: spacing.item,
+                backgroundColor: selected ? `${c.primary}15` : 'transparent',
+              }}
+            >
+              <AppIcon
+                name={selected ? 'CheckSquare' : 'Square'}
+                size={20}
+                color={selected ? c.primary : c.inkDisabled}
+              />
+              <AppText
+                variant="body"
+                tone="tertiary"
+                style={{ flex: 1, textDecorationLine: 'line-through' }}
+              >
+                {todo.title}
+              </AppText>
+            </Pressable>
+          );
+        }}
+      />
+    ) : (
+      <FlatList
+        data={completedTodos}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item: todo, index: i }) => (
+          <AnimatedListItem itemKey={todo.id} index={i}>
+            <SwipeActions
+              onDelete={() => { setUndoTarget(todo); removeTodo(todo.id); }}
+              onComplete={() => uncompleteTodo(todo.id)}
+              completeLabel="되돌리기"
+            >
+              <View style={{ paddingHorizontal: spacing.screen }}>
+                <TodoItem todo={todo} onToggle={() => uncompleteTodo(todo.id)} onPress={() => setEditTarget(todo)} />
+                {i < completedTodos.length - 1 && <Divider />}
+              </View>
+            </SwipeActions>
+          </AnimatedListItem>
+        )}
+      />
+    )
+  ) : !hasTodos && groups.length === 0 ? (
+    <EmptyState
+      message={`오늘 해낼 일을 적어봐요\n작은 한 걸음이 습관이 돼요`}
+      variant="todo"
+    />
+  ) : hasGroups ? (
+    <DraggableFlatList
+      data={dragItems}
+      keyExtractor={(item) => item.key}
+      onDragBegin={handleDragBegin}
+      onDragEnd={handleUnifiedDragEnd}
+      onPlaceholderIndexChange={handlePlaceholderIndexChange}
+      renderItem={renderUnifiedItem}
+      activationDistance={4}
+      contentContainerStyle={{ paddingBottom: 100 }}
+      showsVerticalScrollIndicator={false}
+    />
+  ) : (
+    <ScrollView
+      ref={scrollRef}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 100 }}
+    >
+      {ungroupedActive.length > 0 &&
+        PRIORITY_SECTIONS.map(({ key, label }) => {
+          const items = ungroupedActive
+            .filter((t) => t.priority === key)
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          if (items.length === 0) return null;
+          return (
+            <View key={key}>
+              <PrioritySectionHeader label={label} priority={key} count={items.length} />
+              <View style={{ paddingHorizontal: spacing.screen }}>
+                <DraggableFlatList
+                  data={items}
+                  keyExtractor={(item) => item.id}
+                  onDragEnd={({ data }) => runAfterDragAnimation(() => reorderTodos(key, data))}
+                  renderItem={renderLegacyTodoItem}
+                  scrollEnabled={false}
+                  activationDistance={4}
+                />
+              </View>
+            </View>
+          );
+        })}
+    </ScrollView>
+  );
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
+    <View style={{ flex: 1 }}>
       <Header
         filter={filter}
         setFilter={setFilter}
@@ -693,60 +704,12 @@ export default function TodoScreen() {
         onToggleEdit={editMode ? exitEditMode : enterEditMode}
       />
 
-      {!hasTodos && groups.length === 0 ? (
-        <EmptyState
-          message={`오늘 해낼 일을 적어봐요\n작은 한 걸음이 습관이 돼요`}
-          variant="todo"
-        />
-      ) : hasGroups ? (
-        /* ── Unified DnD list (groups exist) ── */
-        <DraggableFlatList
-          data={dragItems}
-          keyExtractor={(item) => item.key}
-          onDragBegin={handleDragBegin}
-          onDragEnd={handleUnifiedDragEnd}
-          onPlaceholderIndexChange={handlePlaceholderIndexChange}
-          renderItem={renderUnifiedItem}
-          activationDistance={4}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          showsVerticalScrollIndicator={false}
-        />
-      ) : (
-        /* ── Legacy priority-sectioned layout (no groups) ── */
-        <ScrollView
-          ref={scrollRef}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        >
-          {ungroupedActive.length > 0 &&
-            PRIORITY_SECTIONS.map(({ key, label }) => {
-              const items = ungroupedActive
-                .filter((t) => t.priority === key)
-                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-              if (items.length === 0) return null;
-              return (
-                <View key={key}>
-                  <PrioritySectionHeader label={label} priority={key} count={items.length} />
-                  <View style={{ paddingHorizontal: spacing.screen }}>
-                    <DraggableFlatList
-                      data={items}
-                      keyExtractor={(item) => item.id}
-                      onDragEnd={({ data }) => runAfterDragAnimation(() => reorderTodos(key, data))}
-                      renderItem={renderLegacyTodoItem}
-                      scrollEnabled={false}
-                      activationDistance={4}
-                    />
-                  </View>
-                </View>
-              );
-            })}
-        </ScrollView>
-      )}
+      {contentArea}
 
       {editMode ? (
         <EditBottomBar
           selectedCount={selectedIds.size}
-          totalCount={activeTodos.length}
+          totalCount={filter === 'completed' ? completedTodos.length : activeTodos.length}
           onSelectAll={handleSelectAll}
           onDelete={handleBulkDelete}
         />
@@ -762,7 +725,7 @@ export default function TodoScreen() {
       )}
 
       {modals}
-    </SafeAreaView>
+    </View>
   );
 }
 
