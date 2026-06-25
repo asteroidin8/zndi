@@ -1,3 +1,4 @@
+import React from 'react';
 import { Pressable, View } from 'react-native';
 
 import { AppIcon } from '@/components/AppIcon';
@@ -18,13 +19,13 @@ type Props = {
   onEditStartTime?: () => void;
 };
 
-export function FastingTimer({
+const TimerDisplay = React.memo(function TimerDisplay({
   startedAt,
   goalHours,
-  onComplete,
-  onAbandon,
-  onEditStartTime,
-}: Props) {
+}: {
+  startedAt: number;
+  goalHours: number;
+}) {
   const c = useThemeColors();
   const profile = useUserStore((s) => s.profile);
 
@@ -32,11 +33,7 @@ export function FastingTimer({
   const goalMs = goalHours * 3_600_000;
   const isOverGoal = elapsedMs >= goalMs;
   const progress = Math.min(elapsedMs / goalMs, 1);
-  const completionTs = startedAt + goalMs;
-
   const accent = isOverGoal ? c.booster : c.primary;
-  const start = formatRelativeDate(startedAt);
-  const end = formatRelativeDate(completionTs);
 
   const phaseMessage = getFastingMessage(elapsedMs);
   const calories =
@@ -69,34 +66,6 @@ export function FastingTimer({
       </AppText>
 
       <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View style={{ gap: 2 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-              <AppText variant="caption" tone="tertiary">시작</AppText>
-              {onEditStartTime && (
-                <Pressable
-                  onPress={onEditStartTime}
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel="시작 시간 수정"
-                >
-                  <AppIcon name="Pencil" size={10} color={c.inkTertiary} />
-                </Pressable>
-              )}
-            </View>
-            <AppText variant="caption" style={{ fontWeight: '600' }}>
-              {start.timeLabel}
-            </AppText>
-          </View>
-          <View style={{ alignItems: 'flex-end', gap: 2 }}>
-            <AppText variant="caption" style={{ color: isOverGoal ? c.booster : c.inkTertiary }}>
-              {isOverGoal ? '부스터' : '완료'}
-            </AppText>
-            <AppText variant="caption" style={{ fontWeight: '600', color: accent }}>
-              {isOverGoal ? formatOverElapsed(elapsedMs - goalMs) : end.timeLabel}
-            </AppText>
-          </View>
-        </View>
         <View style={{ height: 6, backgroundColor: c.surfaceMuted, borderRadius: 3, overflow: 'visible' }}>
           <View
             style={{
@@ -138,32 +107,115 @@ export function FastingTimer({
           </AppText>
         )}
       </View>
+    </>
+  );
+});
 
-      <View style={{ marginTop: spacing.card }}>
-        {isOverGoal ? (
-          <Pressable
-            onPress={onComplete}
-            accessibilityRole="button"
-            accessibilityLabel="단식 완료"
-            style={{
-              backgroundColor: c.ink,
-              borderRadius: radius.md,
-              paddingVertical: spacing.item,
-              alignItems: 'center',
-            }}
-          >
-            <AppText variant="body" style={{ color: c.surface, fontWeight: '700' }}>
-              단식 완료
-            </AppText>
-          </Pressable>
-        ) : (
-          <HoldToConfirmButton
-            label="단식 포기"
-            subLabel="꾹 눌러서 포기"
-            onConfirm={onAbandon}
-          />
-        )}
+const StaticInfo = React.memo(function StaticInfo({
+  startedAt,
+  goalHours,
+  onEditStartTime,
+}: {
+  startedAt: number;
+  goalHours: number;
+  onEditStartTime?: () => void;
+}) {
+  const c = useThemeColors();
+  const goalMs = goalHours * 3_600_000;
+  const completionTs = startedAt + goalMs;
+  const start = formatRelativeDate(startedAt);
+  const end = formatRelativeDate(completionTs);
+  const isOverGoal = Date.now() - startedAt >= goalMs;
+  const accent = isOverGoal ? c.booster : c.primary;
+
+  return (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.md }}>
+      <View style={{ gap: 2 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+          <AppText variant="caption" tone="tertiary">시작</AppText>
+          {onEditStartTime && (
+            <Pressable
+              onPress={onEditStartTime}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="시작 시간 수정"
+            >
+              <AppIcon name="Pencil" size={10} color={c.inkTertiary} />
+            </Pressable>
+          )}
+        </View>
+        <AppText variant="caption" style={{ fontWeight: '600' }}>
+          {start.timeLabel}
+        </AppText>
       </View>
+      <View style={{ alignItems: 'flex-end', gap: 2 }}>
+        <AppText variant="caption" style={{ color: isOverGoal ? c.booster : c.inkTertiary }}>
+          {isOverGoal ? '부스터' : '완료'}
+        </AppText>
+        <AppText variant="caption" style={{ fontWeight: '600', color: accent }}>
+          {end.timeLabel}
+        </AppText>
+      </View>
+    </View>
+  );
+});
+
+const ActionButtons = React.memo(function ActionButtons({
+  startedAt,
+  goalHours,
+  onComplete,
+  onAbandon,
+}: {
+  startedAt: number;
+  goalHours: number;
+  onComplete: () => void;
+  onAbandon: () => void;
+}) {
+  const c = useThemeColors();
+  const goalMs = goalHours * 3_600_000;
+  const isOverGoal = Date.now() - startedAt >= goalMs;
+
+  return (
+    <View style={{ marginTop: spacing.card }}>
+      {isOverGoal ? (
+        <Pressable
+          onPress={onComplete}
+          accessibilityRole="button"
+          accessibilityLabel="단식 완료"
+          style={{
+            backgroundColor: c.ink,
+            borderRadius: radius.md,
+            paddingVertical: spacing.item,
+            alignItems: 'center',
+          }}
+        >
+          <AppText variant="body" style={{ color: c.surface, fontWeight: '700' }}>
+            단식 완료
+          </AppText>
+        </Pressable>
+      ) : (
+        <HoldToConfirmButton
+          label="단식 포기"
+          subLabel="꾹 눌러서 포기"
+          onConfirm={onAbandon}
+        />
+      )}
+    </View>
+  );
+});
+
+export function FastingTimer({
+  startedAt,
+  goalHours,
+  onComplete,
+  onAbandon,
+  onEditStartTime,
+}: Props) {
+  return (
+    <>
+      <StaticInfo startedAt={startedAt} goalHours={goalHours} onEditStartTime={onEditStartTime} />
+      <TimerDisplay startedAt={startedAt} goalHours={goalHours} />
+      <ActionButtons startedAt={startedAt} goalHours={goalHours} onComplete={onComplete} onAbandon={onAbandon} />
     </>
   );
 }
