@@ -57,27 +57,32 @@ export function useAutoCloudSync() {
       }
     }
 
-    const schedulePush = () => {
+    const dirtyStores = new Set<string>();
+
+    const schedulePush = (storeName: string) => {
       if (isCloudSyncSuppressed()) return;
+      dirtyStores.add(storeName);
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
-        pushLocalToCloud(userId).then((res) => {
+        const stores = new Set(dirtyStores);
+        dirtyStores.clear();
+        pushLocalToCloud(userId, stores).then((res) => {
           if (res.error) console.warn('[zndi] push failed:', res.error);
-          else if (__DEV__) console.log('[zndi] push complete');
+          else if (__DEV__) console.log('[zndi] push complete (stores:', [...stores].join(','), ')');
         });
       }, PUSH_DEBOUNCE_MS);
     };
 
     let prevFastingRecordsLen = useFastingStore.getState().records.length;
     const unsubs = [
-      useUserStore.subscribe(schedulePush),
-      useRoutineStore.subscribe(schedulePush),
-      useTodoStore.subscribe(schedulePush),
-      useRoutineCompletionStore.subscribe(schedulePush),
+      useUserStore.subscribe(() => schedulePush('user')),
+      useRoutineStore.subscribe(() => schedulePush('routines')),
+      useTodoStore.subscribe(() => schedulePush('todos')),
+      useRoutineCompletionStore.subscribe(() => schedulePush('completions')),
       useFastingStore.subscribe((state) => {
         if (state.records.length !== prevFastingRecordsLen) {
           prevFastingRecordsLen = state.records.length;
-          schedulePush();
+          schedulePush('fasting');
         }
       }),
     ];

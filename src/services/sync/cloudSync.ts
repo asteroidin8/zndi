@@ -16,10 +16,13 @@ export async function checkNicknameTaken(nickname: string, _currentUserId: strin
 }
 
 /** 로컬 Zustand → Supabase upsert (클라우드 백업) */
-export async function pushLocalToCloud(userId: string): Promise<{ error?: string }> {
+export async function pushLocalToCloud(userId: string, dirtyStores?: Set<string>): Promise<{ error?: string }> {
   return withCloudSyncSuppressed(async () => {
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
+
+  const pushAll = !dirtyStores || dirtyStores.size === 0;
+  const shouldPush = (name: string) => pushAll || dirtyStores!.has(name);
 
   const { profile, weightRecords } = useUserStore.getState();
   const routines = useRoutineStore.getState().routines;
@@ -31,129 +34,139 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
 
   const now = new Date().toISOString();
 
-  const { error: profileError } = await supabase.from('profiles').upsert({
-    user_id: userId,
-    height_cm: profile.heightCm,
-    weight_kg: profile.weightKg,
-    target_weight_kg: profile.targetWeightKg,
-    age_years: profile.ageYears,
-    is_male: profile.isMale,
-    nickname: profile.nickname,
-    updated_at: now,
-  });
-  if (profileError) return { error: profileError.message };
+  if (shouldPush('user')) {
+    const { error: profileError } = await supabase.from('profiles').upsert({
+      user_id: userId,
+      height_cm: profile.heightCm,
+      weight_kg: profile.weightKg,
+      target_weight_kg: profile.targetWeightKg,
+      age_years: profile.ageYears,
+      is_male: profile.isMale,
+      nickname: profile.nickname,
+      updated_at: now,
+    });
+    if (profileError) return { error: profileError.message };
 
-  if (routineGroups.length > 0) {
-    const { error } = await supabase.from('routine_groups').upsert(
-      routineGroups.map((g) => ({
-        user_id: userId,
-        id: g.id,
-        name: g.name,
-        sort_order: g.order,
-        collapsed: g.collapsed,
-        updated_at: now,
-      })),
-    );
-    if (error) return { error: error.message };
+    if (weightRecords.length > 0) {
+      const { error } = await supabase.from('weight_records').upsert(
+        weightRecords.map((w) => ({
+          user_id: userId,
+          id: w.id,
+          date: w.date,
+          weight_kg: w.weightKg,
+          created_at: w.createdAt,
+          updated_at: now,
+        })),
+      );
+      if (error) return { error: error.message };
+    }
   }
 
-  if (routines.length > 0) {
-    const { error } = await supabase.from('routines').upsert(
-      routines.map((r) => ({
-        user_id: userId,
-        id: r.id,
-        name: r.name,
-        repeat_type: r.repeatType ?? 'weekly',
-        repeat_days: r.repeatDays,
-        month_dates: r.monthDates ?? [],
-        repeat_interval: r.repeatInterval ?? 1,
-        section: r.section ?? null,
-        reminder_time: r.reminderTime,
-        sort_order: r.order,
-        group_id: r.groupId ?? null,
-        created_at: r.createdAt,
-        deleted_at: r.deletedAt ?? null,
-        updated_at: now,
-      })),
-    );
-    if (error) return { error: error.message };
+  if (shouldPush('routines')) {
+    if (routineGroups.length > 0) {
+      const { error } = await supabase.from('routine_groups').upsert(
+        routineGroups.map((g) => ({
+          user_id: userId,
+          id: g.id,
+          name: g.name,
+          sort_order: g.order,
+          collapsed: g.collapsed,
+          updated_at: now,
+        })),
+      );
+      if (error) return { error: error.message };
+    }
+
+    if (routines.length > 0) {
+      const { error } = await supabase.from('routines').upsert(
+        routines.map((r) => ({
+          user_id: userId,
+          id: r.id,
+          name: r.name,
+          repeat_type: r.repeatType ?? 'weekly',
+          repeat_days: r.repeatDays,
+          month_dates: r.monthDates ?? [],
+          repeat_interval: r.repeatInterval ?? 1,
+          section: r.section ?? null,
+          reminder_time: r.reminderTime,
+          sort_order: r.order,
+          group_id: r.groupId ?? null,
+          created_at: r.createdAt,
+          deleted_at: r.deletedAt ?? null,
+          updated_at: now,
+        })),
+      );
+      if (error) return { error: error.message };
+    }
   }
 
-  if (todoGroups.length > 0) {
-    const { error } = await supabase.from('todo_groups').upsert(
-      todoGroups.map((g) => ({
-        user_id: userId,
-        id: g.id,
-        name: g.name,
-        sort_order: g.order,
-        collapsed: g.collapsed,
-        updated_at: now,
-      })),
-    );
-    if (error) return { error: error.message };
+  if (shouldPush('todos')) {
+    if (todoGroups.length > 0) {
+      const { error } = await supabase.from('todo_groups').upsert(
+        todoGroups.map((g) => ({
+          user_id: userId,
+          id: g.id,
+          name: g.name,
+          sort_order: g.order,
+          collapsed: g.collapsed,
+          updated_at: now,
+        })),
+      );
+      if (error) return { error: error.message };
+    }
+
+    if (todos.length > 0) {
+      const { error } = await supabase.from('todos').upsert(
+        todos.map((t) => ({
+          user_id: userId,
+          id: t.id,
+          title: t.title,
+          priority: t.priority,
+          due_date: t.dueDate,
+          completed_at: t.completedAt,
+          archived_date: t.archivedDate,
+          created_at: t.createdAt,
+          sort_order: t.order,
+          pinned_to_home: t.pinnedToHome,
+          pin_order: t.pinOrder,
+          group_id: t.groupId ?? null,
+          section: t.section ?? null,
+          deleted_at: t.deletedAt ?? null,
+          updated_at: now,
+        })),
+      );
+      if (error) return { error: error.message };
+    }
   }
 
-  if (todos.length > 0) {
-    const { error } = await supabase.from('todos').upsert(
-      todos.map((t) => ({
-        user_id: userId,
-        id: t.id,
-        title: t.title,
-        priority: t.priority,
-        due_date: t.dueDate,
-        completed_at: t.completedAt,
-        archived_date: t.archivedDate,
-        created_at: t.createdAt,
-        sort_order: t.order,
-        pinned_to_home: t.pinnedToHome,
-        pin_order: t.pinOrder,
-        group_id: t.groupId ?? null,
-        section: t.section ?? null,
-        deleted_at: t.deletedAt ?? null,
-        updated_at: now,
-      })),
-    );
-    if (error) return { error: error.message };
+  if (shouldPush('completions')) {
+    const completionRows = Object.entries(completions).map(([key, ts]) => ({
+      user_id: userId,
+      completion_key: key,
+      completed_at: ts,
+      updated_at: now,
+    }));
+    if (completionRows.length > 0) {
+      const { error } = await supabase.from('routine_completions').upsert(completionRows);
+      if (error) return { error: error.message };
+    }
   }
 
-  const completionRows = Object.entries(completions).map(([key, ts]) => ({
-    user_id: userId,
-    completion_key: key,
-    completed_at: ts,
-    updated_at: now,
-  }));
-  if (completionRows.length > 0) {
-    const { error } = await supabase.from('routine_completions').upsert(completionRows);
-    if (error) return { error: error.message };
-  }
-
-  if (records.length > 0) {
-    const { error } = await supabase.from('fasting_records').upsert(
-      records.map((r) => ({
-        user_id: userId,
-        id: r.id,
-        started_at: r.startedAt,
-        ended_at: r.endedAt,
-        goal_hours: r.goalHours,
-        result: r.result,
-        updated_at: now,
-      })),
-    );
-    if (error) return { error: error.message };
-  }
-
-  if (weightRecords.length > 0) {
-    const { error } = await supabase.from('weight_records').upsert(
-      weightRecords.map((w) => ({
-        user_id: userId,
-        id: w.id,
-        date: w.date,
-        weight_kg: w.weightKg,
-        created_at: w.createdAt,
-        updated_at: now,
-      })),
-    );
-    if (error) return { error: error.message };
+  if (shouldPush('fasting')) {
+    if (records.length > 0) {
+      const { error } = await supabase.from('fasting_records').upsert(
+        records.map((r) => ({
+          user_id: userId,
+          id: r.id,
+          started_at: r.startedAt,
+          ended_at: r.endedAt,
+          goal_hours: r.goalHours,
+          result: r.result,
+          updated_at: now,
+        })),
+      );
+      if (error) return { error: error.message };
+    }
   }
 
   await supabase.from('sync_state').upsert({
