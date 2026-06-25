@@ -392,12 +392,5 @@ export async function pushDailyProgress(
   });
   if (error) return { error: error.message };
 
-  useBoardStore.getState().upsertProgress({
-    boardId,
-    userId,
-    date,
-    ...data,
-  });
-
   return {};
 }

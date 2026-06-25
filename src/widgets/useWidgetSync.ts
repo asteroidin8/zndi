@@ -105,44 +105,59 @@ async function pushUpdate(data: WidgetData) {
 }
 
 export function useWidgetSync() {
-  const routines = useRoutineStore((s) => s.routines);
-  const { isCompleted } = useRoutineCompletionStore();
-  const todos = useTodoStore((s) => s.todos);
-  const { status, startedAt, goalHours } = useFastingStore();
   const isPro = useProStore((s) => s.isPro);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
     if (!isPro) return;
 
-    const data = buildWidgetData(routines, isCompleted, todos, status, startedAt, goalHours);
-    void pushUpdate(data);
+    const syncWidgets = () => {
+      const data = buildWidgetData(
+        useRoutineStore.getState().routines,
+        useRoutineCompletionStore.getState().isCompleted,
+        useTodoStore.getState().todos,
+        useFastingStore.getState().status,
+        useFastingStore.getState().startedAt,
+        useFastingStore.getState().goalHours,
+      );
+      void pushUpdate(data);
+    };
 
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+    const debouncedSync = () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(syncWidgets, 1000);
+    };
 
-    if (status === 'fasting') {
-      timerRef.current = setInterval(() => {
-        const fresh = buildWidgetData(
-          useRoutineStore.getState().routines,
-          useRoutineCompletionStore.getState().isCompleted,
-          useTodoStore.getState().todos,
-          useFastingStore.getState().status,
-          useFastingStore.getState().startedAt,
-          useFastingStore.getState().goalHours,
-        );
-        void pushUpdate(fresh);
-      }, 60_000);
-    }
+    syncWidgets();
 
-    return () => {
+    const unsubs = [
+      useRoutineStore.subscribe(debouncedSync),
+      useRoutineCompletionStore.subscribe(debouncedSync),
+      useTodoStore.subscribe(debouncedSync),
+      useFastingStore.subscribe(debouncedSync),
+    ];
+
+    const startFastingTimer = () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      if (useFastingStore.getState().status === 'fasting') {
+        timerRef.current = setInterval(syncWidgets, 60_000);
+      }
     };
-  }, [routines, isCompleted, todos, status, startedAt, goalHours, isPro]);
+    startFastingTimer();
+    const unsubFasting = useFastingStore.subscribe((state, prev) => {
+      if (state.status !== prev.status) startFastingTimer();
+    });
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
+      for (const unsub of unsubs) unsub();
+      unsubFasting();
+    };
+  }, [isPro]);
 }
