@@ -24,7 +24,8 @@ export function isRoutineScheduledForDate(routine: Routine, date: Date): boolean
   }
 
   if (type === 'weekly') {
-    if (!routine.repeatDays.includes(date.getDay() as Weekday)) return false;
+    const days = routine.repeatDays ?? [];
+    if (!days.includes(date.getDay() as Weekday)) return false;
     if (interval <= 1) return true;
     const diffDays = daysBetween(created, date);
     const diffWeeks = Math.floor(diffDays / 7);
@@ -47,7 +48,7 @@ export function isRoutineScheduledForDate(routine: Routine, date: Date): boolean
     return diffYears >= 0 && diffYears % interval === 0;
   }
 
-  return routine.repeatDays.includes(date.getDay() as Weekday);
+  return (routine.repeatDays ?? []).includes(date.getDay() as Weekday);
 }
 
 export function formatRepeatLabel(routine: Routine): string {
@@ -69,6 +70,6 @@ export function formatRepeatLabel(routine: Routine): string {
   }
 
   // weekly
-  const dayLabel = routine.repeatDays.map((d) => DAY_LABELS[d]).join('·');
+  const dayLabel = (routine.repeatDays ?? []).map((d) => DAY_LABELS[d]).join('·');
   return interval > 1 ? `${interval}주마다 ${dayLabel}` : dayLabel;
 }
