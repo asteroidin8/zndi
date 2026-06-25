@@ -313,6 +313,9 @@ C  ??????????????  41%
 | 8 | Realtime 에코 필터링 | `src/hooks/useRealtimeSync.ts` | routines/todos/completions 세 테이블 모두 동등성 체크 후 store 업데이트 |
 | 9 | useBoardRealtimeSync 동등성 체크 | `src/hooks/useBoardRealtimeSync.ts` | member INSERT(중복 방지)/UPDATE(nickname·role 비교)/DELETE(존재 확인) 동등성 체크 추가 |
 | 10 | 보드 페이지 이중 return 통합 | `app/board/create.tsx`, `app/board/join.tsx` | 이중 SafeAreaView return → 단일 SafeAreaView + 조건부 content |
+| 11 | board/[id].tsx 컴포넌트 분할 | `src/components/board/MembersTab.tsx`, `RoutinesTab.tsx` | 870줄 → ~620줄, MembersTab·RoutinesTab 분리 |
+| 12 | row→model 매퍼 공통화 | `src/utils/rowMappers.ts` | `routineFromRow`/`todoFromRow` — useRealtimeSync + cloudSync 공유 |
+| 13 | GrassCell 공통 컴포넌트 | `src/components/board/GrassCell.tsx` | 잔디 셀 렌더링 통일, board/[id].tsx + friend.tsx에서 사용 |
 
 ### 미진행 리팩토링 / 개선 과제
 
