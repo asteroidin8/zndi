@@ -1,16 +1,19 @@
-import { useCallback, useEffect } from 'react';
-import { Modal, Pressable, Share, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useRef } from 'react';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import * as Sharing from 'expo-sharing';
+import { captureRef } from 'react-native-view-shot';
 
 import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
 import { QRCode } from './QRCode';
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { appAlert } from '@/stores/useAlertStore';
 
 const ENTER = { duration: 200 };
 const EXIT = { duration: 150 };
@@ -26,6 +29,7 @@ type Props = {
 
 export function QRModal({ visible, onClose, title, subtitle, value, copyLabel }: Props) {
   const c = useThemeColors();
+  const qrRef = useRef<View>(null);
 
   const backdropOpacity = useSharedValue(0);
   const cardOpacity = useSharedValue(0);
@@ -50,8 +54,16 @@ export function QRModal({ visible, onClose, title, subtitle, value, copyLabel }:
   }));
 
   const handleShare = useCallback(async () => {
-    await Share.share({ message: copyLabel ?? value });
-  }, [value, copyLabel]);
+    if (!qrRef.current) return;
+    try {
+      const uri = await captureRef(qrRef, { format: 'png', quality: 1, result: 'tmpfile' });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'QR 코드 공유' });
+      }
+    } catch {
+      appAlert('공유 실패', '이미지를 생성하는 중 문제가 발생했어요.');
+    }
+  }, []);
 
   if (!visible) return null;
 
@@ -88,6 +100,8 @@ export function QRModal({ visible, onClose, title, subtitle, value, copyLabel }:
             )}
 
             <View
+              ref={qrRef}
+              collapsable={false}
               style={{
                 backgroundColor: '#fff',
                 borderRadius: radius.lg,
