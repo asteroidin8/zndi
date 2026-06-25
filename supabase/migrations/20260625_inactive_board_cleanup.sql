@@ -1,3 +1,7 @@
+-- 선행 컬럼 보장 (20260624_board_policy_v2.sql 미적용 시 대비)
+ALTER TABLE boards ADD COLUMN IF NOT EXISTS last_activity_at timestamptz DEFAULT now();
+ALTER TABLE boards ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+
 -- 비활성 보드 자동 삭제 함수
 -- 조건: 전원 미인증 45일 (last_activity_at 기준)
 CREATE OR REPLACE FUNCTION cleanup_inactive_boards()
