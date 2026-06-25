@@ -68,12 +68,18 @@ export function useAutoCloudSync() {
       }, PUSH_DEBOUNCE_MS);
     };
 
+    let prevFastingRecordsLen = useFastingStore.getState().records.length;
     const unsubs = [
       useUserStore.subscribe(schedulePush),
       useRoutineStore.subscribe(schedulePush),
       useTodoStore.subscribe(schedulePush),
       useRoutineCompletionStore.subscribe(schedulePush),
-      useFastingStore.subscribe(schedulePush),
+      useFastingStore.subscribe((state) => {
+        if (state.records.length !== prevFastingRecordsLen) {
+          prevFastingRecordsLen = state.records.length;
+          schedulePush();
+        }
+      }),
     ];
 
     return () => {
