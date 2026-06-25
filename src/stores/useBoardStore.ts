@@ -34,7 +34,7 @@ type BoardStore = {
   reset: () => void;
 };
 
-export const useBoardStore = create<BoardStore>()((set) => ({
+export const useBoardStore = create<BoardStore>()((set, get) => ({
   boards: [],
   members: {},
   progress: {},
@@ -70,17 +70,27 @@ export const useBoardStore = create<BoardStore>()((set) => ({
     })),
   setProgress: (boardId, progress) =>
     set((s) => ({ progress: { ...s.progress, [boardId]: progress } })),
-  upsertProgress: (entry) =>
-    set((s) => {
-      const existing = s.progress[entry.boardId] ?? [];
-      const idx = existing.findIndex(
-        (p) => p.userId === entry.userId && p.date === entry.date,
-      );
-      const next = [...existing];
-      if (idx >= 0) next[idx] = entry;
-      else next.push(entry);
-      return { progress: { ...s.progress, [entry.boardId]: next } };
-    }),
+  upsertProgress: (entry) => {
+    const s = get();
+    const existing = s.progress[entry.boardId] ?? [];
+    const idx = existing.findIndex(
+      (p) => p.userId === entry.userId && p.date === entry.date,
+    );
+    if (idx >= 0) {
+      const cur = existing[idx];
+      if (
+        cur.routineCompleted === entry.routineCompleted &&
+        cur.routineTotal === entry.routineTotal &&
+        cur.todoCompleted === entry.todoCompleted &&
+        cur.todoTotal === entry.todoTotal &&
+        cur.streak === entry.streak
+      ) return;
+    }
+    const next = [...existing];
+    if (idx >= 0) next[idx] = entry;
+    else next.push(entry);
+    set({ progress: { ...s.progress, [entry.boardId]: next } });
+  },
   setRoutines: (boardId, routines) =>
     set((s) => ({ routines: { ...s.routines, [boardId]: routines } })),
   addRoutine: (routine) =>
