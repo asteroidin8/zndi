@@ -227,7 +227,8 @@ export default function StatsScreen() {
     [boardRoutines, boardLogs, user],
   );
   const grassMap = buildMonthGrassMap(viewYear, viewMonth, allRoutines, isCompleted, allTodos, boardData);
-  const { gridRef, share } = useShareGrass();
+  const { gridRef, share, shareInstagram, shareKakao } = useShareGrass();
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   return (
     <View style={{ flex: 1 }}>
@@ -310,7 +311,7 @@ export default function StatsScreen() {
                 </View>
                 <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
                   <Pressable
-                    onPress={() => share(viewYear, viewMonth)}
+                    onPress={() => setShowShareMenu((v) => !v)}
                     hitSlop={8}
                     style={{ padding: 4 }}
                     accessibilityLabel="잔디 공유"
@@ -319,6 +320,68 @@ export default function StatsScreen() {
                   </Pressable>
                 </View>
               </View>
+
+              {showShareMenu && (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'flex-end',
+                    gap: spacing.sm,
+                  }}
+                >
+                  <Pressable
+                    onPress={() => { setShowShareMenu(false); shareInstagram(); }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      borderRadius: radius.md,
+                      backgroundColor: c.surfaceSubtle,
+                      borderWidth: 1,
+                      borderColor: c.border,
+                    }}
+                  >
+                    <AppIcon name="Camera" size={14} color={c.ink} />
+                    <AppText variant="caption">Instagram</AppText>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => { setShowShareMenu(false); shareKakao(); }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      borderRadius: radius.md,
+                      backgroundColor: c.surfaceSubtle,
+                      borderWidth: 1,
+                      borderColor: c.border,
+                    }}
+                  >
+                    <AppIcon name="MessageCircle" size={14} color={c.ink} />
+                    <AppText variant="caption">카카오톡</AppText>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => { setShowShareMenu(false); share(viewYear, viewMonth); }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      borderRadius: radius.md,
+                      backgroundColor: c.surfaceSubtle,
+                      borderWidth: 1,
+                      borderColor: c.border,
+                    }}
+                  >
+                    <AppIcon name="Share2" size={14} color={c.ink} />
+                    <AppText variant="caption">공유</AppText>
+                  </Pressable>
+                </View>
+              )}
 
               <StatsMonthGrid
                 year={viewYear}

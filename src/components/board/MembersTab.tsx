@@ -34,6 +34,7 @@ export function MembersTab({
   onOpenCreateRoutine,
   onDeleteRoutine,
   onVerify,
+  onShowQR,
 }: {
   inviteCode: string;
   isAdmin: boolean;
@@ -50,6 +51,7 @@ export function MembersTab({
   onOpenCreateRoutine: () => void;
   onDeleteRoutine: (routineId: string, name: string) => void;
   onVerify: (routineId: string) => void;
+  onShowQR: () => void;
 }) {
   const c = useThemeColors();
   const grassHex = getGrassColor(grassColor as Parameters<typeof getGrassColor>[0]);
@@ -141,9 +143,14 @@ export function MembersTab({
       {/* 초대 코드 */}
       <Card style={{ alignItems: 'center', gap: spacing.xs }}>
         <AppText variant="caption" tone="tertiary">초대 코드</AppText>
-        <AppText variant="title" style={{ fontSize: 24, fontWeight: '700', letterSpacing: 4 }}>
-          {inviteCode}
-        </AppText>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+          <AppText variant="title" style={{ fontSize: 24, fontWeight: '700', letterSpacing: 4 }}>
+            {inviteCode}
+          </AppText>
+          <Pressable onPress={onShowQR} hitSlop={8} style={{ padding: 4 }}>
+            <AppIcon name="QrCode" size={20} color={c.inkTertiary} />
+          </Pressable>
+        </View>
         {isAdmin && (
           <Pressable onPress={onRefreshCode} hitSlop={8} style={{ padding: 4 }}>
             <AppText variant="caption" style={{ color: c.primary }}>코드 갱신</AppText>

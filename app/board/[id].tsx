@@ -16,6 +16,7 @@ import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { MembersTab } from '@/components/board/MembersTab';
 import { Card } from '@/components/Card';
+import { QRModal } from '@/components/QRModal';
 import { SheetModal, SheetPrimaryButton } from '@/components/SheetModal';
 import { PageHeader } from '@/components/settings/MyScreenUI';
 import { radius, spacing } from '@/constants/spacing';
@@ -205,6 +206,7 @@ export default function BoardDetailScreen() {
   const myNickname = useUserStore((s) => s.profile.nickname);
 
   const [tab, setTab] = useState<Tab>('members');
+  const [showQR, setShowQR] = useState(false);
   const [showCreateRoutine, setShowCreateRoutine] = useState(false);
   const [routineName, setRoutineName] = useState('');
   const [showVerify, setShowVerify] = useState(false);
@@ -597,6 +599,7 @@ export default function BoardDetailScreen() {
             onOpenCreateRoutine={() => setShowCreateRoutine(true)}
             onDeleteRoutine={handleDeleteRoutine}
             onVerify={openVerify}
+            onShowQR={() => setShowQR(true)}
           />
         )}
 
@@ -748,6 +751,15 @@ export default function BoardDetailScreen() {
           )}
         </View>
       </SheetModal>
+
+      <QRModal
+        visible={showQR}
+        onClose={() => setShowQR(false)}
+        title="보드 초대"
+        subtitle="QR 코드를 스캔하거나 초대 코드를 공유하세요"
+        value={`zndi://board/join?code=${board.inviteCode}`}
+        copyLabel={board.inviteCode}
+      />
     </SafeAreaView>
   );
 }
