@@ -3,11 +3,9 @@ import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useAutoCloudSync } from '@/hooks/useAutoCloudSync';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
+import { getSupabase } from '@/lib/supabase';
 import { useProStore } from '@/stores/useProStore';
 
-const ADMIN_EMAILS = ['asteroidin8@gmail.com'];
-
-/** 로그인 시 Realtime + 자동 클라우드 동기화 + 관리자 Pro 활성화 */
 export function CloudSyncBridge() {
   const { user } = useAuth();
   useRealtimeSync();
@@ -15,10 +13,15 @@ export function CloudSyncBridge() {
 
   const setPro = useProStore((s) => s.setPro);
   useEffect(() => {
-    if (user?.email && ADMIN_EMAILS.includes(user.email)) {
-      setPro(true);
-    }
-  }, [user?.email, setPro]);
+    if (!user?.id) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+    supabase.rpc('get_pro_status').then(({ data, error }) => {
+      if (error || !data) return;
+      const status = data as { is_pro: boolean; source: string };
+      setPro(status.is_pro);
+    });
+  }, [user?.id, setPro]);
 
   return null;
 }

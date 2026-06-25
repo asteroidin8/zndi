@@ -195,13 +195,12 @@ export async function refreshInviteCode(
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
 
-  const newCode = generateInviteCode();
-  const { error } = await supabase.rpc('refresh_invite_code', {
+  const { data, error } = await supabase.rpc('refresh_invite_code', {
     p_board_id: boardId,
-    p_new_code: newCode,
   });
   if (error) return { error: error.message };
 
+  const newCode = data as string;
   const store = useBoardStore.getState();
   useBoardStore.setState({
     boards: store.boards.map((b) =>
