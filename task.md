@@ -256,12 +256,11 @@ Lv.6  ?앺깭怨?   (1501+)
 
 | 카테고리 | 무료 | 유료 (Pro 또는 개별 구매) |
 |----------|------|--------------------------|
-| 잔디 컬러 (7종) | green | cherry·ocean·lavender·sunset (1,000원) / flame·gold (1,500원) |
-| 잔디 모양 (4종) | default | pixel·circle·diamond (각 1,500원) |
-| 셀 애니메이션 (5종) | none | glow (1,000원) / pulse·sparkle (1,500원) / wave (2,000원) |
+| 잔디 컬러 (7종) | green | cherry·ocean·lavender·sunset (300원) / flame·gold (500원) |
+| 잔디 모양 (4종) | default | pixel·circle·diamond (각 500원) |
+| 셀 애니메이션 (5종) | none | glow (300원) / pulse·sparkle (500원) / wave (800원) |
 
-> **가격 밸런스 검토 필요**: Pro 월 1,900원 대비 개별 아이템 1,000~2,000원은 비율이 높음.
-> 개별 구매를 임펄스 가격(300~800원)으로 낮추거나, Pro 전용으로 단순화하는 방향 결정 필요.
+> 전부 구매 시 4,700원 (Pro 약 2.5개월분) → 3~4개 사면 Pro 전환 유도
 
 ### 보드 디테일
 
