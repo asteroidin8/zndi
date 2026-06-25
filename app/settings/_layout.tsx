@@ -9,6 +9,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="about" />
       <Stack.Screen name="membership" />
       <Stack.Screen name="theme-shop" />
+      <Stack.Screen name="avatar-collection" />
     </Stack>
   );
 }
