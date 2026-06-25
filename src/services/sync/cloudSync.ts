@@ -1,11 +1,11 @@
 import { getSupabase } from '@/lib/supabase';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
-import type { Weekday } from '@/stores/useRoutineStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { withCloudSyncSuppressed } from '@/services/sync/cloudSyncGuard';
+import { routineFromRow, todoFromRow } from '@/utils/rowMappers';
 
 export async function checkNicknameTaken(nickname: string, _currentUserId: string): Promise<boolean> {
   const supabase = getSupabase();
@@ -230,20 +230,7 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
   if (routinesRes.data?.length) {
     useRoutineStore.setState({
       routines: routinesRes.data
-        .map((r) => ({
-          id: r.id,
-          name: r.name,
-          repeatType: ((r as Record<string, unknown>).repeat_type as string ?? 'weekly') as import('@/types').RepeatType,
-          repeatDays: r.repeat_days as Weekday[],
-          monthDates: ((r as Record<string, unknown>).month_dates as number[]) ?? [],
-          repeatInterval: ((r as Record<string, unknown>).repeat_interval as number) ?? 1,
-          section: ((r as Record<string, unknown>).section as string | null) ?? null,
-          reminderTime: r.reminder_time,
-          createdAt: r.created_at,
-          order: r.sort_order,
-          groupId: (r as Record<string, unknown>).group_id as string | null ?? null,
-          deletedAt: ((r as Record<string, unknown>).deleted_at as number | null) ?? undefined,
-        }))
+        .map((r) => routineFromRow(r as Record<string, unknown>))
         .sort((a, b) => a.order - b.order),
     });
   }
@@ -264,21 +251,7 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
   if (todosRes.data?.length) {
     useTodoStore.setState({
       todos: todosRes.data
-        .map((t) => ({
-          id: t.id,
-          title: t.title,
-          priority: t.priority,
-          dueDate: t.due_date,
-          completedAt: t.completed_at,
-          archivedDate: t.archived_date,
-          createdAt: t.created_at,
-          order: t.sort_order,
-          pinnedToHome: t.pinned_to_home,
-          pinOrder: t.pin_order,
-          groupId: (t as Record<string, unknown>).group_id as string | null ?? null,
-          section: ((t as Record<string, unknown>).section as string | null) ?? null,
-          deletedAt: ((t as Record<string, unknown>).deleted_at as number | null) ?? undefined,
-        }))
+        .map((t) => todoFromRow(t as Record<string, unknown>))
         .sort((a, b) => a.order - b.order),
     });
   }

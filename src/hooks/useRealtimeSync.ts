@@ -4,8 +4,9 @@ import { useAuth } from '@/contexts/AuthProvider';
 import { getSupabase } from '@/lib/supabase';
 import { isCloudSyncSuppressed } from '@/services/sync/cloudSyncGuard';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
-import { useRoutineStore, type Weekday } from '@/stores/useRoutineStore';
+import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
+import { routineFromRow, todoFromRow } from '@/utils/rowMappers';
 
 /** Phase 1: 본인 다기기 Realtime (루틴·할일·완료) */
 export function useRealtimeSync() {
@@ -35,19 +36,7 @@ export function useRealtimeSync() {
           ) return;
           useRoutineStore.setState((state) => {
             const next = state.routines.filter((r) => r.id !== row.id);
-            next.push({
-              id: String(row.id),
-              name: String(row.name),
-              repeatType: ((row.repeat_type as string | undefined) ?? 'weekly') as import('@/types').RepeatType,
-              repeatDays: row.repeat_days as Weekday[],
-              monthDates: (row.month_dates as number[] | undefined) ?? [],
-              section: (row.section as string | null | undefined) ?? null,
-              reminderTime: (row.reminder_time as string | null) ?? null,
-              createdAt: Number(row.created_at),
-              order: Number(row.sort_order),
-              groupId: (row.group_id as string | null) ?? null,
-              repeatInterval: (row.repeat_interval as number | undefined) ?? 1,
-            });
+            next.push(routineFromRow(row));
             return { routines: next.sort((a, b) => a.order - b.order) };
           });
         },
@@ -77,20 +66,7 @@ export function useRealtimeSync() {
           ) return;
           useTodoStore.setState((state) => {
             const next = state.todos.filter((t) => t.id !== row.id);
-            next.push({
-              id: String(row.id),
-              title: String(row.title),
-              priority: row.priority as 'high' | 'mid' | 'low',
-              dueDate: (row.due_date as string | null) ?? null,
-              completedAt: (row.completed_at as number | null) ?? null,
-              archivedDate: (row.archived_date as string | null) ?? null,
-              createdAt: Number(row.created_at),
-              order: Number(row.sort_order),
-              pinnedToHome: Boolean(row.pinned_to_home),
-              pinOrder: Number(row.pin_order),
-              groupId: (row.group_id as string | null) ?? null,
-              section: (row.section as string | null) ?? null,
-            });
+            next.push(todoFromRow(row));
             return { todos: next.sort((a, b) => a.order - b.order) };
           });
         },
