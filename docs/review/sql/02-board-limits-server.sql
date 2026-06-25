@@ -53,6 +53,8 @@ AS $$
 $$;
 
 -- create_board 업데이트: 보드 수 제한 + 서버 초대코드 생성
+-- 기존 RETURNS json → jsonb 변경 시 CREATE OR REPLACE 불가
+DROP FUNCTION IF EXISTS create_board(text, text, text);
 CREATE OR REPLACE FUNCTION create_board(
   p_name text,
   p_invite_code text DEFAULT NULL,
@@ -169,6 +171,8 @@ CREATE TRIGGER trg_check_todo_group_limit
   EXECUTE FUNCTION check_todo_group_limit();
 
 -- 초대코드 서버 생성 RPC (refresh도 서버에서)
+-- 기존 RETURNS void → text 변경 시 CREATE OR REPLACE 불가
+DROP FUNCTION IF EXISTS refresh_invite_code(uuid, text);
 CREATE OR REPLACE FUNCTION refresh_invite_code(
   p_board_id uuid,
   p_new_code text DEFAULT NULL
