@@ -69,7 +69,8 @@ export default function RoutineDetailScreen() {
   const c = useThemeColors();
   const allRoutines = useRoutineStore((s) => s.routines);
   const routines = allRoutines.filter((r) => !r.deletedAt);
-  const { getStreak, isCompleted } = useRoutineCompletionStore();
+  const completions = useRoutineCompletionStore((s) => s.completions);
+  const { getStreak, isCompleted } = useRoutineCompletionStore.getState();
   const { user } = useAuth();
   const boards = useBoardStore((s) => s.boards);
   const boardRoutines = useBoardStore((s) => s.routines);

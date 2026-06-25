@@ -3,41 +3,52 @@ import { Pressable, View } from 'react-native';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { HoldToConfirmButton } from '@/components/HoldToConfirmButton';
+import { estimateCaloriesBurned, getFastingMessage } from '@/constants/fastingMessages';
 import { radius, spacing } from '@/constants/spacing';
+import { useLiveElapsed } from '@/hooks/useLiveElapsed';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useUserStore } from '@/stores/useUserStore';
 import { formatElapsed, formatOverElapsed, formatRelativeDate } from '@/utils/fastingFormat';
 
 type Props = {
-  elapsedMs: number;
-  goalMs: number;
-  isOverGoal: boolean;
-  progress: number;
   startedAt: number;
-  completionTs: number;
-  phaseMessage: string | null;
-  calories: number | null;
+  goalHours: number;
   onComplete: () => void;
   onAbandon: () => void;
   onEditStartTime?: () => void;
 };
 
 export function FastingTimer({
-  elapsedMs,
-  goalMs,
-  isOverGoal,
-  progress,
   startedAt,
-  completionTs,
-  phaseMessage,
-  calories,
+  goalHours,
   onComplete,
   onAbandon,
   onEditStartTime,
 }: Props) {
   const c = useThemeColors();
+  const profile = useUserStore((s) => s.profile);
+
+  const elapsedMs = useLiveElapsed(startedAt, true);
+  const goalMs = goalHours * 3_600_000;
+  const isOverGoal = elapsedMs >= goalMs;
+  const progress = Math.min(elapsedMs / goalMs, 1);
+  const completionTs = startedAt + goalMs;
+
   const accent = isOverGoal ? c.booster : c.primary;
   const start = formatRelativeDate(startedAt);
   const end = formatRelativeDate(completionTs);
+
+  const phaseMessage = getFastingMessage(elapsedMs);
+  const calories =
+    profile.weightKg && profile.heightCm && profile.isMale !== null
+      ? estimateCaloriesBurned({
+          weightKg: profile.weightKg,
+          heightCm: profile.heightCm,
+          ageYears: profile.ageYears ?? 30,
+          isMale: profile.isMale,
+          elapsedMs,
+        })
+      : null;
 
   return (
     <>

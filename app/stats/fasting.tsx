@@ -26,7 +26,8 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function FastingDetailScreen() {
   const c = useThemeColors();
-  const { records, removeRecord, updateRecord } = useFastingStore();
+  const records = useFastingStore((s) => s.records);
+  const { removeRecord, updateRecord } = useFastingStore.getState();
   const [selected, setSelected] = useState<DailyFastingSummary | null>(null);
   const [editingRecord, setEditingRecord] = useState<FastingRecord | null>(null);
 

@@ -107,7 +107,8 @@ export function TodoFormFields({
   onDatePickerOpen,
 }: Props) {
   const c = useThemeColors();
-  const { todos, groups } = useTodoStore();
+  const todos = useTodoStore((s) => s.todos);
+  const groups = useTodoStore((s) => s.groups);
   const isPro = useProStore((s) => s.isPro);
 
   const today = todayStr();

@@ -4,6 +4,7 @@ import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { size, spacing } from '@/constants/spacing';
+import { useLiveElapsed } from '@/hooks/useLiveElapsed';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import type { FastingStatus } from '@/types';
 import { formatElapsed, formatRelativeDate } from '@/utils/fastingFormat';
@@ -11,11 +12,7 @@ import { formatElapsed, formatRelativeDate } from '@/utils/fastingFormat';
 type Props = {
   status: FastingStatus;
   goalHours: number;
-  elapsedMs: number;
-  isOverGoal: boolean;
-  progress: number;
   startedAt: number | null;
-  completionTs: number | null;
   lastRecord?: { startedAt: number; goalHours: number; result: string | null } | null;
   onPress: () => void;
 };
@@ -31,15 +28,17 @@ function formatLastRecord(record: NonNullable<Props['lastRecord']>): string {
 export function FastingCardCollapsed({
   status,
   goalHours,
-  elapsedMs,
-  isOverGoal,
-  progress,
   startedAt,
-  completionTs,
   lastRecord,
   onPress,
 }: Props) {
   const c = useThemeColors();
+  const isFasting = status === 'fasting';
+  const elapsedMs = useLiveElapsed(startedAt, isFasting);
+  const goalMs = goalHours * 3_600_000;
+  const isOverGoal = elapsedMs >= goalMs;
+  const progress = Math.min(elapsedMs / goalMs, 1);
+  const completionTs = startedAt ? startedAt + goalMs : null;
   const accent = isOverGoal ? c.booster : c.primary;
 
   if (status === 'idle') {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { LayoutAnimation, Pressable, View } from 'react-native';
 
 import { AppIcon } from './AppIcon';
@@ -9,12 +9,10 @@ import { FastingCardCollapsed } from './fasting/FastingCardCollapsed';
 import { FastingGoalPicker } from './fasting/FastingGoalPicker';
 import { FastingTimer } from './fasting/FastingTimer';
 import { SheetModal, SheetPrimaryButton } from './SheetModal';
-import { estimateCaloriesBurned, getFastingMessage } from '@/constants/fastingMessages';
 import { size } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
 import { useFastingStore } from '@/stores/useFastingStore';
-import { useUserStore } from '@/stores/useUserStore';
 import { feedbackSuccess } from '@/utils/microFeedback';
 
 const HOUR_ITEMS: DrumItem[] = Array.from({ length: 24 }, (_, i) => ({
@@ -42,43 +40,13 @@ export function FastingCard() {
   const startedAt = useFastingStore((s) => s.startedAt);
   const goalHours = useFastingStore((s) => s.goalHours);
   const records = useFastingStore((s) => s.records);
-  const profile = useUserStore((s) => s.profile);
   const { setGoalHours, startFasting, stopFasting, updateStartTime } = useFastingStore.getState();
-  const [now, setNow] = useState(Date.now());
   const [expanded, setExpanded] = useState(false);
   const [editStartVisible, setEditStartVisible] = useState(false);
   const [editFields, setEditFields] = useState({ month: 0, day: 1, hour: 0, minute: 0 });
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    if (status === 'fasting') {
-      intervalRef.current = setInterval(() => setNow(Date.now()), 1000);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [status]);
-
-  const elapsedMs = status === 'fasting' && startedAt ? now - startedAt : 0;
   const goalMs = goalHours * 3_600_000;
-  const isOverGoal = elapsedMs >= goalMs;
-  const progress = Math.min(elapsedMs / goalMs, 1);
-  const completionTs = startedAt ? startedAt + goalMs : null;
-
-  const calories =
-    status === 'fasting' && profile.weightKg && profile.heightCm && profile.isMale !== null
-      ? estimateCaloriesBurned({
-          weightKg: profile.weightKg,
-          heightCm: profile.heightCm,
-          ageYears: profile.ageYears ?? 30,
-          isMale: profile.isMale,
-          elapsedMs,
-        })
-      : null;
-
-  const phaseMessage = status === 'fasting' ? getFastingMessage(elapsedMs) : null;
+  const isOverGoal = status === 'fasting' && startedAt ? Date.now() - startedAt >= goalMs : false;
 
   function toggleExpanded() {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -134,11 +102,7 @@ export function FastingCard() {
       <FastingCardCollapsed
         status={status}
         goalHours={goalHours}
-        elapsedMs={elapsedMs}
-        isOverGoal={isOverGoal}
-        progress={progress}
         startedAt={startedAt}
-        completionTs={completionTs}
         lastRecord={lastRecord}
         onPress={toggleExpanded}
       />
@@ -164,16 +128,10 @@ export function FastingCard() {
           <AppIcon name="ChevronUp" size={size.iconMd} color={c.inkTertiary} />
         </Pressable>
 
-        {status === 'fasting' && startedAt && completionTs && (
+        {status === 'fasting' && startedAt && (
           <FastingTimer
-            elapsedMs={elapsedMs}
-            goalMs={goalMs}
-            isOverGoal={isOverGoal}
-            progress={progress}
             startedAt={startedAt}
-            completionTs={completionTs}
-            phaseMessage={phaseMessage}
-            calories={calories}
+            goalHours={goalHours}
             onComplete={handleComplete}
             onAbandon={handleAbandon}
             onEditStartTime={openEditStart}

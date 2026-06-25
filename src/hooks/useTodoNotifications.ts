@@ -1,15 +1,24 @@
 import * as Notifications from 'expo-notifications';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
 
+const DEBOUNCE_MS = 2000;
+
 export function useTodoNotifications() {
   const todos = useTodoStore((s) => s.todos);
   const todoNotificationsEnabled = useSettingsStore((s) => s.todoNotificationsEnabled);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    timerRef.current = setTimeout(() => {
+      sync();
+    }, DEBOUNCE_MS);
+
     async function sync() {
       if (!todoNotificationsEnabled) {
         await cancelNotificationsByPrefix(NOTIFICATION_ID.todoPrefix);
@@ -44,6 +53,8 @@ export function useTodoNotifications() {
       }
     }
 
-    sync();
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, [todos, todoNotificationsEnabled]);
 }

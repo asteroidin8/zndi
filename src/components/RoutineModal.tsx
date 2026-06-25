@@ -50,7 +50,8 @@ type Props = {
 
 export function RoutineModal({ visible, initial, onSave, onDelete, onClose }: Props) {
   const c = useThemeColors();
-  const { routines, groups } = useRoutineStore();
+  const routines = useRoutineStore((s) => s.routines);
+  const groups = useRoutineStore((s) => s.groups);
   const isPro = useProStore((s) => s.isPro);
   const timeFormat = useSettingsStore((s) => s.timeFormat ?? '24h');
   const [name, setName] = useState(initial?.name ?? '');

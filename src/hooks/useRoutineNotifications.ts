@@ -1,15 +1,24 @@
 import * as Notifications from 'expo-notifications';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { cancelNotificationsByPrefix, NOTIFICATION_ID } from '@/utils/notifications';
 
+const DEBOUNCE_MS = 2000;
+
 export function useRoutineNotifications() {
   const routines = useRoutineStore((s) => s.routines);
   const routineNotificationsEnabled = useSettingsStore((s) => s.routineNotificationsEnabled);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    timerRef.current = setTimeout(() => {
+      sync();
+    }, DEBOUNCE_MS);
+
     async function sync() {
       if (!routineNotificationsEnabled) {
         await cancelNotificationsByPrefix(NOTIFICATION_ID.routinePrefix);
@@ -84,6 +93,8 @@ export function useRoutineNotifications() {
       }
     }
 
-    sync();
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, [routines, routineNotificationsEnabled]);
 }

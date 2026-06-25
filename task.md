@@ -324,6 +324,10 @@ C  ??????????????  41%
 | 19 | 할일 우선순위 타입 버그 수정 | `app/stats/todo.tsx` | `'medium'` → `'mid'` (TodoPriority 타입과 불일치 수정) |
 | 20 | 루틴 상세 기간 필터 추가 | `app/stats/routine.tsx` | 주간/월간 탭 + 날짜 네비게이션 + 기간별 달성률 — 할일 상세와 구조 통일 |
 
+| 21 | FastingCard 인터벌 격리 | `FastingCard.tsx`, `FastingTimer.tsx`, `FastingCardCollapsed.tsx` | 1초 인터벌을 자식 컴포넌트로 이동 — 부모 리렌더 제거, useLiveElapsed 훅 추출 |
+| 22 | 잔여 whole-store 구독 수정 | `TodoFormFields`, `RoutineModal`, `stats/fasting`, `stats/routine`, `settings/notifications` | 선택적 selector + getState() 전환 |
+| 23 | 알림 재스케줄링 디바운스 | `useRoutineNotifications.ts`, `useTodoNotifications.ts` | 2초 디바운스로 연속 변경 시 불필요한 전체 취소+재등록 방지 |
+
 ### 미진행 리팩토링 / 개선 과제
 
 없음 — 모든 이슈 항목 완료.

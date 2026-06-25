@@ -11,7 +11,10 @@ import { requestNotificationPermission } from '@/utils/notificationPermission';
 
 export default function NotificationsScreen() {
   const c = useThemeColors();
-  const { foregroundServiceEnabled, toggleForegroundService, routineNotificationsEnabled, setRoutineNotifications, todoNotificationsEnabled, setTodoNotifications } = useSettingsStore();
+  const foregroundServiceEnabled = useSettingsStore((s) => s.foregroundServiceEnabled);
+  const routineNotificationsEnabled = useSettingsStore((s) => s.routineNotificationsEnabled);
+  const todoNotificationsEnabled = useSettingsStore((s) => s.todoNotificationsEnabled);
+  const { toggleForegroundService, setRoutineNotifications, setTodoNotifications } = useSettingsStore.getState();
   const copy = NOTIFICATION_COPY;
 
   async function handleRoutine(enabled: boolean) { if (enabled && !(await requestNotificationPermission())) return; setRoutineNotifications(enabled); }
