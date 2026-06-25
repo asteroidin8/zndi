@@ -41,6 +41,7 @@ import {
   unvoteDeleteBoard,
   voteDeleteBoard,
 } from '@/services/board/boardService';
+import { sendBoardPush } from '@/services/board/boardPushService';
 import {
   createBoardRoutine,
   deleteBoardRoutine,
@@ -330,6 +331,12 @@ export default function BoardDetailScreen() {
             } else {
               setHasVoted(true);
               appAlert('투표 완료', `${votes}/${total}명 동의. 전원 동의 시 삭제됩니다.`);
+              void sendBoardPush(
+                id,
+                '보드 삭제 투표',
+                `${board!.name} 보드 삭제 투표가 진행 중입니다. (${votes}/${total})`,
+                user?.id,
+              );
             }
           },
         },
@@ -391,6 +398,12 @@ export default function BoardDetailScreen() {
             const { error } = await kickMember(id, targetUserId);
             if (error) { appAlert('오류', error); return; }
             void insertSystemMessage(id, 'member_kicked', displayName, targetNickname);
+            void sendBoardPush(
+              id,
+              '보드 알림',
+              `${board!.name} 보드에서 추방되었습니다.`,
+              user?.id,
+            );
           },
         },
       ],
