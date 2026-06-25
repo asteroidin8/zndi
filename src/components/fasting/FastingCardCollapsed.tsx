@@ -1,3 +1,4 @@
+import React from 'react';
 import { View } from 'react-native';
 
 import { AppIcon } from '@/components/AppIcon';
@@ -7,7 +8,7 @@ import { size, spacing } from '@/constants/spacing';
 import { useLiveElapsed } from '@/hooks/useLiveElapsed';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import type { FastingStatus } from '@/types';
-import { formatElapsed, formatRelativeDate } from '@/utils/fastingFormat';
+import { formatElapsed } from '@/utils/fastingFormat';
 
 type Props = {
   status: FastingStatus;
@@ -25,6 +26,69 @@ function formatLastRecord(record: NonNullable<Props['lastRecord']>): string {
   return `${when} ${record.goalHours}h ${resultLabel}`;
 }
 
+const CollapsedTimer = React.memo(function CollapsedTimer({
+  startedAt,
+  goalHours,
+}: {
+  startedAt: number;
+  goalHours: number;
+}) {
+  const c = useThemeColors();
+  const elapsedMs = useLiveElapsed(startedAt, true);
+  const goalMs = goalHours * 3_600_000;
+  const isOverGoal = elapsedMs >= goalMs;
+  const progress = Math.min(elapsedMs / goalMs, 1);
+  const accent = isOverGoal ? c.booster : c.primary;
+
+  return (
+    <>
+      <AppText
+        variant="display"
+        style={{
+          marginTop: spacing.sm,
+          fontSize: 36,
+          letterSpacing: -2,
+          fontWeight: '700',
+          color: accent,
+          fontVariant: ['tabular-nums'],
+        }}
+      >
+        {formatElapsed(elapsedMs)}
+      </AppText>
+
+      <View style={{ marginTop: spacing.sm }}>
+        <View style={{ height: 6, backgroundColor: c.surfaceMuted, borderRadius: 3, overflow: 'visible' }}>
+          <View
+            style={{
+              height: 6,
+              width: `${progress * 100}%`,
+              backgroundColor: accent,
+              borderRadius: 3,
+            }}
+          />
+          <View
+            style={{
+              position: 'absolute',
+              top: -3,
+              left: `${progress * 100}%`,
+              width: 12,
+              height: 12,
+              borderRadius: 6,
+              backgroundColor: accent,
+              marginLeft: -6,
+              shadowColor: accent,
+              shadowOpacity: 0.7,
+              shadowRadius: 6,
+              shadowOffset: { width: 0, height: 0 },
+              elevation: 4,
+            }}
+          />
+        </View>
+      </View>
+    </>
+  );
+});
+
 export function FastingCardCollapsed({
   status,
   goalHours,
@@ -34,12 +98,6 @@ export function FastingCardCollapsed({
 }: Props) {
   const c = useThemeColors();
   const isFasting = status === 'fasting';
-  const elapsedMs = useLiveElapsed(startedAt, isFasting);
-  const goalMs = goalHours * 3_600_000;
-  const isOverGoal = elapsedMs >= goalMs;
-  const progress = Math.min(elapsedMs / goalMs, 1);
-  const completionTs = startedAt ? startedAt + goalMs : null;
-  const accent = isOverGoal ? c.booster : c.primary;
 
   if (status === 'idle') {
     const daysSinceLast = lastRecord ? Math.floor((Date.now() - lastRecord.startedAt) / 86_400_000) : 0;
@@ -68,8 +126,8 @@ export function FastingCardCollapsed({
     );
   }
 
-  const start = startedAt ? formatRelativeDate(startedAt) : null;
-  const end = completionTs ? formatRelativeDate(completionTs) : null;
+  const isOverGoal = isFasting && startedAt ? Date.now() - startedAt >= goalHours * 3_600_000 : false;
+  const accent = isOverGoal ? c.booster : c.primary;
 
   return (
     <Card
@@ -86,50 +144,8 @@ export function FastingCardCollapsed({
         <AppIcon name="ChevronDown" size={size.iconMd} color={c.inkTertiary} />
       </View>
 
-      <AppText
-        variant="display"
-        style={{
-          marginTop: spacing.sm,
-          fontSize: 36,
-          letterSpacing: -2,
-          fontWeight: '700',
-          color: accent,
-          fontVariant: ['tabular-nums'],
-        }}
-      >
-        {formatElapsed(elapsedMs)}
-      </AppText>
-
-      {start && end && (
-        <View style={{ marginTop: spacing.sm }}>
-          <View style={{ height: 6, backgroundColor: c.surfaceMuted, borderRadius: 3, overflow: 'visible' }}>
-            <View
-              style={{
-                height: 6,
-                width: `${progress * 100}%`,
-                backgroundColor: accent,
-                borderRadius: 3,
-              }}
-            />
-            <View
-              style={{
-                position: 'absolute',
-                top: -3,
-                left: `${progress * 100}%`,
-                width: 12,
-                height: 12,
-                borderRadius: 6,
-                backgroundColor: accent,
-                marginLeft: -6,
-                shadowColor: accent,
-                shadowOpacity: 0.7,
-                shadowRadius: 6,
-                shadowOffset: { width: 0, height: 0 },
-                elevation: 4,
-              }}
-            />
-          </View>
-        </View>
+      {isFasting && startedAt && (
+        <CollapsedTimer startedAt={startedAt} goalHours={goalHours} />
       )}
     </Card>
   );
