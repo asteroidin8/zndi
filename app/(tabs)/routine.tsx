@@ -223,22 +223,34 @@ export default function RoutineScreen() {
 
   // ── Build unified drag list ──
 
+  const groupCompletionCounts = useMemo(() => {
+    const counts: Record<string, { completed: number; total: number }> = {};
+    for (const group of sortedGroups) {
+      const groupRoutines = allRoutinesSorted.filter((r) => (r.groupId ?? null) === group.id);
+      const todayInGroup = groupRoutines.filter((r) => isRoutineScheduledForDate(r, todayDate));
+      counts[group.id] = {
+        completed: todayInGroup.filter((r) => isCompleted(r.id, todayStr)).length,
+        total: todayInGroup.length,
+      };
+    }
+    return counts;
+  }, [sortedGroups, allRoutinesSorted, todayDate, todayStr, completions]);
+
   const dragItems = useMemo<ListItem[]>(() => {
     if (!hasGroups) return [];
     const items: ListItem[] = [];
 
     for (const group of sortedGroups) {
       const groupRoutines = allRoutinesSorted.filter((r) => (r.groupId ?? null) === group.id);
-      const todayInGroup = groupRoutines.filter((r) => isRoutineScheduledForDate(r, todayDate));
-      const completedInGroup = todayInGroup.filter((r) => isCompleted(r.id, todayStr)).length;
+      const counts = groupCompletionCounts[group.id] ?? { completed: 0, total: 0 };
       const visibleCount = group.collapsed ? 0 : groupRoutines.length;
 
       items.push({
         type: 'group-header',
         key: `gh-${group.id}`,
         group,
-        completedCount: completedInGroup,
-        totalCount: todayInGroup.length,
+        completedCount: counts.completed,
+        totalCount: counts.total,
         hasVisibleItems: visibleCount > 0,
       });
 
@@ -271,7 +283,7 @@ export default function RoutineScreen() {
     }
 
     return items;
-  }, [hasGroups, sortedGroups, allRoutinesSorted, ungroupedRoutines, todayDate, todayStr, completions]);
+  }, [hasGroups, sortedGroups, allRoutinesSorted, ungroupedRoutines, todayDate, todayStr, groupCompletionCounts]);
 
   const dragItemsRef = useRef(dragItems);
   dragItemsRef.current = dragItems;

@@ -61,14 +61,27 @@ export default function MyScreen() {
   const [editingNickname, setEditingNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState(profile.nickname ?? '');
   const [nicknameError, setNicknameError] = useState<string | null>(null);
+  const NICKNAME_MAX = 16;
+  const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9_]+$/;
+
   async function handleNicknameSave() {
     const trimmed = nicknameInput.trim() || null;
     setNicknameError(null);
-    if (trimmed && user?.id) {
-      const taken = await checkNicknameTaken(trimmed, user.id);
-      if (taken) {
-        setNicknameError('이미 사용 중인 닉네임이에요');
+    if (trimmed) {
+      if (trimmed.length > NICKNAME_MAX) {
+        setNicknameError(`${NICKNAME_MAX}자 이하로 입력해주세요`);
         return;
+      }
+      if (!NICKNAME_PATTERN.test(trimmed)) {
+        setNicknameError('한글, 영문, 숫자, _만 사용할 수 있어요');
+        return;
+      }
+      if (user?.id) {
+        const taken = await checkNicknameTaken(trimmed, user.id);
+        if (taken) {
+          setNicknameError('이미 사용 중인 닉네임이에요');
+          return;
+        }
       }
     }
     setNickname(trimmed);
@@ -91,6 +104,12 @@ export default function MyScreen() {
     const timer = setInterval(() => setOtpCooldown((v) => Math.max(0, v - 1)), 1000);
     return () => clearInterval(timer);
   }, [otpCooldown > 0]);
+
+  useEffect(() => {
+    if (otpSent && otp.length === 6 && !busy && otpAttempts < OTP_MAX_ATTEMPTS) {
+      void handleVerifyOtp();
+    }
+  }, [otp]);
 
   async function handleGoogle() {
     setBusy(true);

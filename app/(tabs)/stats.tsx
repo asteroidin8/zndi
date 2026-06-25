@@ -413,15 +413,17 @@ export default function StatsScreen() {
         />
       )}
 
-      <View style={{ position: 'absolute', left: -9999, top: -9999 }}>
-        <ShareableGrassGrid
-          ref={gridRef}
-          year={viewYear}
-          month={viewMonth}
-          grassMap={grassMap}
-          nickname={profile.nickname}
-        />
-      </View>
+      {showShareMenu && (
+        <View style={{ position: 'absolute', left: -9999, top: -9999 }}>
+          <ShareableGrassGrid
+            ref={gridRef}
+            year={viewYear}
+            month={viewMonth}
+            grassMap={grassMap}
+            nickname={profile.nickname}
+          />
+        </View>
+      )}
 
       <FastingRecordEditModal
         visible={editingRecord !== null}

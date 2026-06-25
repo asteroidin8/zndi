@@ -1,10 +1,7 @@
 import type { Session, User } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import * as Linking from 'expo-linking';
-
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import {
-  handleAuthCallbackUrl,
   sendEmailOtp,
   signInWithGoogle,
   signOut,
@@ -53,31 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    const sub = Linking.addEventListener('url', ({ url }) => {
-      if (!url.includes('auth/callback')) return;
-      void (async () => {
-        const supabase = getSupabase();
-        if (!supabase) return;
-        const { data } = await supabase.auth.getSession();
-        if (data.session) return;
-        await handleAuthCallbackUrl(url);
-      })();
-    });
-
-    Linking.getInitialURL().then((url) => {
-      if (!url?.includes('auth/callback')) return;
-      void (async () => {
-        const client = getSupabase();
-        if (!client) return;
-        const { data } = await client.auth.getSession();
-        if (data.session) return;
-        await handleAuthCallbackUrl(url);
-      })();
-    });
-
     return () => {
       listener.subscription.unsubscribe();
-      sub.remove();
     };
   }, []);
 
