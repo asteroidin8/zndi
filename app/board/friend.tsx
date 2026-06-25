@@ -5,9 +5,10 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
+import { GrassCell } from '@/components/board/GrassCell';
 import { Card } from '@/components/Card';
 import { PageHeader } from '@/components/settings/MyScreenUI';
-import { getGrassColor, getCellBorderRadius, GRASS_OPACITY } from '@/constants/grassTheme';
+import { getGrassColor } from '@/constants/grassTheme';
 import { spacing } from '@/constants/spacing';
 import { WEEKDAY_SHORT } from '@/constants/statsLabels';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -64,9 +65,9 @@ export default function FriendProfileScreen() {
     [monthDates, progress],
   );
 
-  const grassHex = getGrassColor(useSettingsStore((s) => s.grassColor));
+  const grassColorId = useSettingsStore((s) => s.grassColor);
+  const grassHex = getGrassColor(grassColorId);
   const grassCellShape = useSettingsStore((s) => s.grassShape);
-  const grassOpacity = GRASS_OPACITY;
 
   function handleUnfollow() {
     appAlert('팔로우 취소', `${nickname}님을 언팔로우할까요?`, [
@@ -119,23 +120,12 @@ export default function FriendProfileScreen() {
           <View style={{ flexDirection: 'row', gap: 6, justifyContent: 'center' }}>
             {weekDates.map((date, i) => {
               const d = new Date(`${date}T00:00:00`);
-              const level = weekGrass[i];
               return (
                 <View key={date} style={{ alignItems: 'center', gap: 4 }}>
                   <AppText variant="caption" tone="disabled" style={{ fontSize: 9 }}>
                     {WEEKDAY_SHORT[d.getDay()]}
                   </AppText>
-                  <View
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: getCellBorderRadius(grassCellShape, 36),
-                      backgroundColor: level === 0 ? c.surfaceMuted : grassHex,
-                      opacity: level === 0 ? 1 : grassOpacity[level],
-                      borderWidth: level === 0 ? 1 : 0,
-                      borderColor: c.border,
-                    }}
-                  />
+                  <GrassCell level={weekGrass[i]} size={36} grassHex={grassHex} shape={grassCellShape} />
                 </View>
               );
             })}
@@ -149,35 +139,13 @@ export default function FriendProfileScreen() {
           </AppText>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
             {monthGrass.map((level, i) => (
-              <View
-                key={i}
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: getCellBorderRadius(grassCellShape, 28),
-                  backgroundColor: level === 0 ? c.surfaceMuted : grassHex,
-                  opacity: level === 0 ? 1 : grassOpacity[level],
-                  borderWidth: level === 0 ? 1 : 0,
-                  borderColor: c.border,
-                }}
-              />
+              <GrassCell key={i} level={level} size={28} grassHex={grassHex} shape={grassCellShape} />
             ))}
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'flex-end', marginTop: 4 }}>
             <AppText variant="caption" tone="disabled" style={{ fontSize: 9 }}>적음</AppText>
             {[0, 1, 2, 3, 4].map((level) => (
-              <View
-                key={level}
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: getCellBorderRadius(grassCellShape, 12),
-                  backgroundColor: level === 0 ? c.surfaceMuted : grassHex,
-                  opacity: level === 0 ? 1 : grassOpacity[level],
-                  borderWidth: level === 0 ? 1 : 0,
-                  borderColor: c.border,
-                }}
-              />
+              <GrassCell key={level} level={level} size={12} grassHex={grassHex} shape={grassCellShape} />
             ))}
             <AppText variant="caption" tone="disabled" style={{ fontSize: 9 }}>많음</AppText>
           </View>

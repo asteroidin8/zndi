@@ -13,12 +13,12 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
+import { MembersTab } from '@/components/board/MembersTab';
+import { RoutinesTab } from '@/components/board/RoutinesTab';
 import { Card } from '@/components/Card';
 import { SheetModal, SheetPrimaryButton } from '@/components/SheetModal';
 import { PageHeader } from '@/components/settings/MyScreenUI';
-import { getGrassColor, getCellBorderRadius, GRASS_OPACITY } from '@/constants/grassTheme';
 import { radius, spacing } from '@/constants/spacing';
-import { WEEKDAY_SHORT } from '@/constants/statsLabels';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
@@ -455,9 +455,6 @@ export default function BoardDetailScreen() {
     ]);
   }
 
-  const grassHex = getGrassColor(grassColor);
-  const grassOpacity = GRASS_OPACITY;
-
   const tabs: { key: Tab; label: string }[] = [
     { key: 'members', label: '멤버' },
     { key: 'routines', label: '루틴' },
@@ -533,188 +530,29 @@ export default function BoardDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {tab === 'members' && (
-          <>
-            <Card style={{ alignItems: 'center', gap: spacing.xs }}>
-              <AppText variant="caption" tone="tertiary">초대 코드</AppText>
-              <AppText variant="title" style={{ fontSize: 24, fontWeight: '700', letterSpacing: 4 }}>
-                {board.inviteCode}
-              </AppText>
-              {isAdmin && (
-                <Pressable onPress={handleRefreshCode} hitSlop={8} style={{ padding: 4 }}>
-                  <AppText variant="caption" style={{ color: c.primary }}>코드 갱신</AppText>
-                </Pressable>
-              )}
-            </Card>
-
-            <View style={{ gap: spacing.xs }}>
-              <View style={{ flexDirection: 'row', gap: 6, justifyContent: 'flex-end', paddingRight: 4 }}>
-                {weekDates.map((date) => {
-                  const d = new Date(`${date}T00:00:00`);
-                  return (
-                    <View key={date} style={{ width: 28, alignItems: 'center' }}>
-                      <AppText variant="caption" tone="disabled" style={{ fontSize: 9 }}>
-                        {WEEKDAY_SHORT[d.getDay()]}
-                      </AppText>
-                    </View>
-                  );
-                })}
-              </View>
-
-              {memberStats.map(({ member, rate, streak, weekGrass }) => (
-                <View
-                  key={member.userId}
-                  style={{
-                    paddingVertical: spacing.sm,
-                    borderBottomWidth: 1,
-                    borderBottomColor: c.borderNeutral,
-                    gap: spacing.xs,
-                  }}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                    <View style={{ flex: 1, minWidth: 60 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <AppText variant="body" style={{ fontWeight: '600' }} numberOfLines={1}>
-                          {member.nickname}
-                        </AppText>
-                        {member.role === 'admin' && (
-                          <AppIcon name="Crown" size={12} color={c.accent} />
-                        )}
-                      </View>
-                      <AppText variant="caption" tone="tertiary">
-                        {rate}% · 🔥{streak}
-                      </AppText>
-                    </View>
-
-                    <View style={{ flexDirection: 'row', gap: 6 }}>
-                      {weekGrass.map((level, i) => (
-                        <View
-                          key={i}
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: getCellBorderRadius(grassCellShape, 28),
-                            backgroundColor: level === 0 ? c.surfaceMuted : grassHex,
-                            opacity: level === 0 ? 1 : grassOpacity[level],
-                            borderWidth: level === 0 ? 1 : 0,
-                            borderColor: c.border,
-                          }}
-                        />
-                      ))}
-                    </View>
-                  </View>
-                  {isAdmin && member.userId !== user?.id && member.role !== 'admin' && (
-                    <View style={{ flexDirection: 'row', gap: spacing.sm, paddingLeft: 4 }}>
-                      <Pressable
-                        onPress={() => handleDelegateAdmin(member.userId, member.nickname)}
-                        hitSlop={4}
-                        style={{ padding: 2 }}
-                      >
-                        <AppText variant="caption" style={{ color: c.primary, fontSize: 11 }}>관리자 위임</AppText>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => handleKickMember(member.userId, member.nickname)}
-                        hitSlop={4}
-                        style={{ padding: 2 }}
-                      >
-                        <AppText variant="caption" style={{ color: c.danger, fontSize: 11 }}>추방</AppText>
-                      </Pressable>
-                    </View>
-                  )}
-                </View>
-              ))}
-            </View>
-          </>
+          <MembersTab
+            inviteCode={board.inviteCode}
+            isAdmin={isAdmin}
+            weekDates={weekDates}
+            memberStats={memberStats}
+            grassColor={grassColor}
+            grassCellShape={grassCellShape}
+            currentUserId={user?.id}
+            onRefreshCode={handleRefreshCode}
+            onDelegateAdmin={handleDelegateAdmin}
+            onKickMember={handleKickMember}
+          />
         )}
 
         {tab === 'routines' && (
-          <View style={{ gap: spacing.md }}>
-            {isAdmin && routines.length === 0 && (
-              <Pressable
-                onPress={() => setShowCreateRoutine(true)}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: spacing.sm,
-                  paddingVertical: spacing.item,
-                  borderRadius: radius.lg,
-                  borderWidth: 1,
-                  borderColor: c.primary,
-                  borderStyle: 'dashed',
-                }}
-              >
-                <AppIcon name="Plus" size={16} color={c.primary} />
-                <AppText variant="body" style={{ color: c.primary, fontWeight: '600' }}>
-                  공동 루틴 추가
-                </AppText>
-              </Pressable>
-            )}
-
-            {routines.length === 0 ? (
-              <View style={{ alignItems: 'center', paddingVertical: 40, gap: spacing.sm }}>
-                <AppIcon name="RotateCcw" size={32} color={c.inkDisabled} />
-                <AppText variant="body" tone="tertiary">
-                  {isAdmin ? '루틴을 설정해주세요.' : '아직 공동 루틴이 없어요.'}
-                </AppText>
-              </View>
-            ) : (
-              routines.map((routine) => {
-                const verified = user?.id ? hasVerified(user.id, routine.id, todayStr) : false;
-                return (
-                  <Card key={routine.id}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.gap }}>
-                      <AppIcon name={verified ? 'CheckCircle' : 'RotateCcw'} size={16} color={verified ? c.accent : c.primary} />
-                      <AppText variant="body" style={{ flex: 1, fontWeight: '600' }}>
-                        {routine.name}
-                      </AppText>
-                      {verified ? (
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 4,
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            borderRadius: radius.sm,
-                            backgroundColor: c.surfaceMuted,
-                          }}
-                        >
-                          <AppIcon name="Check" size={12} color={c.primary} />
-                          <AppText variant="caption" style={{ color: c.primary, fontWeight: '700' }}>
-                            완료
-                          </AppText>
-                        </View>
-                      ) : (
-                        <Pressable
-                          onPress={() => openVerify(routine.id)}
-                          hitSlop={8}
-                          style={{
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            borderRadius: radius.sm,
-                            backgroundColor: c.primary,
-                          }}
-                        >
-                          <AppText variant="caption" style={{ color: '#fff', fontWeight: '700' }}>
-                            인증
-                          </AppText>
-                        </Pressable>
-                      )}
-                      {isAdmin && (
-                        <Pressable
-                          onPress={() => handleDeleteRoutine(routine.id, routine.name)}
-                          hitSlop={8}
-                          style={{ padding: 4 }}
-                        >
-                          <AppIcon name="Trash2" size={14} color={c.danger} />
-                        </Pressable>
-                      )}
-                    </View>
-                  </Card>
-                );
-              })
-            )}
-          </View>
+          <RoutinesTab
+            routines={routines}
+            isAdmin={isAdmin}
+            hasVerified={(routineId) => user?.id ? hasVerified(user.id, routineId, todayStr) : false}
+            onOpenCreate={() => setShowCreateRoutine(true)}
+            onDeleteRoutine={handleDeleteRoutine}
+            onVerify={openVerify}
+          />
         )}
 
         {tab === 'feed' && (
