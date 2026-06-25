@@ -40,51 +40,46 @@ export default function BoardJoinScreen() {
     }
   }
 
-  if (!user) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
-        <PageHeader title="보드 참가" onBack={() => router.back()} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.screen }}>
-          <AppText variant="body" tone="tertiary">로그인이 필요해요.</AppText>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <PageHeader title="보드 참가" onBack={() => router.back()} />
 
-      <View style={{ padding: spacing.screen, gap: spacing.section }}>
-        <View style={{ gap: spacing.sm }}>
-          <AppText variant="caption" tone="tertiary">초대 코드</AppText>
-          <TextInput
-            value={code}
-            onChangeText={(text) => setCode(text.toUpperCase())}
-            placeholder="6자리 코드 입력"
-            placeholderTextColor={c.inkDisabled}
-            autoFocus
-            autoCapitalize="characters"
-            maxLength={6}
-            style={{
-              fontSize: 24,
-              fontWeight: '700',
-              color: c.ink,
-              borderBottomWidth: 1,
-              borderBottomColor: c.border,
-              paddingVertical: spacing.sm,
-              textAlign: 'center',
-              letterSpacing: 6,
-            }}
+      {!user ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.screen }}>
+          <AppText variant="body" tone="tertiary">로그인이 필요해요.</AppText>
+        </View>
+      ) : (
+        <View style={{ padding: spacing.screen, gap: spacing.section }}>
+          <View style={{ gap: spacing.sm }}>
+            <AppText variant="caption" tone="tertiary">초대 코드</AppText>
+            <TextInput
+              value={code}
+              onChangeText={(text) => setCode(text.toUpperCase())}
+              placeholder="6자리 코드 입력"
+              placeholderTextColor={c.inkDisabled}
+              autoFocus
+              autoCapitalize="characters"
+              maxLength={6}
+              style={{
+                fontSize: 24,
+                fontWeight: '700',
+                color: c.ink,
+                borderBottomWidth: 1,
+                borderBottomColor: c.border,
+                paddingVertical: spacing.sm,
+                textAlign: 'center',
+                letterSpacing: 6,
+              }}
+            />
+          </View>
+
+          <SheetPrimaryButton
+            label={loading ? '참가 중...' : '참가하기'}
+            onPress={handleJoin}
+            disabled={code.trim().length < 6 || loading}
           />
         </View>
-
-        <SheetPrimaryButton
-          label={loading ? '참가 중...' : '참가하기'}
-          onPress={handleJoin}
-          disabled={code.trim().length < 6 || loading}
-        />
-      </View>
+      )}
     </SafeAreaView>
   );
 }

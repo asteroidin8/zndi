@@ -49,46 +49,41 @@ export default function BoardCreateScreen() {
     }
   }
 
-  if (!user) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
-        <PageHeader title="보드 만들기" onBack={() => router.back()} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.screen }}>
-          <AppText variant="body" tone="tertiary">로그인이 필요해요.</AppText>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <PageHeader title="보드 만들기" onBack={() => router.back()} />
 
-      <View style={{ padding: spacing.screen, gap: spacing.section }}>
-        <View style={{ gap: spacing.sm }}>
-          <AppText variant="caption" tone="tertiary">보드 이름</AppText>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder="예: 다이어트 챌린지"
-            placeholderTextColor={c.inkDisabled}
-            autoFocus
-            style={{
-              fontSize: 16,
-              color: c.ink,
-              borderBottomWidth: 1,
-              borderBottomColor: c.border,
-              paddingVertical: spacing.sm,
-            }}
+      {!user ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.screen }}>
+          <AppText variant="body" tone="tertiary">로그인이 필요해요.</AppText>
+        </View>
+      ) : (
+        <View style={{ padding: spacing.screen, gap: spacing.section }}>
+          <View style={{ gap: spacing.sm }}>
+            <AppText variant="caption" tone="tertiary">보드 이름</AppText>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder="예: 다이어트 챌린지"
+              placeholderTextColor={c.inkDisabled}
+              autoFocus
+              style={{
+                fontSize: 16,
+                color: c.ink,
+                borderBottomWidth: 1,
+                borderBottomColor: c.border,
+                paddingVertical: spacing.sm,
+              }}
+            />
+          </View>
+
+          <SheetPrimaryButton
+            label={loading ? '생성 중...' : '만들기'}
+            onPress={handleCreate}
+            disabled={!name.trim() || loading}
           />
         </View>
-
-        <SheetPrimaryButton
-          label={loading ? '생성 중...' : '만들기'}
-          onPress={handleCreate}
-          disabled={!name.trim() || loading}
-        />
-      </View>
+      )}
     </SafeAreaView>
   );
 }

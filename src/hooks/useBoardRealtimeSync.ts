@@ -30,17 +30,23 @@ export function useBoardRealtimeSync() {
           if (payload.eventType === 'DELETE') {
             const userId = String((payload.old as Record<string, unknown>).user_id);
             if (userId === user.id) {
+              if (!useBoardStore.getState().boards.some((b) => b.id === boardId)) return;
               useBoardStore.getState().removeBoard(boardId);
             } else {
+              const members = useBoardStore.getState().members[boardId] ?? [];
+              if (!members.some((m) => m.userId === userId)) return;
               useBoardStore.getState().removeMember(boardId, userId);
             }
             return;
           }
 
           if (payload.eventType === 'INSERT') {
+            const newUserId = String(row!.user_id);
+            const existing = (useBoardStore.getState().members[boardId] ?? []).find((m) => m.userId === newUserId);
+            if (existing) return;
             useBoardStore.getState().addMember({
               boardId,
-              userId: String(row!.user_id),
+              userId: newUserId,
               nickname: String(row!.nickname),
               joinedAt: String(row!.joined_at),
               role: (row!.role as string as import('@/types').BoardMemberRole) ?? 'member',
@@ -49,11 +55,15 @@ export function useBoardRealtimeSync() {
             const store = useBoardStore.getState();
             const current = store.members[boardId] ?? [];
             const updatedUserId = String(row.user_id);
+            const newNickname = String(row.nickname);
+            const newRole = (row.role as string as import('@/types').BoardMemberRole) ?? 'member';
+            const target = current.find((m) => m.userId === updatedUserId);
+            if (!target || (target.nickname === newNickname && target.role === newRole)) return;
             store.setMembers(
               boardId,
               current.map((m) =>
                 m.userId === updatedUserId
-                  ? { ...m, nickname: String(row.nickname), role: (row.role as string as import('@/types').BoardMemberRole) ?? m.role }
+                  ? { ...m, nickname: newNickname, role: newRole }
                   : m,
               ),
             );
