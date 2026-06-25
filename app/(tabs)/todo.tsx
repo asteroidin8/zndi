@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { FlatList, Platform, Pressable, ScrollView, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
-import { TabScreenShell } from '@/components/TabScreenShell';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { AppIcon } from '@/components/AppIcon';
@@ -587,7 +587,7 @@ export default function TodoScreen() {
 
   if (filter === 'completed') {
     return (
-      <TabScreenShell>
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
         <Header
           filter={filter}
           setFilter={setFilter}
@@ -674,7 +674,7 @@ export default function TodoScreen() {
           />
         )}
         {modals}
-      </TabScreenShell>
+      </SafeAreaView>
     );
   }
 
@@ -683,7 +683,7 @@ export default function TodoScreen() {
   const hasTodos = activeTodos.length > 0;
 
   return (
-    <TabScreenShell>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <Header
         filter={filter}
         setFilter={setFilter}
@@ -762,7 +762,7 @@ export default function TodoScreen() {
       )}
 
       {modals}
-    </TabScreenShell>
+    </SafeAreaView>
   );
 }
 
