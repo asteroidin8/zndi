@@ -242,6 +242,25 @@ export async function unvoteDeleteBoard(
   return {};
 }
 
+export async function fetchMyDeleteVote(
+  boardId: string,
+): Promise<{ hasVoted: boolean; error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { hasVoted: false, error: 'Supabase 미설정' };
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { hasVoted: false };
+
+  const { data, error } = await supabase
+    .from('board_delete_votes')
+    .select('board_id')
+    .eq('board_id', boardId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (error) return { hasVoted: false, error: error.message };
+  return { hasVoted: !!data };
+}
+
 export async function insertSystemMessage(
   boardId: string,
   type: string,

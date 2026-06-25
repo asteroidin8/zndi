@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -32,10 +33,12 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import {
   delegateAdmin,
   fetchBoardMembers,
+  fetchMyDeleteVote,
   insertSystemMessage,
   kickMember,
   leaveBoard,
   refreshInviteCode,
+  unvoteDeleteBoard,
   voteDeleteBoard,
 } from '@/services/board/boardService';
 import {
@@ -210,6 +213,8 @@ export default function BoardDetailScreen() {
   const [memo, setMemo] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const [hasVoted, setHasVoted] = useState(false);
+
   const grassColor = useSettingsStore((s) => s.grassColor);
   const grassCellShape = useSettingsStore((s) => s.grassShape);
 
@@ -230,6 +235,7 @@ export default function BoardDetailScreen() {
     void fetchBoardRoutines(id);
     void fetchVerificationLogs(id);
     void fetchSystemMessages(id);
+    void fetchMyDeleteVote(id).then(({ hasVoted: v }) => setHasVoted(v));
   }, [id]);
 
   const todayRoutineTotal = routines.length;
@@ -286,6 +292,16 @@ export default function BoardDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             if (!user?.id || !id) return;
+            const store = useBoardStore.getState();
+            const cache = {
+              board,
+              members: store.members[id] ?? [],
+              routines: store.routines[id] ?? [],
+              logs: store.logs[id] ?? [],
+              progress: store.progress[id] ?? [],
+              cachedAt: new Date().toISOString(),
+            };
+            await AsyncStorage.setItem(`board-cache:${id}`, JSON.stringify(cache)).catch(() => {});
             const displayName = getDisplayName(myNickname, user.id);
             await insertSystemMessage(id, 'member_left', displayName);
             await leaveBoard(user.id, id);
@@ -312,8 +328,28 @@ export default function BoardDetailScreen() {
             if (deleted) {
               router.back();
             } else {
+              setHasVoted(true);
               appAlert('투표 완료', `${votes}/${total}명 동의. 전원 동의 시 삭제됩니다.`);
             }
+          },
+        },
+      ],
+    );
+  }
+
+  function handleUnvoteDelete() {
+    if (!id) return;
+    appAlert(
+      '투표 철회',
+      '보드 삭제 동의를 철회할까요?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '철회',
+          onPress: async () => {
+            const { error } = await unvoteDeleteBoard(id);
+            if (error) { appAlert('오류', error); return; }
+            setHasVoted(false);
           },
         },
       ],
@@ -480,7 +516,11 @@ export default function BoardDetailScreen() {
           <Pressable onPress={handleShareCode} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="초대 코드 공유">
             <AppIcon name="Share2" size={18} color={c.inkTertiary} />
           </Pressable>
-          {isAdmin && (
+          {hasVoted ? (
+            <Pressable onPress={handleUnvoteDelete} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="삭제 투표 철회">
+              <AppIcon name="Undo2" size={18} color={c.warning} />
+            </Pressable>
+          ) : (
             <Pressable onPress={handleVoteDelete} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="보드 삭제 투표">
               <AppIcon name="Trash2" size={18} color={c.danger} />
             </Pressable>
