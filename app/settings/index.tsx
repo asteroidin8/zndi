@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
@@ -81,6 +81,16 @@ export default function MyScreen() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
+  const [otpAttempts, setOtpAttempts] = useState(0);
+  const OTP_COOLDOWN_SEC = 60;
+  const OTP_MAX_ATTEMPTS = 5;
+
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const timer = setInterval(() => setOtpCooldown((v) => Math.max(0, v - 1)), 1000);
+    return () => clearInterval(timer);
+  }, [otpCooldown > 0]);
 
   async function handleGoogle() {
     setBusy(true);
@@ -96,20 +106,33 @@ export default function MyScreen() {
   }
 
   async function handleSendOtp() {
-    if (!email.trim()) return;
+    if (!email.trim() || otpCooldown > 0) return;
     setBusy(true);
     const result = await sendEmailOtp(email);
     setBusy(false);
     if (result.error) appAlert('이메일 전송 실패', result.error);
-    else setOtpSent(true);
+    else {
+      setOtpSent(true);
+      setOtpCooldown(OTP_COOLDOWN_SEC);
+      setOtpAttempts(0);
+    }
   }
 
   async function handleVerifyOtp() {
+    if (otpAttempts >= OTP_MAX_ATTEMPTS) {
+      appAlert('인증 실패', '시도 횟수를 초과했어요. 인증 코드를 다시 받아주세요.');
+      return;
+    }
     setBusy(true);
     const result = await verifyEmailOtp(email, otp);
     setBusy(false);
-    if (result.error) appAlert('인증 실패', result.error);
-    else { setEmailMode(false); setOtpSent(false); setOtp(''); }
+    if (result.error) {
+      setOtpAttempts((v) => v + 1);
+      appAlert('인증 실패', result.error);
+    } else {
+      setEmailMode(false); setOtpSent(false); setOtp('');
+      setOtpAttempts(0);
+    }
   }
 
   function handleLogout() {
@@ -329,12 +352,23 @@ export default function MyScreen() {
                   keyboardType="email-address" autoCapitalize="none" style={inputStyle} placeholderTextColor={c.inkTertiary} />
                 {otpSent && (
                   <TextInput value={otp} onChangeText={setOtp} placeholder="인증 코드 6자리"
-                    keyboardType="number-pad" style={inputStyle} placeholderTextColor={c.inkTertiary} />
+                    keyboardType="number-pad" maxLength={6} style={inputStyle} placeholderTextColor={c.inkTertiary} />
                 )}
-                <Pressable onPress={otpSent ? handleVerifyOtp : handleSendOtp} disabled={busy}
-                  style={{ backgroundColor: c.surfaceMuted, borderRadius: radius.md, paddingVertical: spacing.md, alignItems: 'center' }}>
-                  <AppText variant="body" style={{ fontWeight: '600' }}>{otpSent ? '인증하기' : '인증 코드 받기'}</AppText>
+                <Pressable
+                  onPress={otpSent ? handleVerifyOtp : handleSendOtp}
+                  disabled={busy || (!otpSent && otpCooldown > 0) || (otpSent && otpAttempts >= OTP_MAX_ATTEMPTS)}
+                  style={{ backgroundColor: c.surfaceMuted, borderRadius: radius.md, paddingVertical: spacing.md, alignItems: 'center', opacity: (!otpSent && otpCooldown > 0) || (otpSent && otpAttempts >= OTP_MAX_ATTEMPTS) ? 0.5 : 1 }}>
+                  <AppText variant="body" style={{ fontWeight: '600' }}>
+                    {otpSent
+                      ? otpAttempts >= OTP_MAX_ATTEMPTS ? '코드를 다시 받아주세요' : '인증하기'
+                      : otpCooldown > 0 ? `재전송 (${otpCooldown}초)` : '인증 코드 받기'}
+                  </AppText>
                 </Pressable>
+                {otpSent && otpCooldown === 0 && (
+                  <Pressable onPress={handleSendOtp} disabled={busy} style={{ alignItems: 'center' }}>
+                    <AppText variant="caption" tone="primary">인증 코드 다시 받기</AppText>
+                  </Pressable>
+                )}
               </View>
             )}
           </View>
