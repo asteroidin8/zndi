@@ -267,17 +267,6 @@ export default function BoardDetailScreen() {
     });
   }, [members, routines, logs, weekDates, todayStr, todayRoutineTotal]);
 
-  if (!board) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
-        <PageHeader title="보드" onBack={() => router.back()} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <AppText variant="body" tone="tertiary">보드를 찾을 수 없어요.</AppText>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   function handleShareCode() {
     void Share.share({ message: `zndi 보드에 참가하세요!\n초대 코드: ${board!.inviteCode}` });
   }
@@ -474,6 +463,17 @@ export default function BoardDetailScreen() {
     { key: 'routines', label: '루틴' },
     { key: 'feed', label: '피드' },
   ];
+
+  if (!board) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
+        <PageHeader title="보드" onBack={() => router.back()} />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <AppText variant="body" tone="tertiary">보드를 찾을 수 없어요.</AppText>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
