@@ -53,6 +53,7 @@ function computeDailyProgress() {
 export function useBoardProgressSync() {
   const { user } = useAuth();
   const lastPushed = useRef('');
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -72,18 +73,24 @@ export function useBoardProgressSync() {
       }
     };
 
+    const debouncedSync = () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      debounceTimer.current = setTimeout(syncProgress, 500);
+    };
+
     syncProgress();
 
     const unsubs = [
-      useRoutineStore.subscribe(syncProgress),
-      useTodoStore.subscribe(syncProgress),
-      useRoutineCompletionStore.subscribe(syncProgress),
+      useRoutineStore.subscribe(debouncedSync),
+      useTodoStore.subscribe(debouncedSync),
+      useRoutineCompletionStore.subscribe(debouncedSync),
       useBoardStore.subscribe((state, prev) => {
-        if (state.boards !== prev.boards) syncProgress();
+        if (state.boards !== prev.boards) debouncedSync();
       }),
     ];
 
     return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
       for (const unsub of unsubs) unsub();
     };
   }, [user?.id]);
