@@ -25,6 +25,14 @@ export function useRealtimeSync() {
           if (isCloudSyncSuppressed()) return;
           const row = payload.new as Record<string, unknown> | undefined;
           if (!row || payload.eventType === 'DELETE') return;
+          const existing = useRoutineStore.getState().routines.find((r) => r.id === String(row.id));
+          if (existing &&
+            existing.name === String(row.name) &&
+            existing.order === Number(row.sort_order) &&
+            existing.section === ((row.section as string | null | undefined) ?? null) &&
+            existing.groupId === ((row.group_id as string | null) ?? null) &&
+            existing.reminderTime === ((row.reminder_time as string | null) ?? null)
+          ) return;
           useRoutineStore.setState((state) => {
             const next = state.routines.filter((r) => r.id !== row.id);
             next.push({
@@ -52,11 +60,21 @@ export function useRealtimeSync() {
           const row = payload.new as Record<string, unknown> | undefined;
           if (!row) return;
           if (payload.eventType === 'DELETE') {
+            const delId = (payload.old as { id: string }).id;
+            if (!useTodoStore.getState().todos.some((t) => t.id === delId)) return;
             useTodoStore.setState((s) => ({
-              todos: s.todos.filter((t) => t.id !== (payload.old as { id: string }).id),
+              todos: s.todos.filter((t) => t.id !== delId),
             }));
             return;
           }
+          const existingTodo = useTodoStore.getState().todos.find((t) => t.id === String(row.id));
+          if (existingTodo &&
+            existingTodo.title === String(row.title) &&
+            existingTodo.order === Number(row.sort_order) &&
+            existingTodo.completedAt === ((row.completed_at as number | null) ?? null) &&
+            existingTodo.groupId === ((row.group_id as string | null) ?? null) &&
+            existingTodo.section === ((row.section as string | null) ?? null)
+          ) return;
           useTodoStore.setState((state) => {
             const next = state.todos.filter((t) => t.id !== row.id);
             next.push({
@@ -89,6 +107,7 @@ export function useRealtimeSync() {
           if (isCloudSyncSuppressed()) return;
           if (payload.eventType === 'DELETE') {
             const key = (payload.old as { completion_key: string }).completion_key;
+            if (!(key in useRoutineCompletionStore.getState().completions)) return;
             useRoutineCompletionStore.setState((s) => {
               const next = { ...s.completions };
               delete next[key];
@@ -97,6 +116,7 @@ export function useRealtimeSync() {
             return;
           }
           const row = payload.new as { completion_key: string; completed_at: number };
+          if (useRoutineCompletionStore.getState().completions[row.completion_key] === row.completed_at) return;
           useRoutineCompletionStore.setState((s) => ({
             completions: { ...s.completions, [row.completion_key]: row.completed_at },
           }));

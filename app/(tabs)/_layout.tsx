@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, Platform, ToastAndroid, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePathname } from 'expo-router';
 
 import { TabBar } from '@/components/TabBar';
@@ -24,11 +25,19 @@ const SCREENS = [BoardTabScreen, RoutineScreen, HomeScreen, TodoScreen, StatsScr
 export default function TabLayout() {
   const c = useThemeColors();
   const [activeTab, setActiveTab] = useState<TabIndex>(HOME_INDEX);
+  const [mountedTabs, setMountedTabs] = useState<Set<TabIndex>>(() => new Set([HOME_INDEX]));
   const [tabBarVisible, setTabBarVisible] = useState(true);
   const pathname = usePathname();
   const backPressedOnce = useRef(false);
   const activeTabRef = useRef(activeTab);
   activeTabRef.current = activeTab;
+
+  useEffect(() => {
+    setMountedTabs((prev) => {
+      if (prev.has(activeTab)) return prev;
+      return new Set(prev).add(activeTab);
+    });
+  }, [activeTab]);
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
@@ -78,14 +87,23 @@ export default function TabLayout() {
     [navigateTo, scrollToTop],
   );
 
-  const ActiveScreen = SCREENS[activeTab];
-
   return (
     <TabNavigationContext.Provider value={contextValue}>
       <View style={{ flex: 1, backgroundColor: c.surface }}>
-        <View style={{ flex: 1 }}>
-          <ActiveScreen />
-        </View>
+        <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+          {SCREENS.map((Screen, i) => {
+            const idx = i as TabIndex;
+            if (!mountedTabs.has(idx)) return null;
+            return (
+              <View
+                key={idx}
+                style={{ flex: 1, display: activeTab === idx ? 'flex' : 'none' }}
+              >
+                <Screen />
+              </View>
+            );
+          })}
+        </SafeAreaView>
         {tabBarVisible && <TabBar activeTab={activeTab} onPress={handleTabPress} />}
       </View>
     </TabNavigationContext.Provider>

@@ -5,7 +5,6 @@ import { router } from 'expo-router';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { EmptyState } from '@/components/EmptyState';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { getGrassColor, getCellBorderRadius, GRASS_OPACITY } from '@/constants/grassTheme';
 import { radius, spacing } from '@/constants/spacing';
 import { WEEKDAY_SHORT } from '@/constants/statsLabels';
@@ -81,7 +80,7 @@ export default function BoardTabScreen() {
   }, [following, friendProgress, weekDates, todayStr]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
+    <View style={{ flex: 1 }}>
       <View
         style={{
           flexDirection: 'row',
@@ -332,6 +331,6 @@ export default function BoardTabScreen() {
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
