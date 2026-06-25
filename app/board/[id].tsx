@@ -15,7 +15,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { MembersTab } from '@/components/board/MembersTab';
-import { RoutinesTab } from '@/components/board/RoutinesTab';
 import { Card } from '@/components/Card';
 import { SheetModal, SheetPrimaryButton } from '@/components/SheetModal';
 import { PageHeader } from '@/components/settings/MyScreenUI';
@@ -70,7 +69,7 @@ const SYSTEM_MSG_TEXT: Record<BoardSystemMessage['type'], (m: BoardSystemMessage
   admin_changed: (m) => `🔑 ${m.targetNickname}님이 관리자가 되었습니다.`,
 };
 
-type Tab = 'members' | 'routines' | 'feed';
+type Tab = 'members' | 'feed';
 
 function formatLogTime(iso: string): string {
   const d = new Date(iso);
@@ -506,7 +505,6 @@ export default function BoardDetailScreen() {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'members', label: '멤버' },
-    { key: 'routines', label: '루틴' },
     { key: 'feed', label: '피드' },
   ];
 
@@ -591,18 +589,12 @@ export default function BoardDetailScreen() {
             grassColor={grassColor}
             grassCellShape={grassCellShape}
             currentUserId={user?.id}
+            routines={routines}
+            hasVerified={(routineId) => user?.id ? hasVerified(user.id, routineId, todayStr) : false}
             onRefreshCode={handleRefreshCode}
             onDelegateAdmin={handleDelegateAdmin}
             onKickMember={handleKickMember}
-          />
-        )}
-
-        {tab === 'routines' && (
-          <RoutinesTab
-            routines={routines}
-            isAdmin={isAdmin}
-            hasVerified={(routineId) => user?.id ? hasVerified(user.id, routineId, todayStr) : false}
-            onOpenCreate={() => setShowCreateRoutine(true)}
+            onOpenCreateRoutine={() => setShowCreateRoutine(true)}
             onDeleteRoutine={handleDeleteRoutine}
             onVerify={openVerify}
           />

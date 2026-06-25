@@ -5,9 +5,11 @@ import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { GrassCell } from '@/components/board/GrassCell';
 import { getGrassColor, type GrassCellShape } from '@/constants/grassTheme';
-import { spacing } from '@/constants/spacing';
+import { radius, spacing } from '@/constants/spacing';
 import { WEEKDAY_SHORT } from '@/constants/statsLabels';
 import { useThemeColors } from '@/hooks/useThemeColors';
+
+type BoardRoutine = { id: string; name: string };
 
 type MemberStat = {
   member: { userId: string; nickname: string; role: string };
@@ -24,9 +26,14 @@ export function MembersTab({
   grassColor,
   grassCellShape,
   currentUserId,
+  routines,
+  hasVerified,
   onRefreshCode,
   onDelegateAdmin,
   onKickMember,
+  onOpenCreateRoutine,
+  onDeleteRoutine,
+  onVerify,
 }: {
   inviteCode: string;
   isAdmin: boolean;
@@ -35,15 +42,103 @@ export function MembersTab({
   grassColor: string;
   grassCellShape: GrassCellShape;
   currentUserId: string | undefined;
+  routines: BoardRoutine[];
+  hasVerified: (routineId: string) => boolean;
   onRefreshCode: () => void;
   onDelegateAdmin: (userId: string, nickname: string) => void;
   onKickMember: (userId: string, nickname: string) => void;
+  onOpenCreateRoutine: () => void;
+  onDeleteRoutine: (routineId: string, name: string) => void;
+  onVerify: (routineId: string) => void;
 }) {
   const c = useThemeColors();
   const grassHex = getGrassColor(grassColor as Parameters<typeof getGrassColor>[0]);
 
   return (
     <>
+      {/* 루틴 영역 */}
+      {routines.length === 0 ? (
+        isAdmin ? (
+          <Pressable
+            onPress={onOpenCreateRoutine}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: spacing.sm,
+              paddingVertical: spacing.item,
+              borderRadius: radius.lg,
+              borderWidth: 1,
+              borderColor: c.primary,
+              borderStyle: 'dashed',
+            }}
+          >
+            <AppIcon name="Plus" size={16} color={c.primary} />
+            <AppText variant="body" style={{ color: c.primary, fontWeight: '600' }}>
+              공동 루틴 추가
+            </AppText>
+          </Pressable>
+        ) : (
+          <Card style={{ alignItems: 'center', gap: spacing.xs }}>
+            <AppIcon name="RotateCcw" size={20} color={c.inkDisabled} />
+            <AppText variant="caption" tone="tertiary">아직 공동 루틴이 없어요.</AppText>
+          </Card>
+        )
+      ) : (
+        routines.map((routine) => {
+          const verified = hasVerified(routine.id);
+          return (
+            <Card key={routine.id}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.gap }}>
+                <AppIcon name={verified ? 'CheckCircle' : 'RotateCcw'} size={16} color={verified ? c.accent : c.primary} />
+                <AppText variant="body" style={{ flex: 1, fontWeight: '600' }}>
+                  {routine.name}
+                </AppText>
+                {verified ? (
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: radius.sm,
+                      backgroundColor: c.surfaceMuted,
+                    }}
+                  >
+                    <AppIcon name="Check" size={12} color={c.primary} />
+                    <AppText variant="caption" style={{ color: c.primary, fontWeight: '700' }}>완료</AppText>
+                  </View>
+                ) : (
+                  <Pressable
+                    onPress={() => onVerify(routine.id)}
+                    hitSlop={8}
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: radius.sm,
+                      backgroundColor: c.primary,
+                    }}
+                  >
+                    <AppText variant="caption" style={{ color: '#fff', fontWeight: '700' }}>인증</AppText>
+                  </Pressable>
+                )}
+                {isAdmin && (
+                  <Pressable
+                    onPress={() => onDeleteRoutine(routine.id, routine.name)}
+                    hitSlop={8}
+                    style={{ padding: 4 }}
+                  >
+                    <AppIcon name="Trash2" size={14} color={c.danger} />
+                  </Pressable>
+                )}
+              </View>
+            </Card>
+          );
+        })
+      )}
+
+      {/* 초대 코드 */}
       <Card style={{ alignItems: 'center', gap: spacing.xs }}>
         <AppText variant="caption" tone="tertiary">초대 코드</AppText>
         <AppText variant="title" style={{ fontSize: 24, fontWeight: '700', letterSpacing: 4 }}>
@@ -56,6 +151,7 @@ export function MembersTab({
         )}
       </Card>
 
+      {/* 멤버 리스트 */}
       <View style={{ gap: spacing.xs }}>
         <View style={{ flexDirection: 'row', gap: 6, justifyContent: 'flex-end', paddingRight: 4 }}>
           {weekDates.map((date) => {
