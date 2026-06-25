@@ -7,12 +7,21 @@ export type BoardRoutineData = {
   getCompleted: (dateStr: string) => number;
 };
 
+function isActiveRoutine(r: BoardRoutine): boolean {
+  return !r.deletedAt;
+}
+
+function isActiveOnDate(r: BoardRoutine, dateStr: string): boolean {
+  if (!r.deletedAt) return true;
+  return dateStr < localDateStr(new Date(r.deletedAt));
+}
+
 export function countBoardRoutinesTotal(
   boardRoutines: Record<string, BoardRoutine[]>,
 ): number {
   let total = 0;
   for (const routines of Object.values(boardRoutines)) {
-    total += routines.length;
+    total += routines.filter(isActiveRoutine).length;
   }
   return total;
 }
@@ -61,4 +70,15 @@ export function buildBoardRoutineData(
   const total = countBoardRoutinesTotal(boardRoutines);
   if (total === 0) return undefined;
   return { total, getCompleted: buildBoardCompletionLookup(boardLogs, userId) };
+}
+
+export function countBoardRoutinesForDate(
+  boardRoutines: Record<string, BoardRoutine[]>,
+  dateStr: string,
+): number {
+  let total = 0;
+  for (const routines of Object.values(boardRoutines)) {
+    total += routines.filter((r) => isActiveOnDate(r, dateStr)).length;
+  }
+  return total;
 }

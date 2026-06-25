@@ -1,6 +1,6 @@
 import { getSupabase } from '@/lib/supabase';
 import { useBoardStore } from '@/stores/useBoardStore';
-import type { Board, BoardDailyProgress, BoardMember } from '@/types';
+import type { Board, BoardDailyProgress, BoardMember, BoardMemberRole } from '@/types';
 import { localDateStr } from '@/utils/dateFormat';
 
 function generateInviteCode(): string {
@@ -29,6 +29,7 @@ function rowToMember(row: Record<string, unknown>): BoardMember {
     userId: String(row.user_id),
     nickname: String(row.nickname),
     joinedAt: String(row.joined_at),
+    role: (row.role as BoardMemberRole) ?? 'member',
   };
 }
 
@@ -70,6 +71,7 @@ export async function createBoard(
     userId,
     nickname,
     joinedAt: new Date().toISOString(),
+    role: 'admin',
   };
 
   useBoardStore.getState().addBoard(board);
@@ -125,25 +127,139 @@ export async function joinBoard(
 export async function leaveBoard(
   userId: string,
   boardId: string,
+): Promise<{ error?: string; boardDeleted?: boolean; newAdmin?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { error: 'Supabase 미설정' };
+
+  const { data, error } = await supabase.rpc('leave_board_v2', {
+    p_board_id: boardId,
+  });
+  if (error) return { error: error.message };
+
+  const result = data as { board_deleted?: boolean; new_admin?: string } | null;
+  useBoardStore.getState().removeBoard(boardId);
+  return {
+    boardDeleted: result?.board_deleted ?? false,
+    newAdmin: result?.new_admin,
+  };
+}
+
+export async function delegateAdmin(
+  boardId: string,
+  targetUserId: string,
 ): Promise<{ error?: string }> {
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
 
-  const board = useBoardStore.getState().boards.find((b) => b.id === boardId);
+  const { error } = await supabase.rpc('delegate_admin', {
+    p_board_id: boardId,
+    p_target_user_id: targetUserId,
+  });
+  if (error) return { error: error.message };
 
-  if (board?.ownerId === userId) {
-    const { error } = await supabase.from('boards').delete().eq('id', boardId);
-    if (error) return { error: error.message };
-  } else {
-    const { error } = await supabase
-      .from('board_members')
-      .delete()
-      .eq('board_id', boardId)
-      .eq('user_id', userId);
-    if (error) return { error: error.message };
+  const store = useBoardStore.getState();
+  const members = (store.members[boardId] ?? []).map((m) => {
+    if (m.userId === targetUserId) return { ...m, role: 'admin' as const };
+    if (m.role === 'admin') return { ...m, role: 'member' as const };
+    return m;
+  });
+  useBoardStore.setState({
+    members: { ...store.members, [boardId]: members },
+    boards: store.boards.map((b) =>
+      b.id === boardId ? { ...b, ownerId: targetUserId } : b,
+    ),
+  });
+  return {};
+}
+
+export async function kickMember(
+  boardId: string,
+  targetUserId: string,
+): Promise<{ error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { error: 'Supabase 미설정' };
+
+  const { error } = await supabase.rpc('kick_member', {
+    p_board_id: boardId,
+    p_target_user_id: targetUserId,
+  });
+  if (error) return { error: error.message };
+
+  useBoardStore.getState().removeMember(boardId, targetUserId);
+  return {};
+}
+
+export async function refreshInviteCode(
+  boardId: string,
+): Promise<{ newCode?: string; error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { error: 'Supabase 미설정' };
+
+  const newCode = generateInviteCode();
+  const { error } = await supabase.rpc('refresh_invite_code', {
+    p_board_id: boardId,
+    p_new_code: newCode,
+  });
+  if (error) return { error: error.message };
+
+  const store = useBoardStore.getState();
+  useBoardStore.setState({
+    boards: store.boards.map((b) =>
+      b.id === boardId ? { ...b, inviteCode: newCode } : b,
+    ),
+  });
+  return { newCode };
+}
+
+export async function voteDeleteBoard(
+  boardId: string,
+): Promise<{ deleted?: boolean; votes?: number; total?: number; error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { error: 'Supabase 미설정' };
+
+  const { data, error } = await supabase.rpc('vote_delete_board', {
+    p_board_id: boardId,
+  });
+  if (error) return { error: error.message };
+
+  const result = data as { deleted: boolean; votes: number; total: number };
+  if (result.deleted) {
+    useBoardStore.getState().removeBoard(boardId);
   }
+  return { deleted: result.deleted, votes: result.votes, total: result.total };
+}
 
-  useBoardStore.getState().removeBoard(boardId);
+export async function unvoteDeleteBoard(
+  boardId: string,
+): Promise<{ error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { error: 'Supabase 미설정' };
+
+  const { error } = await supabase.rpc('unvote_delete_board', {
+    p_board_id: boardId,
+  });
+  if (error) return { error: error.message };
+  return {};
+}
+
+export async function insertSystemMessage(
+  boardId: string,
+  type: string,
+  actorNickname: string,
+  targetNickname?: string,
+  routineName?: string,
+): Promise<{ error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { error: 'Supabase 미설정' };
+
+  const { error } = await supabase.from('board_system_messages').insert({
+    board_id: boardId,
+    type,
+    actor_nickname: actorNickname,
+    target_nickname: targetNickname ?? null,
+    routine_name: routineName ?? null,
+  });
+  if (error) return { error: error.message };
   return {};
 }
 

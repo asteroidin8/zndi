@@ -43,16 +43,18 @@ export function useBoardRealtimeSync() {
               userId: String(row!.user_id),
               nickname: String(row!.nickname),
               joinedAt: String(row!.joined_at),
+              role: (row!.role as string as import('@/types').BoardMemberRole) ?? 'member',
             });
           } else if (payload.eventType === 'UPDATE' && row) {
             const store = useBoardStore.getState();
             const current = store.members[boardId] ?? [];
             const updatedUserId = String(row.user_id);
-            const updatedNickname = String(row.nickname);
             store.setMembers(
               boardId,
               current.map((m) =>
-                m.userId === updatedUserId ? { ...m, nickname: updatedNickname } : m,
+                m.userId === updatedUserId
+                  ? { ...m, nickname: String(row.nickname), role: (row.role as string as import('@/types').BoardMemberRole) ?? m.role }
+                  : m,
               ),
             );
           }

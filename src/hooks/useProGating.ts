@@ -24,5 +24,11 @@ export function useProGating() {
 export const FREE_LIMITS = {
   routineGroups: 1,
   todoGroups: 1,
-  boards: 1,
+  boards: 3,
+  boardMembers: 5,
+} as const;
+
+export const PRO_LIMITS = {
+  boards: 7,
+  boardMembers: 15,
 } as const;

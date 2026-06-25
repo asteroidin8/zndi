@@ -86,11 +86,14 @@ export type Board = {
   createdAt: string;
 };
 
+export type BoardMemberRole = 'admin' | 'member';
+
 export type BoardMember = {
   boardId: string;
   userId: string;
   nickname: string;
   joinedAt: string;
+  role: BoardMemberRole;
 };
 
 export type BoardDailyProgress = {
@@ -111,6 +114,7 @@ export type BoardRoutine = {
   name: string;
   createdBy: string;
   createdAt: string;
+  deletedAt?: string;
 };
 
 export type BoardVerificationLog = {
@@ -124,6 +128,25 @@ export type BoardVerificationLog = {
   createdAt: string;
   nickname?: string;
   routineName?: string;
+};
+
+// ── Board System Message ──
+export type BoardSystemMessageType =
+  | 'routine_created'
+  | 'routine_deleted'
+  | 'member_joined'
+  | 'member_left'
+  | 'member_kicked'
+  | 'admin_changed';
+
+export type BoardSystemMessage = {
+  id: string;
+  boardId: string;
+  type: BoardSystemMessageType;
+  actorNickname: string;
+  targetNickname?: string;
+  routineName?: string;
+  createdAt: string;
 };
 
 // ── Follow ──

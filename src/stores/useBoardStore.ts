@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { Board, BoardDailyProgress, BoardMember, BoardRoutine, BoardVerificationLog } from '@/types';
+import type { Board, BoardDailyProgress, BoardMember, BoardRoutine, BoardSystemMessage, BoardVerificationLog } from '@/types';
 
 /** Zustand selector에서 ?? [] 사용 시 매 렌더 새 참조 → 무한 리렌더 방지 */
 export const EMPTY_BOARD_MEMBERS: BoardMember[] = [];
@@ -14,6 +14,7 @@ type BoardStore = {
   progress: Record<string, BoardDailyProgress[]>;
   routines: Record<string, BoardRoutine[]>;
   logs: Record<string, BoardVerificationLog[]>;
+  systemMessages: Record<string, BoardSystemMessage[]>;
   setBoards: (boards: Board[]) => void;
   addBoard: (board: Board) => void;
   removeBoard: (boardId: string) => void;
@@ -25,9 +26,11 @@ type BoardStore = {
   setRoutines: (boardId: string, routines: BoardRoutine[]) => void;
   addRoutine: (routine: BoardRoutine) => void;
   removeRoutine: (boardId: string, routineId: string) => void;
+  softDeleteRoutine: (boardId: string, routineId: string) => void;
   setLogs: (boardId: string, logs: BoardVerificationLog[]) => void;
   addLog: (log: BoardVerificationLog) => void;
   removeLog: (boardId: string, logId: string) => void;
+  setSystemMessages: (boardId: string, messages: BoardSystemMessage[]) => void;
   reset: () => void;
 };
 
@@ -37,6 +40,7 @@ export const useBoardStore = create<BoardStore>()((set) => ({
   progress: {},
   routines: {},
   logs: {},
+  systemMessages: {},
   setBoards: (boards) => set({ boards }),
   addBoard: (board) => set((s) => ({ boards: [...s.boards, board] })),
   removeBoard: (boardId) =>
@@ -46,6 +50,7 @@ export const useBoardStore = create<BoardStore>()((set) => ({
       progress: Object.fromEntries(Object.entries(s.progress).filter(([k]) => k !== boardId)),
       routines: Object.fromEntries(Object.entries(s.routines).filter(([k]) => k !== boardId)),
       logs: Object.fromEntries(Object.entries(s.logs).filter(([k]) => k !== boardId)),
+      systemMessages: Object.fromEntries(Object.entries(s.systemMessages).filter(([k]) => k !== boardId)),
     })),
   setMembers: (boardId, members) =>
     set((s) => ({ members: { ...s.members, [boardId]: members } })),
@@ -92,6 +97,15 @@ export const useBoardStore = create<BoardStore>()((set) => ({
         [boardId]: (s.routines[boardId] ?? []).filter((r) => r.id !== routineId),
       },
     })),
+  softDeleteRoutine: (boardId, routineId) =>
+    set((s) => ({
+      routines: {
+        ...s.routines,
+        [boardId]: (s.routines[boardId] ?? []).map((r) =>
+          r.id === routineId ? { ...r, deletedAt: new Date().toISOString() } : r,
+        ),
+      },
+    })),
   setLogs: (boardId, logs) =>
     set((s) => ({ logs: { ...s.logs, [boardId]: logs } })),
   addLog: (log) =>
@@ -108,5 +122,7 @@ export const useBoardStore = create<BoardStore>()((set) => ({
         [boardId]: (s.logs[boardId] ?? []).filter((l) => l.id !== logId),
       },
     })),
-  reset: () => set({ boards: [], members: {}, progress: {}, routines: {}, logs: {} }),
+  setSystemMessages: (boardId, messages) =>
+    set((s) => ({ systemMessages: { ...s.systemMessages, [boardId]: messages } })),
+  reset: () => set({ boards: [], members: {}, progress: {}, routines: {}, logs: {}, systemMessages: {} }),
 }));

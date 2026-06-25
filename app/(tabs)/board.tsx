@@ -179,7 +179,7 @@ export default function BoardTabScreen() {
             boards.map((board) => {
               const boardMembers = members[board.id] ?? [];
               const sorted = [...boardMembers].sort((a, b) =>
-                a.userId === board.ownerId ? -1 : b.userId === board.ownerId ? 1 : 0,
+                a.role === 'admin' ? -1 : b.role === 'admin' ? 1 : 0,
               );
               const AVATAR_SIZE = 28;
               const OVERLAP = 8;
@@ -205,7 +205,7 @@ export default function BoardTabScreen() {
                     </AppText>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                       {visible.map((m, i) => {
-                        const isOwner = m.userId === board.ownerId;
+                        const isBoardAdmin = m.role === 'admin';
                         return (
                           <View
                             key={m.userId}
@@ -214,7 +214,7 @@ export default function BoardTabScreen() {
                               zIndex: visible.length - i,
                             }}
                           >
-                            {isOwner && (
+                            {isBoardAdmin && (
                               <View style={{ alignItems: 'center', marginBottom: -2 }}>
                                 <AppIcon name="Crown" size={10} color={c.primary} />
                               </View>

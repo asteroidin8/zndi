@@ -3,7 +3,7 @@ import { File } from 'expo-file-system';
 
 import { getSupabase } from '@/lib/supabase';
 import { useBoardStore } from '@/stores/useBoardStore';
-import type { BoardRoutine, BoardVerificationLog } from '@/types';
+import type { BoardRoutine, BoardSystemMessage, BoardVerificationLog } from '@/types';
 
 function rowToRoutine(row: Record<string, unknown>): BoardRoutine {
   return {
@@ -12,6 +12,7 @@ function rowToRoutine(row: Record<string, unknown>): BoardRoutine {
     name: String(row.name),
     createdBy: String(row.created_by),
     createdAt: String(row.created_at),
+    deletedAt: row.deleted_at ? String(row.deleted_at) : undefined,
   };
 }
 
@@ -56,13 +57,13 @@ export async function deleteBoardRoutine(
   const supabase = getSupabase();
   if (!supabase) return { error: 'Supabase 미설정' };
 
-  const { error } = await supabase
-    .from('board_routines')
-    .delete()
-    .eq('id', routineId);
+  const { error } = await supabase.rpc('soft_delete_board_routine', {
+    p_board_id: boardId,
+    p_routine_id: routineId,
+  });
   if (error) return { error: error.message };
 
-  useBoardStore.getState().removeRoutine(boardId, routineId);
+  useBoardStore.getState().softDeleteRoutine(boardId, routineId);
   return {};
 }
 
@@ -240,5 +241,37 @@ export async function fetchVerificationLogs(
   });
 
   useBoardStore.getState().setLogs(boardId, logs);
+  return {};
+}
+
+export async function fetchSystemMessages(
+  boardId: string,
+  limit = 50,
+): Promise<{ error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { error: 'Supabase 미설정' };
+
+  const { data, error } = await supabase
+    .from('board_system_messages')
+    .select('*')
+    .eq('board_id', boardId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) return { error: error.message };
+
+  const messages: BoardSystemMessage[] = (data ?? []).map((row) => {
+    const r = row as Record<string, unknown>;
+    return {
+      id: String(r.id),
+      boardId: String(r.board_id),
+      type: String(r.type) as BoardSystemMessage['type'],
+      actorNickname: String(r.actor_nickname),
+      targetNickname: r.target_nickname ? String(r.target_nickname) : undefined,
+      routineName: r.routine_name ? String(r.routine_name) : undefined,
+      createdAt: String(r.created_at),
+    };
+  });
+
+  useBoardStore.getState().setSystemMessages(boardId, messages);
   return {};
 }

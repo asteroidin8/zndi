@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
 import { useUserStore } from '@/stores/useUserStore';
-import { joinBoard, fetchMyBoards } from '@/services/board/boardService';
+import { joinBoard, fetchMyBoards, insertSystemMessage } from '@/services/board/boardService';
 import { getDisplayName } from '@/utils/avatarColor';
 
 export default function BoardJoinScreen() {
@@ -34,6 +34,7 @@ export default function BoardJoinScreen() {
     }
 
     if (board) {
+      void insertSystemMessage(board.id, 'member_joined', displayName);
       await fetchMyBoards(user.id);
       router.replace(`/board/${board.id}`);
     }

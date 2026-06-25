@@ -12,7 +12,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
 import { useBoardStore } from '@/stores/useBoardStore';
 import { useProStore } from '@/stores/useProStore';
-import { FREE_LIMITS } from '@/hooks/useProGating';
+import { FREE_LIMITS, PRO_LIMITS } from '@/hooks/useProGating';
 import { useUserStore } from '@/stores/useUserStore';
 import { createBoard } from '@/services/board/boardService';
 import { getDisplayName } from '@/utils/avatarColor';
@@ -29,8 +29,10 @@ export default function BoardCreateScreen() {
   async function handleCreate() {
     const displayName = getDisplayName(nickname, user?.id);
     if (!user?.id || !name.trim()) return;
-    if (!isPro && boards.length >= FREE_LIMITS.boards) {
-      appAlert('Pro 기능', `Free는 보드를 ${FREE_LIMITS.boards}개까지 만들 수 있어요.\n설정 > 멤버십에서 업그레이드할 수 있어요.`);
+    const maxBoards = isPro ? PRO_LIMITS.boards : FREE_LIMITS.boards;
+    const ownedBoards = boards.filter((b) => b.ownerId === user.id);
+    if (ownedBoards.length >= maxBoards) {
+      appAlert('보드 제한', `보드를 ${maxBoards}개까지 만들 수 있어요.${!isPro ? '\n설정 > 멤버십에서 업그레이드할 수 있어요.' : ''}`);
       return;
     }
     setLoading(true);
