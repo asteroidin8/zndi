@@ -10,6 +10,7 @@ import {
   signOut,
   verifyEmailOtp,
 } from '@/services/auth/authSession';
+import { registerPushToken } from '@/services/pushTokenService';
 import { resetUserData } from '@/utils/resetUserData';
 
 type AuthContextValue = {
@@ -43,6 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        void registerPushToken();
+      }
       if (event === 'SIGNED_OUT') {
         setLoading(false);
         void resetUserData();
