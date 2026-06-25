@@ -47,15 +47,20 @@ export default function HomeScreen() {
   const unverifiedCount = useMemo(() => {
     if (!user?.id || boards.length === 0) return 0;
     const today = localDateStr();
+    const verified = new Set<string>();
+    for (const board of boards) {
+      const logs = allLogs[board.id] ?? [];
+      for (const l of logs) {
+        if (l.userId === user.id && localDateStr(new Date(l.createdAt)) === today) {
+          verified.add(`${board.id}:${l.routineId}`);
+        }
+      }
+    }
     let count = 0;
     for (const board of boards) {
       const routines = allRoutines[board.id] ?? [];
-      const logs = allLogs[board.id] ?? [];
       for (const routine of routines) {
-        const verified = logs.some(
-          (l) => l.userId === user.id && l.routineId === routine.id && localDateStr(new Date(l.createdAt)) === today,
-        );
-        if (!verified) count++;
+        if (!verified.has(`${board.id}:${routine.id}`)) count++;
       }
     }
     return count;

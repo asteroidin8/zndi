@@ -307,10 +307,11 @@ export async function fetchMyBoards(userId: string): Promise<{ error?: string }>
   const boards = (boardRows ?? []).map((r) => rowToBoard(r as Record<string, unknown>));
   useBoardStore.getState().setBoards(boards);
 
-  for (const board of boards) {
-    await fetchBoardMembers(board.id);
-    await fetchBoardProgress(board.id);
-  }
+  await Promise.all(
+    boards.map((board) =>
+      Promise.all([fetchBoardMembers(board.id), fetchBoardProgress(board.id)]),
+    ),
+  );
 
   return {};
 }

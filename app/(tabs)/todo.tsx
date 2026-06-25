@@ -26,6 +26,7 @@ import { FREE_LIMITS } from '@/hooks/useProGating';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { getPriorityColor } from '@/utils/dateFormat';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
+import { uniqueId } from '@/utils/uniqueId';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { type Todo, type TodoGroup, type TodoPriority, useTodoStore } from '@/stores/useTodoStore';
 
@@ -249,7 +250,7 @@ export default function TodoScreen() {
       -1,
     );
     addTodo({
-      id: String(Date.now()),
+      id: uniqueId(),
       title,
       priority,
       dueDate,
@@ -284,7 +285,7 @@ export default function TodoScreen() {
     }
     appPrompt('그룹 추가', '', (name) => {
       addGroup({
-        id: String(Date.now()),
+        id: uniqueId(),
         name: name.trim(),
         order: groups.length,
         collapsed: false,

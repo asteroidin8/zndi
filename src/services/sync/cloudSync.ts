@@ -165,8 +165,12 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
   });
 }
 
+type DeletableTable =
+  | 'routines' | 'todos' | 'fasting_records' | 'routine_completions'
+  | 'weight_records' | 'routine_groups' | 'todo_groups';
+
 export async function deleteCloudRecord(
-  table: string,
+  table: DeletableTable,
   id: string,
 ): Promise<{ error?: string }> {
   const supabase = getSupabase();

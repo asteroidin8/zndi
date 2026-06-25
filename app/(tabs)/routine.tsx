@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, ScrollView, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState, Platform, Pressable, ScrollView, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
@@ -31,6 +31,7 @@ import {
 } from '@/stores/useRoutineStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { localDateStr } from '@/utils/dateFormat';
+import { uniqueId } from '@/utils/uniqueId';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
 import { formatRepeatLabel, isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
@@ -98,8 +99,18 @@ export default function RoutineScreen() {
   const dragSourceGroupRef = useRef<string | null>(null);
   const prevDragTargetRef = useRef<string | null>(null);
 
-  const todayDate = useMemo(() => new Date(), []);
-  const todayStr = useMemo(() => localDateStr(), []);
+  const [todayDate, setTodayDate] = useState(() => new Date());
+  const todayStr = useMemo(() => localDateStr(todayDate), [todayDate]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        const now = new Date();
+        if (localDateStr(now) !== localDateStr(todayDate)) setTodayDate(now);
+      }
+    });
+    return () => sub.remove();
+  }, [todayDate]);
 
   const hasGroups = groups.length > 0;
   const sortedGroups = useMemo(() => [...groups].sort((a, b) => a.order - b.order), [groups]);
@@ -160,7 +171,7 @@ export default function RoutineScreen() {
       updateRoutine(editTarget.id, data);
     } else {
       addRoutine({
-        id: String(Date.now()),
+        id: uniqueId(),
         createdAt: Date.now(),
         order: routines.length,
         ...data,
@@ -182,7 +193,7 @@ export default function RoutineScreen() {
     }
     appPrompt('그룹 추가', '', (name) => {
       addGroup({
-        id: String(Date.now()),
+        id: uniqueId(),
         name: name.trim(),
         order: groups.length,
         collapsed: false,

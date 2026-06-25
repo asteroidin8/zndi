@@ -226,7 +226,10 @@ export default function StatsScreen() {
     () => (user ? buildBoardRoutineData(boardRoutines, boardLogs, user.id) : undefined),
     [boardRoutines, boardLogs, user],
   );
-  const grassMap = buildMonthGrassMap(viewYear, viewMonth, allRoutines, isCompleted, allTodos, boardData);
+  const grassMap = useMemo(
+    () => buildMonthGrassMap(viewYear, viewMonth, allRoutines, isCompleted, allTodos, boardData),
+    [viewYear, viewMonth, allRoutines, completions, allTodos, boardData],
+  );
   const { gridRef, share, shareInstagram, shareKakao } = useShareGrass();
   const [showShareMenu, setShowShareMenu] = useState(false);
 

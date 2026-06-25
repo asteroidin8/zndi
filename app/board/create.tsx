@@ -67,6 +67,7 @@ export default function BoardCreateScreen() {
               placeholder="예: 다이어트 챌린지"
               placeholderTextColor={c.inkDisabled}
               autoFocus
+              maxLength={30}
               style={{
                 fontSize: 16,
                 color: c.ink,

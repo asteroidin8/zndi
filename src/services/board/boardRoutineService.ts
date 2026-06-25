@@ -92,6 +92,7 @@ export async function pickImage(): Promise<string | null> {
     quality: 0.7,
     allowsEditing: true,
     aspect: [1, 1],
+    exif: false,
   });
   if (result.canceled || !result.assets[0]) return null;
   return result.assets[0].uri;
@@ -105,6 +106,7 @@ export async function takePhoto(): Promise<string | null> {
     quality: 0.7,
     allowsEditing: true,
     aspect: [1, 1],
+    exif: false,
   });
   if (result.canceled || !result.assets[0]) return null;
   return result.assets[0].uri;

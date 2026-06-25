@@ -242,10 +242,16 @@ export default function BoardDetailScreen() {
 
   const todayRoutineTotal = routines.length;
 
+  const verifiedSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of logs) {
+      set.add(`${l.userId}:${l.routineId}:${localDateStr(new Date(l.createdAt))}`);
+    }
+    return set;
+  }, [logs]);
+
   function hasVerified(userId: string, routineId: string, date: string): boolean {
-    return logs.some(
-      (l) => l.userId === userId && l.routineId === routineId && localDateStr(new Date(l.createdAt)) === date,
-    );
+    return verifiedSet.has(`${userId}:${routineId}:${date}`);
   }
 
   const memberStats = useMemo(() => {

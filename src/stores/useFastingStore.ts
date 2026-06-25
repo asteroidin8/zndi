@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { FastingRecord, FastingResult, FastingStatus } from '@/types';
+import { uniqueId } from '@/utils/uniqueId';
 
 export type { FastingRecord, FastingResult, FastingStatus } from '@/types';
 
@@ -31,7 +32,7 @@ export const useFastingStore = create<FastingStore>()(
         const { startedAt, goalHours, records } = get();
         if (!startedAt) return;
         const newRecord: FastingRecord = {
-          id: String(Date.now()),
+          id: uniqueId(),
           startedAt,
           endedAt: Date.now(),
           goalHours,
