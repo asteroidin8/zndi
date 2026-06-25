@@ -13,7 +13,7 @@ import { StatsBentoStats } from '@/components/stats/StatsBentoStats';
 import { StatsDayDetailModal } from '@/components/stats/StatsDayDetailModal';
 import { StatsMonthGrid } from '@/components/stats/StatsMonthGrid';
 import { STATS_LABELS } from '@/constants/statsLabels';
-import { spacing } from '@/constants/spacing';
+import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useShareGrass } from '@/hooks/useShareGrass';
@@ -22,6 +22,7 @@ import type { FastingRecord } from '@/types';
 import { appAlert } from '@/stores/useAlertStore';
 import { useBoardStore } from '@/stores/useBoardStore';
 import { useFastingStore } from '@/stores/useFastingStore';
+import { useProStore } from '@/stores/useProStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { type StatsCardId, useStatsCardStore } from '@/stores/useStatsCardStore';
@@ -33,6 +34,7 @@ import { formatMetric } from '@/utils/formatMetric';
 import { localDateStr } from '@/utils/dateFormat';
 import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 import { type DailyFastingSummary, groupFastingByDay } from '@/utils/statsHelper';
+import { type Insight, generateInsights } from '@/utils/statsInsights';
 
 const TAB_INDEX = 4 as const;
 const L = STATS_LABELS;
@@ -61,6 +63,27 @@ function StatCard({
   );
 }
 
+function InsightCard({ insight }: { insight: Insight }) {
+  const c = useThemeColors();
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.gap,
+        backgroundColor: `${c.primary}10`,
+        borderRadius: radius.lg,
+        padding: spacing.card,
+      }}
+    >
+      <AppIcon name={insight.icon as never} size={18} color={c.primary} />
+      <AppText variant="body" style={{ flex: 1 }}>
+        {insight.message}
+      </AppText>
+    </View>
+  );
+}
+
 export default function StatsScreen() {
   const c = useThemeColors();
   const scrollRef = useRef<ScrollView>(null);
@@ -75,10 +98,21 @@ export default function StatsScreen() {
   const { user } = useAuth();
   const boardRoutines = useBoardStore((s) => s.routines);
   const boardLogs = useBoardStore((s) => s.logs);
+  const isPro = useProStore((s) => s.isPro);
   const { removeRecord, updateRecord } = useFastingStore.getState();
   const { isCompleted } = useRoutineCompletionStore.getState();
   const routines = useMemo(() => allRoutines.filter((r) => !r.deletedAt), [allRoutines]);
   const todos = useMemo(() => allTodos.filter((t) => !t.deletedAt), [allTodos]);
+
+  const insights = useMemo(() => {
+    if (!isPro) return [];
+    return generateInsights({
+      routines,
+      completions,
+      todos,
+      fastingRecords: records,
+    }).slice(0, 2);
+  }, [isPro, routines, completions, todos, records]);
 
   const now = new Date();
   const [viewYear, setViewYear] = useState(now.getFullYear());
@@ -220,6 +254,14 @@ export default function StatsScreen() {
         </View>
 
         <StatsBentoStats />
+
+        {insights.length > 0 && (
+          <View style={{ gap: spacing.sm }}>
+            {insights.map((insight) => (
+              <InsightCard key={insight.type} insight={insight} />
+            ))}
+          </View>
+        )}
 
         {isDataEmpty ? (
           <EmptyState
