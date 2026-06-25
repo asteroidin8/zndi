@@ -20,7 +20,8 @@ type FeatureRow = {
 const FEATURES: FeatureRow[] = [
   { label: '루틴 그룹', free: '1개', pro: '무제한' },
   { label: '할일 그룹', free: '1개', pro: '무제한' },
-  { label: '보드', free: '1개', pro: '무제한' },
+  { label: '보드 생성', free: '3개', pro: '7개' },
+  { label: '보드 인원', free: '5명', pro: '15명' },
   { label: '섹션', free: false, pro: true },
   { label: '테마 컬러', free: '1종', pro: '전체' },
   { label: '잔디 모양', free: '1종', pro: '전체' },
