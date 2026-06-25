@@ -327,7 +327,14 @@ C  ??????????????  41%
 | 21 | FastingCard 인터벌 격리 | `FastingCard.tsx`, `FastingTimer.tsx`, `FastingCardCollapsed.tsx` | 1초 인터벌을 자식 컴포넌트로 이동 — 부모 리렌더 제거, useLiveElapsed 훅 추출 |
 | 22 | 잔여 whole-store 구독 수정 | `TodoFormFields`, `RoutineModal`, `stats/fasting`, `stats/routine`, `settings/notifications` | 선택적 selector + getState() 전환 |
 | 23 | 알림 재스케줄링 디바운스 | `useRoutineNotifications.ts`, `useTodoNotifications.ts` | 2초 디바운스로 연속 변경 시 불필요한 전체 취소+재등록 방지 |
+| 24 | 삭제 투표 철회 UI | `app/board/[id].tsx`, `boardService.ts` | unvoteDeleteBoard 연결, 투표 상태에 따른 Trash2/Undo2 아이콘 전환 |
+| 25 | 탈퇴 시 로컬 캐시 보존 | `app/board/[id].tsx` | leaveBoard 전 AsyncStorage에 보드 데이터 저장 (통계 보존) |
+| 26 | 푸시 알림 인프라 | `pushTokenService.ts`, `AuthProvider.tsx`, `push_tokens.sql` | 로그인 시 Expo Push Token 등록, push_tokens 테이블 |
+| 27 | 추방/투표 푸시 알림 | `boardPushService.ts`, `send-board-push/` | Edge Function으로 Expo Push API 호출, 추방·투표 시 보드 멤버 알림 |
+| 28 | 비활성 보드 자동 삭제 | `20260625_inactive_board_cleanup.sql` | cleanup_inactive_boards() — 45일 미인증 보드 soft delete (pg_cron용) |
+| 29 | 비활성 보드 경고 알림 | `inactive-board-warning/` | 38일 경과 보드 감지 → 7일 전 푸시 경고 Edge Function |
+| 30 | Storage 사진 정리 | `cleanup-board-photos/` | soft delete된 보드의 인증 사진 Storage에서 삭제 Edge Function |
 
 ### 미진행 리팩토링 / 개선 과제
 
-없음 — 모든 이슈 항목 완료.
+없음 — 보드 정책 미구현 항목 전체 완료.
