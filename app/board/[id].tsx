@@ -193,6 +193,7 @@ export default function BoardDetailScreen() {
   const c = useThemeColors();
   const { user } = useAuth();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const board = useBoardStore((s) => s.boards.find((b) => b.id === id));
   const members = useBoardStore((s) => s.members[id ?? ''] ?? EMPTY_BOARD_MEMBERS);
   const allRoutines = useBoardStore((s) => s.routines[id ?? ''] ?? EMPTY_BOARD_ROUTINES);
   const routines = useMemo(() => allRoutines.filter((r) => !r.deletedAt), [allRoutines]);
