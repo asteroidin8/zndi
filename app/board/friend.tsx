@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { InteractionManager, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 
@@ -28,7 +28,11 @@ export default function FriendProfileScreen() {
   const progress = useFollowStore((s) => s.friendProgress[userId ?? ''] ?? EMPTY_FRIEND_PROGRESS);
 
   useEffect(() => {
-    if (userId) void fetchFriendProgress(userId);
+    if (!userId) return;
+    const task = InteractionManager.runAfterInteractions(() => {
+      void fetchFriendProgress(userId);
+    });
+    return () => task.cancel();
   }, [userId]);
 
   const weekDates = useMemo(() => getWeekDates(), []);
