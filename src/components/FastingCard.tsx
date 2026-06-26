@@ -14,11 +14,22 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
 import { useFastingStore } from '@/stores/useFastingStore';
 import { feedbackSuccess } from '@/utils/microFeedback';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 
-const HOUR_ITEMS: DrumItem[] = Array.from({ length: 24 }, (_, i) => ({
+const HOUR_ITEMS_24: DrumItem[] = Array.from({ length: 24 }, (_, i) => ({
   value: i,
   label: `${String(i).padStart(2, '0')}시`,
 }));
+
+const HOUR_ITEMS_12: DrumItem[] = Array.from({ length: 12 }, (_, i) => ({
+  value: i,
+  label: `${i === 0 ? 12 : i}시`,
+}));
+
+const AM_PM_ITEMS: DrumItem[] = [
+  { value: 0, label: '오전' },
+  { value: 1, label: '오후' },
+];
 
 const MINUTE_ITEMS: DrumItem[] = Array.from({ length: 12 }, (_, i) => ({
   value: i * 5,
@@ -36,6 +47,8 @@ function buildMonthItems(): DrumItem[] {
 
 export function FastingCard() {
   const c = useThemeColors();
+  const timeFormat = useSettingsStore((s) => s.timeFormat ?? '24h');
+  const is12h = timeFormat === '12h';
   const status = useFastingStore((s) => s.status);
   const startedAt = useFastingStore((s) => s.startedAt);
   const goalHours = useFastingStore((s) => s.goalHours);
@@ -167,12 +180,29 @@ export function FastingCard() {
             onSelect={(v) => setEditFields((p) => ({ ...p, day: v }))}
             width={56}
           />
-          <DrumPicker
-            items={HOUR_ITEMS}
-            selected={editFields.hour}
-            onSelect={(v) => setEditFields((p) => ({ ...p, hour: v }))}
-            width={56}
-          />
+          {is12h ? (
+            <>
+              <DrumPicker
+                items={AM_PM_ITEMS}
+                selected={Math.floor(editFields.hour / 12)}
+                onSelect={(v) => setEditFields((p) => ({ ...p, hour: v * 12 + (p.hour % 12) }))}
+                width={56}
+              />
+              <DrumPicker
+                items={HOUR_ITEMS_12}
+                selected={editFields.hour % 12}
+                onSelect={(v) => setEditFields((p) => ({ ...p, hour: Math.floor(p.hour / 12) * 12 + v }))}
+                width={56}
+              />
+            </>
+          ) : (
+            <DrumPicker
+              items={HOUR_ITEMS_24}
+              selected={editFields.hour}
+              onSelect={(v) => setEditFields((p) => ({ ...p, hour: v }))}
+              width={56}
+            />
+          )}
           <DrumPicker
             items={MINUTE_ITEMS}
             selected={editFields.minute}

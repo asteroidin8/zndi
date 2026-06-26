@@ -8,6 +8,7 @@ import { estimateCaloriesBurned, getFastingMessage } from '@/constants/fastingMe
 import { radius, spacing } from '@/constants/spacing';
 import { useLiveElapsed } from '@/hooks/useLiveElapsed';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { formatElapsed, formatOverElapsed, formatRelativeDate } from '@/utils/fastingFormat';
 
@@ -121,10 +122,11 @@ const StaticInfo = React.memo(function StaticInfo({
   onEditStartTime?: () => void;
 }) {
   const c = useThemeColors();
+  const timeFormat = useSettingsStore((s) => s.timeFormat ?? '24h');
   const goalMs = goalHours * 3_600_000;
   const completionTs = startedAt + goalMs;
-  const start = formatRelativeDate(startedAt);
-  const end = formatRelativeDate(completionTs);
+  const start = formatRelativeDate(startedAt, timeFormat);
+  const end = formatRelativeDate(completionTs, timeFormat);
   const isOverGoal = Date.now() - startedAt >= goalMs;
   const accent = isOverGoal ? c.booster : c.primary;
 

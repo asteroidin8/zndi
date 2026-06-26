@@ -10,7 +10,7 @@ export function formatOverElapsed(ms: number) {
   return `+${formatElapsed(ms)}`;
 }
 
-export function formatRelativeDate(ts: number): { timeLabel: string; dayLabel: string } {
+export function formatRelativeDate(ts: number, timeFormat: '12h' | '24h' = '12h'): { timeLabel: string; dayLabel: string } {
   const date = new Date(ts);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -20,8 +20,13 @@ export function formatRelativeDate(ts: number): { timeLabel: string; dayLabel: s
 
   const h = date.getHours();
   const min = date.getMinutes();
-  const ampm = h < 12 ? '오전' : '오후';
-  const timeLabel = `${ampm} ${h % 12 || 12}:${String(min).padStart(2, '0')}`;
+  let timeLabel: string;
+  if (timeFormat === '24h') {
+    timeLabel = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+  } else {
+    const ampm = h < 12 ? '오전' : '오후';
+    timeLabel = `${ampm} ${h % 12 || 12}:${String(min).padStart(2, '0')}`;
+  }
 
   let dayLabel: string;
   if (diffDays === 0) dayLabel = '오늘';
