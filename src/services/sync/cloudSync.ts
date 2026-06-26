@@ -241,29 +241,38 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
 
   if (profileRes.data) {
     const p = profileRes.data as Record<string, unknown>;
-    useUserStore.setState({
-      profile: {
-        heightCm: p.height_cm as number | null,
-        weightKg: p.weight_kg as number | null,
-        targetWeightKg: p.target_weight_kg as number | null,
-        ageYears: p.age_years as number | null,
-        isMale: p.is_male as boolean | null,
-        nickname: (p.nickname as string | null) ?? null,
-      },
-    });
+    const serverProfile = {
+      heightCm: p.height_cm as number | null,
+      weightKg: p.weight_kg as number | null,
+      targetWeightKg: p.target_weight_kg as number | null,
+      ageYears: p.age_years as number | null,
+      isMale: p.is_male as boolean | null,
+      nickname: (p.nickname as string | null) ?? null,
+    };
+    const local = useUserStore.getState().profile;
+    const changed = Object.keys(serverProfile).some(
+      (k) => serverProfile[k as keyof typeof serverProfile] !== local[k as keyof typeof local],
+    );
+    if (changed) {
+      useUserStore.setState({ profile: serverProfile });
+    }
   }
 
   if (routineGroupsRes.data?.length) {
-    useRoutineStore.setState({
-      groups: routineGroupsRes.data
-        .map((g: Record<string, unknown>) => ({
-          id: g.id as string,
-          name: g.name as string,
-          order: g.sort_order as number,
-          collapsed: (g.collapsed as boolean) ?? false,
-        }))
-        .sort((a, b) => a.order - b.order),
-    });
+    const localGroups = useRoutineStore.getState().groups;
+    const localGroupIds = new Set(localGroups.map((g) => g.id));
+    const serverGroups = routineGroupsRes.data.map((g: Record<string, unknown>) => ({
+      id: g.id as string,
+      name: g.name as string,
+      order: g.sort_order as number,
+      collapsed: (g.collapsed as boolean) ?? false,
+    }));
+    const newGroups = serverGroups.filter((g) => !localGroupIds.has(g.id));
+    if (newGroups.length > 0) {
+      useRoutineStore.setState({
+        groups: [...localGroups, ...newGroups].sort((a, b) => a.order - b.order),
+      });
+    }
   }
 
   if (routinesRes.data?.length) {
@@ -271,24 +280,28 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
       .map((r) => routineFromRow(r as Record<string, unknown>));
     const localRoutines = useRoutineStore.getState().routines;
     const localIds = new Set(localRoutines.map((r) => r.id));
-    const merged = [
-      ...localRoutines,
-      ...serverRoutines.filter((r) => !localIds.has(r.id)),
-    ].sort((a, b) => a.order - b.order);
-    useRoutineStore.setState({ routines: merged });
+    const newFromServer = serverRoutines.filter((r) => !localIds.has(r.id));
+    if (newFromServer.length > 0) {
+      const merged = [...localRoutines, ...newFromServer].sort((a, b) => a.order - b.order);
+      useRoutineStore.setState({ routines: merged });
+    }
   }
 
   if (todoGroupsRes.data?.length) {
-    useTodoStore.setState({
-      groups: todoGroupsRes.data
-        .map((g: Record<string, unknown>) => ({
-          id: g.id as string,
-          name: g.name as string,
-          order: g.sort_order as number,
-          collapsed: (g.collapsed as boolean) ?? false,
-        }))
-        .sort((a, b) => a.order - b.order),
-    });
+    const localTodoGroups = useTodoStore.getState().groups;
+    const localTodoGroupIds = new Set(localTodoGroups.map((g) => g.id));
+    const serverTodoGroups = todoGroupsRes.data.map((g: Record<string, unknown>) => ({
+      id: g.id as string,
+      name: g.name as string,
+      order: g.sort_order as number,
+      collapsed: (g.collapsed as boolean) ?? false,
+    }));
+    const newTodoGroups = serverTodoGroups.filter((g) => !localTodoGroupIds.has(g.id));
+    if (newTodoGroups.length > 0) {
+      useTodoStore.setState({
+        groups: [...localTodoGroups, ...newTodoGroups].sort((a, b) => a.order - b.order),
+      });
+    }
   }
 
   if (todosRes.data?.length) {
@@ -296,46 +309,59 @@ export async function pullCloudToLocal(userId: string): Promise<{ error?: string
       .map((t) => todoFromRow(t as Record<string, unknown>));
     const localTodos = useTodoStore.getState().todos;
     const localTodoIds = new Set(localTodos.map((t) => t.id));
-    const mergedTodos = [
-      ...localTodos,
-      ...serverTodos.filter((t) => !localTodoIds.has(t.id)),
-    ].sort((a, b) => a.order - b.order);
-    useTodoStore.setState({ todos: mergedTodos });
+    const newTodosFromServer = serverTodos.filter((t) => !localTodoIds.has(t.id));
+    if (newTodosFromServer.length > 0) {
+      const mergedTodos = [...localTodos, ...newTodosFromServer].sort((a, b) => a.order - b.order);
+      useTodoStore.setState({ todos: mergedTodos });
+    }
   }
 
   if (completionsRes.data?.length) {
-    const serverMap: Record<string, number> = {};
-    for (const row of completionsRes.data) {
-      serverMap[row.completion_key] = row.completed_at;
-    }
     const localCompletions = useRoutineCompletionStore.getState().completions;
-    const merged = { ...serverMap, ...localCompletions };
-    useRoutineCompletionStore.setState({ completions: merged });
+    let hasNew = false;
+    const merged = { ...localCompletions };
+    for (const row of completionsRes.data) {
+      if (!(row.completion_key in merged)) {
+        merged[row.completion_key] = row.completed_at;
+        hasNew = true;
+      }
+    }
+    if (hasNew) {
+      useRoutineCompletionStore.setState({ completions: merged });
+    }
   }
 
   if (fastingRes.data?.length) {
-    useFastingStore.setState({
-      records: fastingRes.data.map((r) => ({
-        id: r.id,
-        startedAt: r.started_at,
-        endedAt: r.ended_at,
-        goalHours: Number(r.goal_hours),
-        result: r.result,
-      })),
-    });
+    const localRecords = useFastingStore.getState().records;
+    const localRecordIds = new Set(localRecords.map((r) => r.id));
+    const serverRecords = fastingRes.data.map((r) => ({
+      id: r.id as string,
+      startedAt: r.started_at as number,
+      endedAt: r.ended_at as number | null,
+      goalHours: Number(r.goal_hours),
+      result: r.result as import('@/types').FastingResult | null,
+    }));
+    const newRecords = serverRecords.filter((r) => !localRecordIds.has(r.id));
+    if (newRecords.length > 0) {
+      useFastingStore.setState({ records: [...localRecords, ...newRecords] });
+    }
   }
 
   if (weightRes.data?.length) {
-    useUserStore.setState({
-      weightRecords: weightRes.data
-        .map((w: Record<string, unknown>) => ({
-          id: w.id as string,
-          date: w.date as string,
-          weightKg: Number(w.weight_kg),
-          createdAt: w.created_at as number,
-        }))
-        .sort((a, b) => a.date.localeCompare(b.date)),
-    });
+    const localWeight = useUserStore.getState().weightRecords;
+    const localWeightIds = new Set(localWeight.map((w) => w.id));
+    const serverWeight = weightRes.data.map((w: Record<string, unknown>) => ({
+      id: w.id as string,
+      date: w.date as string,
+      weightKg: Number(w.weight_kg),
+      createdAt: w.created_at as number,
+    }));
+    const newWeight = serverWeight.filter((w) => !localWeightIds.has(w.id));
+    if (newWeight.length > 0) {
+      useUserStore.setState({
+        weightRecords: [...localWeight, ...newWeight].sort((a, b) => a.date.localeCompare(b.date)),
+      });
+    }
   }
 
   return {};

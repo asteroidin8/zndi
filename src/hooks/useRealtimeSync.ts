@@ -30,7 +30,10 @@ function subscribeChannel(supabase: SupabaseClient, userId: string): RealtimeCha
           existing.order === Number(row.sort_order) &&
           existing.section === ((row.section as string | null | undefined) ?? null) &&
           existing.groupId === ((row.group_id as string | null) ?? null) &&
-          existing.reminderTime === ((row.reminder_time as string | null) ?? null)
+          existing.reminderTime === ((row.reminder_time as string | null) ?? null) &&
+          existing.deletedAt === (row.deleted_at ? Number(row.deleted_at) : undefined) &&
+          existing.repeatType === ((row.repeat_type as string) ?? 'weekly') &&
+          JSON.stringify(existing.repeatDays) === JSON.stringify(row.repeat_days ?? [])
         ) return;
         useRoutineStore.setState((state) => {
           const next = state.routines.filter((r) => r.id !== row.id);
@@ -60,7 +63,10 @@ function subscribeChannel(supabase: SupabaseClient, userId: string): RealtimeCha
           existingTodo.order === Number(row.sort_order) &&
           existingTodo.completedAt === ((row.completed_at as number | null) ?? null) &&
           existingTodo.groupId === ((row.group_id as string | null) ?? null) &&
-          existingTodo.section === ((row.section as string | null) ?? null)
+          existingTodo.section === ((row.section as string | null) ?? null) &&
+          existingTodo.deletedAt === (row.deleted_at ? Number(row.deleted_at) : undefined) &&
+          existingTodo.priority === String(row.priority) &&
+          existingTodo.dueDate === ((row.due_date as string | null) ?? null)
         ) return;
         useTodoStore.setState((state) => {
           const next = state.todos.filter((t) => t.id !== row.id);
