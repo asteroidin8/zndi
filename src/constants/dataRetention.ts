@@ -1,0 +1,3 @@
+export const DELETED_RETENTION_DAYS = 180;
+export const COMPLETION_RETENTION_DAYS = 400;
+export const MAX_STREAK_DAYS = 365;
