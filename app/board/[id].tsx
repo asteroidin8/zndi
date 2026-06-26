@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  InteractionManager,
   Pressable,
   ScrollView,
   Share,
@@ -247,11 +248,14 @@ export default function BoardDetailScreen() {
 
   useEffect(() => {
     if (!id) return;
-    void fetchBoardMembers(id);
-    void fetchBoardRoutines(id);
-    void fetchVerificationLogs(id);
-    void fetchSystemMessages(id);
-    void fetchMyDeleteVote(id).then(({ hasVoted: v }) => setHasVoted(v));
+    const task = InteractionManager.runAfterInteractions(() => {
+      void fetchBoardMembers(id);
+      void fetchBoardRoutines(id);
+      void fetchVerificationLogs(id);
+      void fetchSystemMessages(id);
+      void fetchMyDeleteVote(id).then(({ hasVoted: v }) => setHasVoted(v));
+    });
+    return () => task.cancel();
   }, [id]);
 
   const todayRoutineTotal = routines.length;
