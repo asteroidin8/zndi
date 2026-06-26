@@ -11,6 +11,17 @@ interface TabNavigationContextValue {
 }
 
 const scrollHandlers = new Map<TabIndex, () => void>();
+const backHandlers = new Map<TabIndex, () => boolean>();
+
+export function registerBackHandler(index: TabIndex, handler: () => boolean): () => void {
+  backHandlers.set(index, handler);
+  return () => { backHandlers.delete(index); };
+}
+
+export function invokeTabBackHandler(index: TabIndex): boolean {
+  const handler = backHandlers.get(index);
+  return handler ? handler() : false;
+}
 
 export function registerTabScrollHandler(index: TabIndex, handler: () => void): () => void {
   scrollHandlers.set(index, handler);

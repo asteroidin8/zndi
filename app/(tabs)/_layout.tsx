@@ -6,6 +6,7 @@ import { usePathname } from 'expo-router';
 import { TabBar } from '@/components/TabBar';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import {
+  invokeTabBackHandler,
   invokeTabScrollToTop,
   TabNavigationContext,
   type TabIndex,
@@ -45,6 +46,9 @@ export default function TabLayout() {
       const tabPaths = ['/', '/board', '/routine', '/todo', '/stats'];
       if (!tabPaths.includes(pathname)) return false;
 
+      if (invokeTabBackHandler(activeTabRef.current)) {
+        return true;
+      }
       if (activeTabRef.current !== HOME_INDEX) {
         setActiveTab(HOME_INDEX);
         return true;
