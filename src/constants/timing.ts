@@ -1,0 +1,5 @@
+export const PUSH_DEBOUNCE_MS = 2500;
+export const MIN_BACKGROUND_MS = 5000;
+export const BOARD_PROGRESS_DEBOUNCE_MS = 500;
+export const WIDGET_DEBOUNCE_MS = 1000;
+export const WIDGET_REFRESH_MS = 60_000;

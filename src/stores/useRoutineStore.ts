@@ -6,7 +6,7 @@ import type { Routine, RoutineGroup } from '@/types';
 
 export type { Routine, RoutineGroup, Weekday, RepeatType } from '@/types';
 
-const DELETED_RETENTION_DAYS = 180;
+import { DELETED_RETENTION_DAYS } from '@/constants/dataRetention';
 
 type RoutineStore = {
   routines: Routine[];

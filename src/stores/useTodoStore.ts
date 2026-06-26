@@ -10,7 +10,7 @@ function nextPinOrder(todos: Todo[]): number {
   return todos.reduce((max, t) => (t.pinnedToHome ? Math.max(max, t.pinOrder) : max), -1) + 1;
 }
 
-const DELETED_RETENTION_DAYS = 180;
+import { DELETED_RETENTION_DAYS } from '@/constants/dataRetention';
 
 type TodoStore = {
   todos: Todo[];

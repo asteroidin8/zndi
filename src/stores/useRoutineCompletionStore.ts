@@ -2,12 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { COMPLETION_RETENTION_DAYS, MAX_STREAK_DAYS } from '@/constants/dataRetention';
 import type { Routine } from '@/types';
 import { toDateStr } from '@/utils/homeDailyBoard';
 import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
-
-const MAX_STREAK_DAYS = 365;
-const COMPLETION_RETENTION_DAYS = 400;
 
 function makeKey(routineId: string, date: string) {
   return `${date}:${routineId}`;

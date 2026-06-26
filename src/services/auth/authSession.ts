@@ -2,12 +2,13 @@ import * as Linking from 'expo-linking';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 
+import { APP_SCHEME } from '@/constants/app';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export function getAuthRedirectUri(): string {
-  return makeRedirectUri({ scheme: 'zndi', path: 'auth/callback' });
+  return makeRedirectUri({ scheme: APP_SCHEME, path: 'auth/callback' });
 }
 
 function parseAuthParams(url: string): { access_token?: string; refresh_token?: string } {

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 
+import { BOARD_PROGRESS_DEBOUNCE_MS } from '@/constants/timing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { isCloudSyncSuppressed } from '@/services/sync/cloudSyncGuard';
 import { useBoardStore } from '@/stores/useBoardStore';
@@ -75,7 +76,7 @@ export function useBoardProgressSync() {
 
     const debouncedSync = () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      debounceTimer.current = setTimeout(syncProgress, 500);
+      debounceTimer.current = setTimeout(syncProgress, BOARD_PROGRESS_DEBOUNCE_MS);
     };
 
     syncProgress();

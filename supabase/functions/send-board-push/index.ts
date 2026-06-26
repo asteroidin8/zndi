@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
+import { EXPO_PUSH_URL } from '../_shared/constants.ts';
 
 interface PushRequest {
   boardId: string;

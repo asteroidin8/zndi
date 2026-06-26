@@ -1,6 +1,7 @@
 import React from 'react';
 import { FlexWidget, TextWidget } from 'react-native-android-widget';
 import type { WidgetData } from './widgetDataBridge';
+import { APP_SCHEME } from '@/constants/app';
 import { colors } from '@/constants/colors';
 
 interface Props {
@@ -34,7 +35,7 @@ export function FastingWidget({ data, theme }: Props) {
           flexGap: 6,
         }}
         clickAction="OPEN_URI"
-        clickActionData={{ uri: 'zndi://(tabs)' }}
+        clickActionData={{ uri: `${APP_SCHEME}://(tabs)` }}
       >
         <TextWidget
           text="단식"

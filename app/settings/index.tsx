@@ -9,6 +9,7 @@ import { AppText } from '@/components/AppText';
 import { ProgressBar } from '@/components/ProgressBar';
 import { QRModal } from '@/components/QRModal';
 import { DangerRow, GroupCard, InsetDivider, Row } from '@/components/settings/MyScreenUI';
+import { APP_SCHEME } from '@/constants/app';
 import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -498,7 +499,7 @@ export default function MyScreen() {
           onClose={() => setShowProfileQR(false)}
           title="내 프로필"
           subtitle="친구가 이 QR을 스캔하면 나를 팔로우할 수 있어요"
-          value={profile.nickname ? `zndi://follow?nickname=${encodeURIComponent(profile.nickname)}` : `zndi://follow?userId=${user.id.slice(0, 8)}`}
+          value={profile.nickname ? `${APP_SCHEME}://follow?nickname=${encodeURIComponent(profile.nickname)}` : `${APP_SCHEME}://follow?userId=${user.id.slice(0, 8)}`}
           copyLabel={profile.nickname ?? getDisplayName(null, user.id)}
         />
       )}

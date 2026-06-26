@@ -19,6 +19,7 @@ import { Card } from '@/components/Card';
 import { QRModal } from '@/components/QRModal';
 import { SheetModal, SheetPrimaryButton } from '@/components/SheetModal';
 import { PageHeader } from '@/components/settings/MyScreenUI';
+import { APP_SCHEME } from '@/constants/app';
 import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -787,7 +788,7 @@ export default function BoardDetailScreen() {
         onClose={() => setShowQR(false)}
         title="보드 초대"
         subtitle="QR 코드를 스캔하거나 초대 코드를 공유하세요"
-        value={`zndi://board/join?code=${board.inviteCode}`}
+        value={`${APP_SCHEME}://board/join?code=${board.inviteCode}`}
         copyLabel={board.inviteCode}
       />
     </SafeAreaView>

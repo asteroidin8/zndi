@@ -3,6 +3,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIcon } from '@/components/AppIcon';
+import { CONTACT_EMAIL } from '@/constants/app';
 import { AppText } from '@/components/AppText';
 import { Divider } from '@/components/Divider';
 import { spacing } from '@/constants/spacing';
@@ -35,7 +36,7 @@ const SECTIONS = [
   },
   {
     title: '7. 문의',
-    body: '약관 관련 문의는 설정 > 앱 정보 > 문의하기 또는 asteroidin8@gmail.com 으로 연락해 주세요.',
+    body: `약관 관련 문의는 설정 > 앱 정보 > 문의하기 또는 ${CONTACT_EMAIL} 으로 연락해 주세요.`,
   },
   {
     title: '8. 시행일',
