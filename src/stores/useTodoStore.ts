@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { markDirty } from '@/services/sync/dirtyTracker';
 import type { Todo, TodoGroup, TodoPriority } from '@/types';
 
 export type { Todo, TodoGroup, TodoPriority } from '@/types';
@@ -45,9 +46,10 @@ export const useTodoStore = create<TodoStore>()(
       groups: [],
       lastArchiveDate: null,
 
-      addTodo: (todo) => set((s) => ({ todos: [...s.todos, todo] })),
+      addTodo: (todo) => { markDirty('todos', todo.id); set((s) => ({ todos: [...s.todos, todo] })); },
 
-      updateTodo: (id, updates) =>
+      updateTodo: (id, updates) => {
+        markDirty('todos', id);
         set((s) => ({
           todos: s.todos.map((t) => {
             if (t.id !== id) return t;
@@ -61,31 +63,16 @@ export const useTodoStore = create<TodoStore>()(
             }
             return next;
           }),
-        })),
+        }));
+      },
 
-      completeTodo: (id) =>
-        set((s) => ({
-          todos: s.todos.map((t) => (t.id === id ? { ...t, completedAt: Date.now() } : t)),
-        })),
+      completeTodo: (id) => { markDirty('todos', id); set((s) => ({ todos: s.todos.map((t) => (t.id === id ? { ...t, completedAt: Date.now() } : t)) })); },
 
-      uncompleteTodo: (id) =>
-        set((s) => ({
-          todos: s.todos.map((t) => (t.id === id ? { ...t, completedAt: null } : t)),
-        })),
+      uncompleteTodo: (id) => { markDirty('todos', id); set((s) => ({ todos: s.todos.map((t) => (t.id === id ? { ...t, completedAt: null } : t)) })); },
 
-      removeTodo: (id) =>
-        set((s) => ({
-          todos: s.todos.map((t) =>
-            t.id === id ? { ...t, deletedAt: Date.now() } : t,
-          ),
-        })),
+      removeTodo: (id) => { markDirty('todos', id); set((s) => ({ todos: s.todos.map((t) => t.id === id ? { ...t, deletedAt: Date.now() } : t) })); },
 
-      undoRemoveTodo: (id) =>
-        set((s) => ({
-          todos: s.todos.map((t) =>
-            t.id === id ? { ...t, deletedAt: undefined } : t,
-          ),
-        })),
+      undoRemoveTodo: (id) => { markDirty('todos', id); set((s) => ({ todos: s.todos.map((t) => t.id === id ? { ...t, deletedAt: undefined } : t) })); },
 
       purgeOldDeleted: () => {
         const cutoff = Date.now() - DELETED_RETENTION_DAYS * 86_400_000;
@@ -96,15 +83,18 @@ export const useTodoStore = create<TodoStore>()(
         }));
       },
 
-      reorderTodos: (priority, ordered) =>
+      reorderTodos: (priority, ordered) => {
+        for (const t of ordered) markDirty('todos', t.id);
         set((s) => ({
           todos: [
             ...s.todos.filter((t) => t.priority !== priority),
             ...ordered.map((t, i) => ({ ...t, order: i })),
           ],
-        })),
+        }));
+      },
 
-      toggleTodoHomePin: (id) =>
+      toggleTodoHomePin: (id) => {
+        markDirty('todos', id);
         set((s) => {
           const target = s.todos.find((t) => t.id === id);
           if (!target) return s;
@@ -114,7 +104,8 @@ export const useTodoStore = create<TodoStore>()(
               t.id === id ? { ...t, pinnedToHome: !target.pinnedToHome, pinOrder } : t,
             ),
           };
-        }),
+        });
+      },
 
       archiveCompletedTodos: (date) =>
         set((s) => ({
@@ -126,54 +117,55 @@ export const useTodoStore = create<TodoStore>()(
 
       setLastArchiveDate: (date) => set({ lastArchiveDate: date }),
 
-      addGroup: (group) => set((s) => ({ groups: [...s.groups, group] })),
+      addGroup: (group) => { markDirty('todo_groups', group.id); set((s) => ({ groups: [...s.groups, group] })); },
 
-      updateGroup: (id, updates) =>
-        set((s) => ({
-          groups: s.groups.map((g) => (g.id === id ? { ...g, ...updates } : g)),
-        })),
+      updateGroup: (id, updates) => { markDirty('todo_groups', id); set((s) => ({ groups: s.groups.map((g) => (g.id === id ? { ...g, ...updates } : g)) })); },
 
-      removeGroup: (id) =>
+      removeGroup: (id) => {
+        markDirty('todo_groups', id);
         set((s) => ({
           groups: s.groups.filter((g) => g.id !== id),
           todos: s.todos.map((t) => (t.groupId === id ? { ...t, groupId: null } : t)),
-        })),
+        }));
+      },
 
-      reorderGroups: (ordered) =>
-        set({ groups: ordered.map((g, i) => ({ ...g, order: i })) }),
+      reorderGroups: (ordered) => {
+        for (const g of ordered) markDirty('todo_groups', g.id);
+        set({ groups: ordered.map((g, i) => ({ ...g, order: i })) });
+      },
 
-      toggleGroupCollapsed: (id) =>
-        set((s) => ({
-          groups: s.groups.map((g) => (g.id === id ? { ...g, collapsed: !g.collapsed } : g)),
-        })),
+      toggleGroupCollapsed: (id) => { markDirty('todo_groups', id); set((s) => ({ groups: s.groups.map((g) => (g.id === id ? { ...g, collapsed: !g.collapsed } : g)) })); },
 
-      moveTodoToGroup: (todoId, groupId) =>
-        set((s) => ({
-          todos: s.todos.map((t) => (t.id === todoId ? { ...t, groupId } : t)),
-        })),
+      moveTodoToGroup: (todoId, groupId) => { markDirty('todos', todoId); set((s) => ({ todos: s.todos.map((t) => (t.id === todoId ? { ...t, groupId } : t)) })); },
 
-      reorderGroupTodos: (groupId, ordered) =>
+      reorderGroupTodos: (groupId, ordered) => {
+        for (const t of ordered) markDirty('todos', t.id);
         set((s) => ({
           todos: [
             ...s.todos.filter((t) => t.groupId !== groupId),
             ...ordered.map((t, i) => ({ ...t, order: i })),
           ],
-        })),
+        }));
+      },
 
-      batchUpdateTodos: (updates) =>
+      batchUpdateTodos: (updates) => {
+        for (const u of updates) markDirty('todos', u.id);
         set((s) => ({
           todos: s.todos.map((t) => {
             const u = updates.find((up) => up.id === t.id);
             return u ? { ...t, groupId: u.groupId, order: u.order } : t;
           }),
-        })),
+        }));
+      },
 
-      removeTodos: (ids) =>
+      removeTodos: (ids) => {
+        for (const id of ids) markDirty('todos', id);
         set((s) => ({
           todos: s.todos.map((t) =>
             ids.includes(t.id) ? { ...t, deletedAt: Date.now() } : t,
           ),
-        })),
+        }));
+      },
     }),
     {
       name: 'todo-store',

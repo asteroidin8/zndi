@@ -2,11 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { DELETED_RETENTION_DAYS } from '@/constants/dataRetention';
+import { markDirty } from '@/services/sync/dirtyTracker';
 import type { Routine, RoutineGroup } from '@/types';
 
 export type { Routine, RoutineGroup, Weekday, RepeatType } from '@/types';
-
-import { DELETED_RETENTION_DAYS } from '@/constants/dataRetention';
 
 type RoutineStore = {
   routines: Routine[];
@@ -34,34 +34,44 @@ export const useRoutineStore = create<RoutineStore>()(
       routines: [],
       groups: [],
 
-      addRoutine: (routine) =>
-        set((s) => ({ routines: [...s.routines, routine] })),
+      addRoutine: (routine) => {
+        markDirty('routines', routine.id);
+        set((s) => ({ routines: [...s.routines, routine] }));
+      },
 
-      updateRoutine: (id, updates) =>
+      updateRoutine: (id, updates) => {
+        markDirty('routines', id);
         set((s) => ({
           routines: s.routines.map((r) => (r.id === id ? { ...r, ...updates } : r)),
-        })),
+        }));
+      },
 
-      removeRoutine: (id) =>
+      removeRoutine: (id) => {
+        markDirty('routines', id);
         set((s) => ({
           routines: s.routines.map((r) =>
             r.id === id ? { ...r, deletedAt: Date.now() } : r,
           ),
-        })),
+        }));
+      },
 
-      removeRoutines: (ids) =>
+      removeRoutines: (ids) => {
+        for (const id of ids) markDirty('routines', id);
         set((s) => ({
           routines: s.routines.map((r) =>
             ids.includes(r.id) ? { ...r, deletedAt: Date.now() } : r,
           ),
-        })),
+        }));
+      },
 
-      undoRemoveRoutine: (id) =>
+      undoRemoveRoutine: (id) => {
+        markDirty('routines', id);
         set((s) => ({
           routines: s.routines.map((r) =>
             r.id === id ? { ...r, deletedAt: undefined } : r,
           ),
-        })),
+        }));
+      },
 
       purgeOldDeleted: () => {
         const cutoff = Date.now() - DELETED_RETENTION_DAYS * 86_400_000;
@@ -72,53 +82,71 @@ export const useRoutineStore = create<RoutineStore>()(
         }));
       },
 
-      reorderRoutines: (ordered) =>
-        set({ routines: ordered.map((r, i) => ({ ...r, order: i })) }),
+      reorderRoutines: (ordered) => {
+        for (const r of ordered) markDirty('routines', r.id);
+        set({ routines: ordered.map((r, i) => ({ ...r, order: i })) });
+      },
 
-      addGroup: (group) =>
-        set((s) => ({ groups: [...s.groups, group] })),
+      addGroup: (group) => {
+        markDirty('routine_groups', group.id);
+        set((s) => ({ groups: [...s.groups, group] }));
+      },
 
-      updateGroup: (id, updates) =>
+      updateGroup: (id, updates) => {
+        markDirty('routine_groups', id);
         set((s) => ({
           groups: s.groups.map((g) => (g.id === id ? { ...g, ...updates } : g)),
-        })),
+        }));
+      },
 
-      removeGroup: (id) =>
+      removeGroup: (id) => {
+        markDirty('routine_groups', id);
         set((s) => ({
           groups: s.groups.filter((g) => g.id !== id),
           routines: s.routines.map((r) =>
             (r.groupId ?? null) === id ? { ...r, groupId: null } : r,
           ),
-        })),
+        }));
+      },
 
-      reorderGroups: (ordered) =>
-        set({ groups: ordered.map((g, i) => ({ ...g, order: i })) }),
+      reorderGroups: (ordered) => {
+        for (const g of ordered) markDirty('routine_groups', g.id);
+        set({ groups: ordered.map((g, i) => ({ ...g, order: i })) });
+      },
 
-      toggleGroupCollapsed: (id) =>
+      toggleGroupCollapsed: (id) => {
+        markDirty('routine_groups', id);
         set((s) => ({
           groups: s.groups.map((g) => (g.id === id ? { ...g, collapsed: !g.collapsed } : g)),
-        })),
+        }));
+      },
 
-      moveRoutineToGroup: (routineId, groupId) =>
+      moveRoutineToGroup: (routineId, groupId) => {
+        markDirty('routines', routineId);
         set((s) => ({
           routines: s.routines.map((r) => (r.id === routineId ? { ...r, groupId } : r)),
-        })),
+        }));
+      },
 
-      reorderGroupRoutines: (groupId, ordered) =>
+      reorderGroupRoutines: (groupId, ordered) => {
+        for (const r of ordered) markDirty('routines', r.id);
         set((s) => ({
           routines: [
             ...s.routines.filter((r) => (r.groupId ?? null) !== groupId),
             ...ordered.map((r, i) => ({ ...r, order: i })),
           ],
-        })),
+        }));
+      },
 
-      batchUpdateRoutines: (updates) =>
+      batchUpdateRoutines: (updates) => {
+        for (const u of updates) markDirty('routines', u.id);
         set((s) => ({
           routines: s.routines.map((r) => {
             const u = updates.find((up) => up.id === r.id);
             return u ? { ...r, groupId: u.groupId, order: u.order } : r;
           }),
-        })),
+        }));
+      },
     }),
     {
       name: 'routine-store',

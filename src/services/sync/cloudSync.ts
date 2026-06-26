@@ -5,6 +5,7 @@ import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { withCloudSyncSuppressed } from '@/services/sync/cloudSyncGuard';
+import { getDirtyIds, clearDirty, hasDirtyIds } from '@/services/sync/dirtyTracker';
 import { routineFromRow, todoFromRow } from '@/utils/rowMappers';
 
 export async function checkNicknameTaken(nickname: string, _currentUserId: string): Promise<boolean> {
@@ -63,9 +64,13 @@ export async function pushLocalToCloud(userId: string, dirtyStores?: Set<string>
   }
 
   if (shouldPush('routines')) {
-    if (routineGroups.length > 0) {
+    const dirtyGroupIds = getDirtyIds('routine_groups');
+    const dirtyRoutineGroups = hasDirtyIds('routine_groups')
+      ? routineGroups.filter((g) => dirtyGroupIds.has(g.id))
+      : routineGroups;
+    if (dirtyRoutineGroups.length > 0) {
       const { error } = await supabase.from('routine_groups').upsert(
-        routineGroups.map((g) => ({
+        dirtyRoutineGroups.map((g) => ({
           user_id: userId,
           id: g.id,
           name: g.name,
@@ -76,10 +81,15 @@ export async function pushLocalToCloud(userId: string, dirtyStores?: Set<string>
       );
       if (error) return { error: error.message };
     }
+    clearDirty('routine_groups');
 
-    if (routines.length > 0) {
+    const dirtyRIds = getDirtyIds('routines');
+    const dirtyRoutines = hasDirtyIds('routines')
+      ? routines.filter((r) => dirtyRIds.has(r.id))
+      : routines;
+    if (dirtyRoutines.length > 0) {
       const { error } = await supabase.from('routines').upsert(
-        routines.map((r) => ({
+        dirtyRoutines.map((r) => ({
           user_id: userId,
           id: r.id,
           name: r.name,
@@ -98,12 +108,17 @@ export async function pushLocalToCloud(userId: string, dirtyStores?: Set<string>
       );
       if (error) return { error: error.message };
     }
+    clearDirty('routines');
   }
 
   if (shouldPush('todos')) {
-    if (todoGroups.length > 0) {
+    const dirtyTGroupIds = getDirtyIds('todo_groups');
+    const dirtyTodoGroups = hasDirtyIds('todo_groups')
+      ? todoGroups.filter((g) => dirtyTGroupIds.has(g.id))
+      : todoGroups;
+    if (dirtyTodoGroups.length > 0) {
       const { error } = await supabase.from('todo_groups').upsert(
-        todoGroups.map((g) => ({
+        dirtyTodoGroups.map((g) => ({
           user_id: userId,
           id: g.id,
           name: g.name,
@@ -114,10 +129,15 @@ export async function pushLocalToCloud(userId: string, dirtyStores?: Set<string>
       );
       if (error) return { error: error.message };
     }
+    clearDirty('todo_groups');
 
-    if (todos.length > 0) {
+    const dirtyTIds = getDirtyIds('todos');
+    const dirtyTodos = hasDirtyIds('todos')
+      ? todos.filter((t) => dirtyTIds.has(t.id))
+      : todos;
+    if (dirtyTodos.length > 0) {
       const { error } = await supabase.from('todos').upsert(
-        todos.map((t) => ({
+        dirtyTodos.map((t) => ({
           user_id: userId,
           id: t.id,
           title: t.title,
@@ -137,6 +157,7 @@ export async function pushLocalToCloud(userId: string, dirtyStores?: Set<string>
       );
       if (error) return { error: error.message };
     }
+    clearDirty('todos');
   }
 
   if (shouldPush('completions')) {
