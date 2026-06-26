@@ -111,7 +111,7 @@ export default function TodoScreen() {
   const seenHints = useSettingsStore((s) => s.seenHints);
   const {
     addTodo, updateTodo, completeTodo, uncompleteTodo, removeTodo, removeTodos,
-    reorderTodos, addGroup, updateGroup, removeGroup, toggleGroupCollapsed, batchUpdateTodos,
+    reorderTodos, reorderGroups, addGroup, updateGroup, removeGroup, toggleGroupCollapsed, batchUpdateTodos,
   } = useTodoStore.getState();
   const { markHintSeen } = useSettingsStore.getState();
   const todos = useMemo(() => allTodos.filter((t) => !t.deletedAt), [allTodos]);
@@ -129,6 +129,9 @@ export default function TodoScreen() {
   const { editMode, selectedIds, enterEditMode: _enterEditMode, exitEditMode: _exitEditMode, toggleSelection, toggleSelectAll } = useEditMode();
   const enterEditMode = useCallback(() => { _enterEditMode(); setTabBarVisible(false); }, [_enterEditMode, setTabBarVisible]);
   const exitEditMode = useCallback(() => { _exitEditMode(); setTabBarVisible(true); }, [_exitEditMode, setTabBarVisible]);
+  const [arrangeMode, setArrangeMode] = useState(false);
+  const enterArrangeMode = useCallback(() => { setArrangeMode(true); setTabBarVisible(false); }, [setTabBarVisible]);
+  const exitArrangeMode = useCallback(() => { setArrangeMode(false); setTabBarVisible(true); }, [setTabBarVisible]);
 
   useEffect(() => {
     if (!editMode) return;
@@ -356,6 +359,42 @@ export default function TodoScreen() {
     runAfterDragAnimation(() => batchUpdateTodos(updates));
   }
 
+  // ── Arrange mode (group reorder) ──
+
+  type ArrangeItem = { type: 'group-header'; key: string; group: TodoGroup };
+
+  const arrangeItems = useMemo<ArrangeItem[]>(() => {
+    if (!arrangeMode) return [];
+    return sortedGroups.map((group) => ({
+      type: 'group-header' as const,
+      key: `ah-${group.id}`,
+      group,
+    }));
+  }, [arrangeMode, sortedGroups]);
+
+  function handleArrangeDragEnd({ data }: { data: ArrangeItem[] }) {
+    runAfterDragAnimation(() => reorderGroups(data.map((item) => item.group)));
+  }
+
+  function renderArrangeItem({ item, drag }: RenderItemParams<ArrangeItem>) {
+    return (
+      <ScaleDecorator activeScale={1.02}>
+        <GroupHeader
+          group={{ ...item.group, collapsed: true }}
+          completedCount={0}
+          totalCount={0}
+          hasVisibleItems={false}
+          showDelete={false}
+          arrangeMode
+          onDrag={drag}
+          onToggleCollapse={() => {}}
+          onRename={() => {}}
+          onDelete={() => {}}
+        />
+      </ScaleDecorator>
+    );
+  }
+
   // ── Render items ──
 
   function renderUnifiedItem({ item, drag, isActive }: RenderItemParams<ListItem>) {
@@ -557,7 +596,7 @@ export default function TodoScreen() {
         onDismiss={() => setUndoTarget(null)}
       />
       <Coachmark
-        visible={showSwipeHint && filter === 'active' && !editMode}
+        visible={showSwipeHint && filter === 'active' && !editMode && !arrangeMode}
         message="← 삭제 · 완료 → 스와이프 · 길게 눌러 편집"
         onDismiss={() => {
           markHintSeen('swipeActions');
@@ -630,6 +669,16 @@ export default function TodoScreen() {
         )}
       />
     )
+  ) : arrangeMode ? (
+    <DraggableFlatList
+      data={arrangeItems}
+      keyExtractor={(item) => item.key}
+      onDragEnd={handleArrangeDragEnd}
+      renderItem={renderArrangeItem}
+      activationDistance={4}
+      contentContainerStyle={{ paddingBottom: 100 }}
+      showsVerticalScrollIndicator={false}
+    />
   ) : !hasTodos && groups.length === 0 ? (
     <EmptyState
       message={`오늘 해낼 일을 적어봐요\n작은 한 걸음이 습관이 돼요`}
@@ -686,7 +735,10 @@ export default function TodoScreen() {
         activeTodos={activeTodos}
         completedTodos={completedTodos}
         editMode={editMode}
+        arrangeMode={arrangeMode}
+        hasGroups={groups.length >= 2}
         onToggleEdit={editMode ? exitEditMode : enterEditMode}
+        onToggleArrange={arrangeMode ? exitArrangeMode : enterArrangeMode}
       />
 
       {contentArea}
@@ -698,13 +750,12 @@ export default function TodoScreen() {
           onSelectAll={handleSelectAll}
           onDelete={handleBulkDelete}
         />
-      ) : (
+      ) : !arrangeMode && (
         <SpeedDialFab
           accessibilityLabel="추가 메뉴"
           actions={[
             { label: '할일 추가', icon: 'Plus', onPress: () => setAddModalVisible(true) },
             { label: '그룹 추가', icon: 'FolderPlus', onPress: handleAddGroup },
-            { label: '편집', icon: 'Pencil', onPress: enterEditMode },
           ]}
         />
       )}
@@ -722,38 +773,56 @@ function Header({
   activeTodos,
   completedTodos,
   editMode,
+  arrangeMode,
+  hasGroups,
   onToggleEdit,
+  onToggleArrange,
 }: {
   filter: TabFilter;
   setFilter: (f: TabFilter) => void;
   activeTodos: Todo[];
   completedTodos: Todo[];
   editMode: boolean;
+  arrangeMode: boolean;
+  hasGroups: boolean;
   onToggleEdit: () => void;
+  onToggleArrange: () => void;
 }) {
   const c = useThemeColors();
+  const isEmpty = activeTodos.length === 0 && completedTodos.length === 0;
   return (
     <>
       <View
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
-          alignItems: 'baseline',
+          alignItems: 'center',
           paddingHorizontal: spacing.screen,
           paddingTop: spacing.card,
           paddingBottom: spacing.sm,
         }}
       >
         <AppText variant="title">할일</AppText>
-        {editMode && (
-          <Pressable onPress={onToggleEdit} hitSlop={8} accessibilityRole="button">
+        {(editMode || arrangeMode) ? (
+          <Pressable onPress={editMode ? onToggleEdit : onToggleArrange} hitSlop={8} accessibilityRole="button">
             <AppText variant="body" tone="primary" style={{ fontWeight: '600' }}>
               완료
             </AppText>
           </Pressable>
+        ) : !isEmpty && (
+          <View style={{ flexDirection: 'row', gap: spacing.md }}>
+            {hasGroups && (
+              <Pressable onPress={onToggleArrange} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="그룹 배치">
+                <AppIcon name="ArrowUpDown" size={20} color={c.inkTertiary} />
+              </Pressable>
+            )}
+            <Pressable onPress={onToggleEdit} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="편집">
+              <AppIcon name="Pencil" size={20} color={c.inkTertiary} />
+            </Pressable>
+          </View>
         )}
       </View>
-      {!editMode && (
+      {!editMode && !arrangeMode && (
         <View style={{ flexDirection: 'row', paddingHorizontal: spacing.screen, gap: spacing.card, marginBottom: spacing.xs }}>
           {(['active', 'completed'] as TabFilter[]).map((tab) => {
             const isActive = filter === tab;
