@@ -629,11 +629,11 @@ export default function RoutineScreen() {
           <View style={{ flexDirection: 'row', gap: spacing.md }}>
             {groups.length >= 2 && (
               <Pressable onPress={enterArrangeMode} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="그룹 배치">
-                <AppIcon name="ArrowUpDown" size={20} color={c.inkTertiary} />
+                <AppIcon name="Settings2" size={20} color={c.inkTertiary} />
               </Pressable>
             )}
             <Pressable onPress={enterEditMode} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="편집">
-              <AppIcon name="Pencil" size={20} color={c.inkTertiary} />
+              <AppIcon name="CircleMinus" size={20} color={c.inkTertiary} />
             </Pressable>
           </View>
         )}

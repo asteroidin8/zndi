@@ -813,11 +813,11 @@ function Header({
           <View style={{ flexDirection: 'row', gap: spacing.md }}>
             {hasGroups && (
               <Pressable onPress={onToggleArrange} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="그룹 배치">
-                <AppIcon name="ArrowUpDown" size={20} color={c.inkTertiary} />
+                <AppIcon name="Settings2" size={20} color={c.inkTertiary} />
               </Pressable>
             )}
             <Pressable onPress={onToggleEdit} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="편집">
-              <AppIcon name="Pencil" size={20} color={c.inkTertiary} />
+              <AppIcon name="CircleMinus" size={20} color={c.inkTertiary} />
             </Pressable>
           </View>
         )}
