@@ -28,6 +28,7 @@ import { getPriorityColor } from '@/utils/dateFormat';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { type Todo, type TodoGroup, type TodoPriority, useTodoStore } from '@/stores/useTodoStore';
+import { compareBySectionThenOrder } from '@/utils/sectionSort';
 
 type TabFilter = 'active' | 'completed';
 
@@ -41,23 +42,8 @@ const PRIORITY_SECTIONS: { key: TodoPriority; label: string }[] = [
 
 const PRIORITY_ORDER: Record<TodoPriority, number> = { high: 0, mid: 1, low: 2 };
 
-const SECTION_TIME_ORDER: Record<string, number> = {
-  '새벽': 0, '아침': 1, '오전': 2, '점심': 3, '오후': 4, '저녁': 5, '밤': 6,
-};
-
-function sectionSortKey(section: string | null): number {
-  if (!section) return 999;
-  return SECTION_TIME_ORDER[section] ?? 500;
-}
-
-function sortBySection(todos: Todo[]): Todo[] {
-  return [...todos].sort((a, b) => {
-    const ka = sectionSortKey(a.section);
-    const kb = sectionSortKey(b.section);
-    if (ka !== kb) return ka - kb;
-    if (ka === 500 && a.section !== b.section) return (a.section ?? '').localeCompare(b.section ?? '');
-    return (a.order ?? 0) - (b.order ?? 0);
-  });
+function sortTodosBySection(todos: Todo[]): Todo[] {
+  return [...todos].sort(compareBySectionThenOrder);
 }
 
 // ── Unified drag list types ──
@@ -208,7 +194,7 @@ export default function TodoScreen() {
         if (groupActive.length === 0) {
           items.push({ type: 'group-empty', key: `ge-${group.id}`, groupId: group.id });
         } else {
-          const sorted = sortBySection(groupActive);
+          const sorted = sortTodosBySection(groupActive);
           for (let i = 0; i < sorted.length; i++) {
             const pos: GroupPosition =
               sorted.length === 1 ? 'only' : i === 0 ? 'first' : i === sorted.length - 1 ? 'last' : 'middle';
@@ -222,7 +208,7 @@ export default function TodoScreen() {
     }
 
     items.push({ type: 'ungrouped-header', key: 'ungrouped-header' });
-    const ungroupedSorted = sortBySection([...ungroupedActive].sort((a, b) => {
+    const ungroupedSorted = sortTodosBySection([...ungroupedActive].sort((a, b) => {
       if (a.priority !== b.priority) return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
       return (a.order ?? 0) - (b.order ?? 0);
     }));

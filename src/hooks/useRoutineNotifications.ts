@@ -72,7 +72,7 @@ export function useRoutineNotifications() {
             }).catch(() => {});
           }
         } else {
-          for (const weekday of routine.repeatDays) {
+          for (const weekday of routine.repeatDays ?? []) {
             const expoWeekday = weekday + 1;
             await Notifications.scheduleNotificationAsync({
               identifier: `${NOTIFICATION_ID.routinePrefix}${routine.id}-${weekday}`,

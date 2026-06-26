@@ -64,7 +64,7 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
         id: r.id,
         name: r.name,
         repeat_type: r.repeatType ?? 'weekly',
-        repeat_days: r.repeatDays,
+        repeat_days: r.repeatDays ?? [],
         month_dates: r.monthDates ?? [],
         repeat_interval: r.repeatInterval ?? 1,
         section: r.section ?? null,

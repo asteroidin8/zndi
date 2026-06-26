@@ -33,25 +33,12 @@ import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { localDateStr } from '@/utils/dateFormat';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
 import { formatRepeatLabel, isRoutineScheduledForDate } from '@/utils/routineSchedule';
+import { compareBySectionThenOrder } from '@/utils/sectionSort';
 
 const TAB_INDEX = 1 as const;
-const SECTION_TIME_ORDER: Record<string, number> = {
-  '새벽': 0, '아침': 1, '오전': 2, '점심': 3, '오후': 4, '저녁': 5, '밤': 6,
-};
 
-function sectionSortKey(section: string | null): number {
-  if (!section) return 999;
-  return SECTION_TIME_ORDER[section] ?? 500;
-}
-
-function sortBySection(routines: Routine[]): Routine[] {
-  return [...routines].sort((a, b) => {
-    const ka = sectionSortKey(a.section);
-    const kb = sectionSortKey(b.section);
-    if (ka !== kb) return ka - kb;
-    if (ka === 500 && a.section !== b.section) return (a.section ?? '').localeCompare(b.section ?? '');
-    return (a.order ?? 0) - (b.order ?? 0);
-  });
+function sortRoutinesBySection(routines: Routine[]): Routine[] {
+  return [...routines].sort(compareBySectionThenOrder);
 }
 
 // ── Unified drag list types ──
@@ -232,7 +219,7 @@ export default function RoutineScreen() {
       });
 
       if (!group.collapsed) {
-        const sorted = sortBySection(groupRoutines);
+        const sorted = sortRoutinesBySection(groupRoutines);
         if (sorted.length === 0) {
           items.push({ type: 'group-empty', key: `ge-${group.id}`, groupId: group.id });
         } else {
@@ -250,7 +237,7 @@ export default function RoutineScreen() {
     }
 
     items.push({ type: 'ungrouped-header', key: 'ungrouped-header' });
-    const sortedUngrouped = sortBySection(ungroupedRoutines);
+    const sortedUngrouped = sortRoutinesBySection(ungroupedRoutines);
     let prevUngroupedSection: string | null | undefined;
     for (const routine of sortedUngrouped) {
       const curSection = routine.section ?? null;

@@ -6,7 +6,7 @@ export function routineFromRow(row: Record<string, unknown>): Routine {
     id: String(row.id),
     name: String(row.name),
     repeatType: ((row.repeat_type as string | undefined) ?? 'weekly') as RepeatType,
-    repeatDays: row.repeat_days as Weekday[],
+    repeatDays: (row.repeat_days as Weekday[] | null) ?? [],
     monthDates: (row.month_dates as number[] | undefined) ?? [],
     repeatInterval: (row.repeat_interval as number | undefined) ?? 1,
     section: (row.section as string | null | undefined) ?? null,
