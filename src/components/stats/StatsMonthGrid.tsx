@@ -3,8 +3,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { AppText } from '@/components/AppText';
 import { DAY_LABELS } from '@/constants/statsLabels';
-import { getCellBorderRadius, getCellTransform } from '@/constants/grassTheme';
-import { motion } from '@/constants/motion';
+import { getCellBorderRadius, getCellTransform, getGrassColor } from '@/constants/grassTheme';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useSettingsStore } from '@/stores/useSettingsStore';
@@ -25,6 +24,7 @@ type Props = {
 export function StatsMonthGrid({ year, month, grassMap, hasFastingRecord, onSelectDate }: Props) {
   const c = useThemeColors();
   const grassShape = useSettingsStore((s) => s.grassShape);
+  const grassHex = getGrassColor(useSettingsStore((s) => s.grassColor));
   const today = toDateStr(new Date());
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -46,18 +46,21 @@ export function StatsMonthGrid({ year, month, grassMap, hasFastingRecord, onSele
           </View>
         ))}
       </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+      <Animated.View
+        key={`${year}-${month}`}
+        entering={FadeIn.duration(200)}
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}
+      >
         {cells.map((date, i) => {
           if (!date) return <View key={`empty-${i}`} style={{ width: CELL_SIZE, height: CELL_SIZE }} />;
+          const dayNum = parseInt(date.slice(8), 10);
           const isToday = date === today;
           const hasFasting = hasFastingRecord(date);
           const grass = grassMap.get(date);
           const level = grass?.level ?? 0;
-          const colors = grassCellColors(level, c, isToday, hasFasting);
-          const dayIndex = new Date(`${date}T00:00:00`).getDate() - 1;
-          const staggerDelay = Math.min(dayIndex * 12, motion.stagger.maxDelay);
+          const colors = grassCellColors(level, c, isToday, hasFasting, grassHex);
           const a11yParts = [
-            `${new Date(`${date}T00:00:00`).getDate()}일`,
+            `${dayNum}일`,
             grass && grass.routineTotal > 0
               ? `루틴 ${grass.routineCompleted}/${grass.routineTotal}`
               : null,
@@ -73,8 +76,7 @@ export function StatsMonthGrid({ year, month, grassMap, hasFastingRecord, onSele
           const diamondSize = isDiamond ? Math.round(CELL_SIZE * 0.78) : CELL_SIZE;
 
           return (
-            <Animated.View key={`${year}-${month}-${date}`} entering={FadeIn.delay(staggerDelay).duration(200)}>
-            <View style={{ width: CELL_SIZE, height: CELL_SIZE, alignItems: 'center', justifyContent: 'center' }}>
+            <View key={date} style={{ width: CELL_SIZE, height: CELL_SIZE, alignItems: 'center', justifyContent: 'center' }}>
             <Pressable
               onPress={() => onSelectDate(date)}
               accessibilityRole="button"
@@ -123,19 +125,18 @@ export function StatsMonthGrid({ year, month, grassMap, hasFastingRecord, onSele
                   ...(cellTransform.rotate ? { transform: [{ rotate: `-${cellTransform.rotate}` }] } : {}),
                 }}
               >
-                {new Date(`${date}T00:00:00`).getDate()}
+                {dayNum}
               </AppText>
             </Pressable>
             </View>
-            </Animated.View>
           );
         })}
-      </View>
+      </Animated.View>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: spacing.md, alignSelf: 'flex-end' }}>
         <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>적음</AppText>
         {LEGEND_LEVELS.map((lvl) => {
-          const legendColors = grassCellColors(lvl, c, false, false);
+          const legendColors = grassCellColors(lvl, c, false, false, grassHex);
           const legendRadius = getCellBorderRadius(grassShape, 10);
           return (
             <View
