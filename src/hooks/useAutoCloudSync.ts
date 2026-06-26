@@ -12,6 +12,23 @@ import { useUserStore } from '@/stores/useUserStore';
 
 import { PUSH_DEBOUNCE_MS } from '@/constants/timing';
 
+function waitForHydration(): Promise<void> {
+  const stores = [
+    useRoutineStore.persist,
+    useTodoStore.persist,
+    useRoutineCompletionStore.persist,
+    useFastingStore.persist,
+    useUserStore.persist,
+  ];
+  return Promise.all(
+    stores.map((p) =>
+      p.hasHydrated()
+        ? Promise.resolve()
+        : new Promise<void>((resolve) => p.onFinishHydration(() => resolve())),
+    ),
+  ).then(() => {});
+}
+
 /** 로그인 시 로컬 변경을 debounce push (항상 ON) */
 export function useAutoCloudSync() {
   const { user, configured } = useAuth();
@@ -40,21 +57,23 @@ export function useAutoCloudSync() {
 
     if (initialPullUserRef.current !== userId) {
       initialPullUserRef.current = userId;
-      const hasLocalData =
-        useRoutineStore.getState().routines.length > 0 ||
-        useTodoStore.getState().todos.length > 0 ||
-        Object.keys(useRoutineCompletionStore.getState().completions).length > 0;
-      if (!hasLocalData) {
-        pullCloudToLocal(userId).then((res) => {
-          if (res.error) console.warn('[zndi] pull failed:', res.error);
-          else if (__DEV__) console.log('[zndi] pull complete');
-        });
-      } else {
-        pushLocalToCloud(userId).then((res) => {
-          if (res.error) console.warn('[zndi] initial push failed:', res.error);
-          else if (__DEV__) console.log('[zndi] initial push complete');
-        });
-      }
+      waitForHydration().then(() => {
+        const hasLocalData =
+          useRoutineStore.getState().routines.length > 0 ||
+          useTodoStore.getState().todos.length > 0 ||
+          Object.keys(useRoutineCompletionStore.getState().completions).length > 0;
+        if (!hasLocalData) {
+          pullCloudToLocal(userId).then((res) => {
+            if (res.error) console.warn('[zndi] pull failed:', res.error);
+            else if (__DEV__) console.log('[zndi] pull complete');
+          });
+        } else {
+          pushLocalToCloud(userId).then((res) => {
+            if (res.error) console.warn('[zndi] initial push failed:', res.error);
+            else if (__DEV__) console.log('[zndi] initial push complete');
+          });
+        }
+      });
     }
 
     const dirtyStores = new Set<string>();
