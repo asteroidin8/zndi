@@ -17,10 +17,12 @@ export function isRoutineScheduledForDate(routine: Routine, date: Date): boolean
   const interval = routine.repeatInterval ?? 1;
   const created = new Date(routine.createdAt);
 
+  if (daysBetween(created, date) < 0) return false;
+
   if (type === 'daily') {
     if (interval <= 1) return true;
     const diff = daysBetween(created, date);
-    return diff >= 0 && diff % interval === 0;
+    return diff % interval === 0;
   }
 
   if (type === 'weekly') {
@@ -29,14 +31,14 @@ export function isRoutineScheduledForDate(routine: Routine, date: Date): boolean
     if (interval <= 1) return true;
     const diffDays = daysBetween(created, date);
     const diffWeeks = Math.floor(diffDays / 7);
-    return diffDays >= 0 && diffWeeks % interval === 0;
+    return diffWeeks % interval === 0;
   }
 
   if (type === 'monthly') {
     if (!(routine.monthDates ?? []).includes(date.getDate())) return false;
     if (interval <= 1) return true;
     const diff = monthsBetween(created, date);
-    return diff >= 0 && diff % interval === 0;
+    return diff % interval === 0;
   }
 
   if (type === 'yearly') {
@@ -45,7 +47,7 @@ export function isRoutineScheduledForDate(routine: Routine, date: Date): boolean
     if (date.getMonth() !== createdMonth || date.getDate() !== createdDate) return false;
     if (interval <= 1) return true;
     const diffYears = date.getFullYear() - created.getFullYear();
-    return diffYears >= 0 && diffYears % interval === 0;
+    return diffYears % interval === 0;
   }
 
   return (routine.repeatDays ?? []).includes(date.getDay() as Weekday);

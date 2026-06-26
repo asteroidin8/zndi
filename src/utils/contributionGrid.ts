@@ -12,10 +12,13 @@ export function getMonthRoutineStats(
   const year = refDate.getFullYear();
   const month = refDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
+  const maxDay = isCurrentMonth ? today.getDate() : daysInMonth;
   let daysWithRoutines = 0;
   let daysFullyComplete = 0;
 
-  for (let day = 1; day <= daysInMonth; day++) {
+  for (let day = 1; day <= maxDay; day++) {
     const date = new Date(year, month, day);
     const dateStr = toDateStr(date);
     const { completed, total } = getRoutineProgressForDate(

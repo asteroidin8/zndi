@@ -116,6 +116,7 @@ export async function pushLocalToCloud(userId: string): Promise<{ error?: string
     if (error) return { error: error.message };
   }
 
+  await supabase.from('routine_completions').delete().eq('user_id', userId);
   const completionRows = Object.entries(completions).map(([key, ts]) => ({
     user_id: userId,
     completion_key: key,
