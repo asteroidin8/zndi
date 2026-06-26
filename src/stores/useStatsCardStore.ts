@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type StatsCardId = 'fasting' | 'routine' | 'todo' | 'weight';
+export type StatsCardId = 'insights' | 'fasting' | 'routine' | 'todo' | 'weight';
 
 export type StatsCardEntry = {
   id: StatsCardId;
@@ -10,6 +10,7 @@ export type StatsCardEntry = {
 };
 
 const DEFAULT_CARDS: StatsCardEntry[] = [
+  { id: 'insights', visible: true },
   { id: 'fasting', visible: true },
   { id: 'routine', visible: true },
   { id: 'todo', visible: true },
@@ -37,8 +38,11 @@ export const useStatsCardStore = create<StatsCardStore>()(
     {
       name: 'stats-card-store',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 1,
-      migrate: () => ({ cards: DEFAULT_CARDS }),
+      version: 2,
+      migrate: (_persisted, version) => {
+        if (version < 2) return { cards: DEFAULT_CARDS };
+        return { cards: DEFAULT_CARDS };
+      },
     },
   ),
 );

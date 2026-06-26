@@ -68,10 +68,15 @@ export default function HomeScreen() {
 
   return (
     <View style={{ flex: 1 }}>
+      <View style={{ paddingHorizontal: spacing.screen, paddingTop: spacing.screen }}>
+        <HomeTopBar />
+      </View>
+
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={{
           padding: spacing.screen,
+          paddingTop: spacing.section,
           gap: spacing.section,
           paddingBottom: spacing.section * 2,
         }}
@@ -79,8 +84,6 @@ export default function HomeScreen() {
         alwaysBounceVertical={false}
         overScrollMode="never"
       >
-        <HomeTopBar />
-
         <HomeWeeklyGrass />
 
         {unverifiedCount > 0 && (

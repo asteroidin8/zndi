@@ -7,7 +7,7 @@ import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { ProLockModal } from '@/components/ProLockModal';
 import { PageHeader } from '@/components/settings/MyScreenUI';
-import { GRASS_COLORS, GRASS_CELL_SKINS, GRASS_ANIMATIONS, getCellBorderRadius, getCellTransform } from '@/constants/grassTheme';
+import { GRASS_COLORS, GRASS_CELL_SKINS, getCellBorderRadius, getCellTransform } from '@/constants/grassTheme';
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useProStore } from '@/stores/useProStore';
@@ -15,8 +15,8 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 
 export default function ThemeShopScreen() {
   const c = useThemeColors();
-  const { grassColor, setGrassColor, grassShape, setGrassShape, grassAnimation, setGrassAnimation } = useSettingsStore();
-  const { isColorUnlocked, isShapeUnlocked, isAnimationUnlocked } = useProStore();
+  const { grassColor, setGrassColor, grassShape, setGrassShape } = useSettingsStore();
+  const { isColorUnlocked, isShapeUnlocked } = useProStore();
   const [proLockVisible, setProLockVisible] = useState(false);
 
   const activeHex = GRASS_COLORS.find((p) => p.id === grassColor)?.hex ?? '#22C55E';
@@ -135,68 +135,6 @@ export default function ThemeShopScreen() {
           </View>
         </View>
 
-        {/* 애니메이션 */}
-        <View style={{ gap: spacing.sm }}>
-          <View style={{ gap: 2 }}>
-            <AppText variant="caption" tone="tertiary" style={{ fontWeight: '600' }}>애니메이션</AppText>
-            <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>잔디 칸을 완료했을 때 재생되는 효과</AppText>
-          </View>
-          <View style={{ gap: spacing.xs }}>
-            {GRASS_ANIMATIONS.map((anim) => {
-              const selected = grassAnimation === anim.id;
-              const locked = !isAnimationUnlocked(anim.id);
-              return (
-                <Pressable
-                  key={anim.id}
-                  onPress={() => {
-                    if (locked) { setProLockVisible(true); return; }
-                    setGrassAnimation(anim.id);
-                  }}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: spacing.sm,
-                    paddingVertical: spacing.sm,
-                    paddingHorizontal: spacing.md,
-                    borderRadius: radius.md,
-                    borderWidth: selected ? 2 : 1,
-                    borderColor: selected ? activeHex : c.border,
-                    backgroundColor: selected ? `${activeHex}10` : 'transparent',
-                    opacity: locked ? 0.5 : 1,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 5,
-                      backgroundColor: anim.id === 'none' ? c.surfaceMuted : activeHex,
-                    }}
-                  />
-                  <View style={{ flex: 1 }}>
-                    <AppText variant="caption" style={{ fontWeight: selected ? '700' : '500', color: selected ? activeHex : c.ink }}>
-                      {anim.name}
-                    </AppText>
-                    <AppText variant="caption" tone="tertiary" style={{ fontSize: 10 }}>
-                      {anim.desc}
-                    </AppText>
-                  </View>
-                  {locked && anim.price != null && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <AppIcon name="Lock" size={10} color={c.inkTertiary} />
-                      <AppText variant="caption" tone="disabled" style={{ fontSize: 10 }}>
-                        {anim.price.toLocaleString()}
-                      </AppText>
-                    </View>
-                  )}
-                  {selected && !locked && (
-                    <AppIcon name="Check" size={14} color={activeHex} />
-                  )}
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
       </ScrollView>
 
       <ProLockModal
