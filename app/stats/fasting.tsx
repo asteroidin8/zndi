@@ -8,7 +8,7 @@ import { BarChart, type BarChartItem } from '@/components/BarChart';
 import { EmptyState } from '@/components/EmptyState';
 import { FastingRecordEditModal } from '@/components/FastingRecordEditModal';
 import { deleteCloudRecord } from '@/services/sync/cloudSync';
-import { StatsDayDetailModal } from '@/components/stats/StatsDayDetailModal';
+import { FastingDayDetailModal } from '@/components/stats/FastingDayDetailModal';
 import { StatsSummaryCard } from '@/components/stats/StatsSummaryCard';
 import { PageHeader } from '@/components/settings/MyScreenUI';
 import { STATS_LABELS, WEEKDAY_SHORT } from '@/constants/statsLabels';
@@ -129,9 +129,9 @@ export default function FastingDetailScreen() {
       </ScrollView>
 
       {selectedDate && (
-        <StatsDayDetailModal
+        <FastingDayDetailModal
           date={selectedDate}
-          onEditFastingRecord={(r) => {
+          onEditRecord={(r) => {
             setEditingRecord(r);
             setSelectedDate(null);
           }}
