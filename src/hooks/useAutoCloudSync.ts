@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { InteractionManager } from 'react-native';
 
 import { useAuth } from '@/contexts/AuthProvider';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -58,21 +59,23 @@ export function useAutoCloudSync() {
     if (initialPullUserRef.current !== userId) {
       initialPullUserRef.current = userId;
       waitForHydration().then(() => {
-        const hasLocalData =
-          useRoutineStore.getState().routines.length > 0 ||
-          useTodoStore.getState().todos.length > 0 ||
-          Object.keys(useRoutineCompletionStore.getState().completions).length > 0;
-        if (!hasLocalData) {
-          pullCloudToLocal(userId).then((res) => {
-            if (res.error) console.warn('[zndi] pull failed:', res.error);
-            else if (__DEV__) console.log('[zndi] pull complete');
-          });
-        } else {
-          pushLocalToCloud(userId).then((res) => {
-            if (res.error) console.warn('[zndi] initial push failed:', res.error);
-            else if (__DEV__) console.log('[zndi] initial push complete');
-          });
-        }
+        InteractionManager.runAfterInteractions(() => {
+          const hasLocalData =
+            useRoutineStore.getState().routines.length > 0 ||
+            useTodoStore.getState().todos.length > 0 ||
+            Object.keys(useRoutineCompletionStore.getState().completions).length > 0;
+          if (!hasLocalData) {
+            pullCloudToLocal(userId).then((res) => {
+              if (res.error) console.warn('[zndi] pull failed:', res.error);
+              else if (__DEV__) console.log('[zndi] pull complete');
+            });
+          } else {
+            pushLocalToCloud(userId).then((res) => {
+              if (res.error) console.warn('[zndi] initial push failed:', res.error);
+              else if (__DEV__) console.log('[zndi] initial push complete');
+            });
+          }
+        });
       });
     }
 
