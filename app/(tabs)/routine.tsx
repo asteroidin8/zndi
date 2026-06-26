@@ -34,9 +34,14 @@ import { localDateStr } from '@/utils/dateFormat';
 import { uniqueId } from '@/utils/uniqueId';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
 import { formatRepeatLabel, isRoutineScheduledForDate } from '@/utils/routineSchedule';
-import { sortBySection } from '@/utils/sectionSort';
+import { compareBySectionThenOrder } from '@/utils/sectionSort';
 
 const TAB_INDEX = 1 as const;
+
+function sortRoutinesBySection(routines: Routine[]): Routine[] {
+  return [...routines].sort(compareBySectionThenOrder);
+}
+
 // ── Unified drag list types ──
 
 type GroupPosition = 'first' | 'middle' | 'last' | 'only';
@@ -237,7 +242,7 @@ export default function RoutineScreen() {
       });
 
       if (!group.collapsed) {
-        const sorted = sortBySection(groupRoutines);
+        const sorted = sortRoutinesBySection(groupRoutines);
         if (sorted.length === 0) {
           items.push({ type: 'group-empty', key: `ge-${group.id}`, groupId: group.id });
         } else {
@@ -255,7 +260,7 @@ export default function RoutineScreen() {
     }
 
     items.push({ type: 'ungrouped-header', key: 'ungrouped-header' });
-    const sortedUngrouped = sortBySection(ungroupedRoutines);
+    const sortedUngrouped = sortRoutinesBySection(ungroupedRoutines);
     let prevUngroupedSection: string | null | undefined;
     for (const routine of sortedUngrouped) {
       const curSection = routine.section ?? null;

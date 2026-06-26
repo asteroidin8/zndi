@@ -26,10 +26,10 @@ import { FREE_LIMITS } from '@/hooks/useProGating';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { getPriorityColor } from '@/utils/dateFormat';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
-import { sortBySection } from '@/utils/sectionSort';
 import { uniqueId } from '@/utils/uniqueId';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { type Todo, type TodoGroup, type TodoPriority, useTodoStore } from '@/stores/useTodoStore';
+import { compareBySectionThenOrder } from '@/utils/sectionSort';
 
 type TabFilter = 'active' | 'completed';
 
@@ -42,6 +42,10 @@ const PRIORITY_SECTIONS: { key: TodoPriority; label: string }[] = [
 ];
 
 const PRIORITY_ORDER: Record<TodoPriority, number> = { high: 0, mid: 1, low: 2 };
+
+function sortTodosBySection(todos: Todo[]): Todo[] {
+  return [...todos].sort(compareBySectionThenOrder);
+}
 
 // ── Unified drag list types ──
 
@@ -191,7 +195,7 @@ export default function TodoScreen() {
         if (groupActive.length === 0) {
           items.push({ type: 'group-empty', key: `ge-${group.id}`, groupId: group.id });
         } else {
-          const sorted = sortBySection(groupActive);
+          const sorted = sortTodosBySection(groupActive);
           for (let i = 0; i < sorted.length; i++) {
             const pos: GroupPosition =
               sorted.length === 1 ? 'only' : i === 0 ? 'first' : i === sorted.length - 1 ? 'last' : 'middle';
@@ -205,7 +209,7 @@ export default function TodoScreen() {
     }
 
     items.push({ type: 'ungrouped-header', key: 'ungrouped-header' });
-    const ungroupedSorted = sortBySection([...ungroupedActive].sort((a, b) => {
+    const ungroupedSorted = sortTodosBySection([...ungroupedActive].sort((a, b) => {
       if (a.priority !== b.priority) return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
       return (a.order ?? 0) - (b.order ?? 0);
     }));

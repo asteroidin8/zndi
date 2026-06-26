@@ -7,12 +7,14 @@ export function sectionSortKey(section: string | null): number {
   return SECTION_TIME_ORDER[section] ?? 500;
 }
 
-export function sortBySection<T extends { section?: string | null; order?: number }>(items: T[]): T[] {
-  return [...items].sort((a, b) => {
-    const ka = sectionSortKey(a.section ?? null);
-    const kb = sectionSortKey(b.section ?? null);
-    if (ka !== kb) return ka - kb;
-    if (ka === 500 && (a.section ?? '') !== (b.section ?? '')) return (a.section ?? '').localeCompare(b.section ?? '');
-    return (a.order ?? 0) - (b.order ?? 0);
-  });
+export function compareBySectionThenOrder(
+  a: { section?: string | null; order?: number | null },
+  b: { section?: string | null; order?: number | null },
+): number {
+  const ka = sectionSortKey(a.section ?? null);
+  const kb = sectionSortKey(b.section ?? null);
+  if (ka !== kb) return ka - kb;
+  if (ka === 500 && a.section !== b.section)
+    return (a.section ?? '').localeCompare(b.section ?? '');
+  return (a.order ?? 0) - (b.order ?? 0);
 }
