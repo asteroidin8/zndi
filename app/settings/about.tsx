@@ -4,6 +4,7 @@ import { Linking, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GroupCard, InsetDivider, PageHeader, Row } from '@/components/settings/MyScreenUI';
+import { CONTACT_EMAIL } from '@/constants/app';
 import { spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
@@ -21,7 +22,7 @@ export default function AboutScreen() {
           <InsetDivider />
           <Row label="개인정보처리방침" onPress={() => router.push('/privacy')} />
           <InsetDivider />
-          <Row label="문의하기" onPress={() => Linking.openURL('mailto:asteroidin8@gmail.com?subject=%EC%9E%94%EB%94%94%20%EB%AC%B8%EC%9D%98')} />
+          <Row label="문의하기" onPress={() => Linking.openURL(`mailto:${CONTACT_EMAIL}?subject=%EC%9E%94%EB%94%94%20%EB%AC%B8%EC%9D%98`)} />
           <InsetDivider />
           <Row label="버전" value={`v${version}`} />
         </GroupCard>

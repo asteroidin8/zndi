@@ -2,8 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SharedGroupPreferences from 'react-native-shared-group-preferences';
 import { Platform } from 'react-native';
 
-const WIDGET_GROUP = 'group.com.asteroidin8.zndi';
-const WIDGET_KEY = 'zndi_widget_data';
+import { WIDGET_GROUP, WIDGET_KEY } from '@/constants/app';
 
 export interface WidgetData {
   streak: number;
