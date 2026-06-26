@@ -396,14 +396,6 @@ export default function StatsScreen() {
             <View style={{ gap: spacing.md }}>
               {visibleCards.map((card) => renderCardById(card.id))}
             </View>
-
-            {insights.length > 0 && !visibleCards.some((c) => c.id === 'insights') && (
-              <View style={{ gap: spacing.sm }}>
-                {insights.map((insight) => (
-                  <InsightCard key={insight.type} insight={insight} />
-                ))}
-              </View>
-            )}
           </>
         )}
       </ScrollView>

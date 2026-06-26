@@ -11,7 +11,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { type StatsCardEntry, type StatsCardId, useStatsCardStore } from '@/stores/useStatsCardStore';
 
 const CARD_META: Record<StatsCardId, { icon: string; label: string }> = {
-  insights: { icon: 'Lightbulb', label: 'AI 분석' },
+  insights: { icon: 'Lightbulb', label: '분석' },
   fasting: { icon: 'Timer', label: '단식' },
   routine: { icon: 'RotateCcw', label: '루틴' },
   todo: { icon: 'ListTodo', label: '할일' },
