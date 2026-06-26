@@ -12,6 +12,8 @@ import { pushPersonalProgress } from '@/services/social/followService';
 import { localDateStr } from '@/utils/dateFormat';
 import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
 
+let cachedStreak = { date: '', value: 0, baseKey: '' };
+
 function computeDailyProgress() {
   const routines = useRoutineStore.getState().routines.filter((r) => !r.deletedAt);
   const todos = useTodoStore.getState().todos.filter((t) => !t.deletedAt && !t.archivedDate);
@@ -27,16 +29,23 @@ function computeDailyProgress() {
   const todoCompleted = todos.filter((t) => t.completedAt !== null).length;
   const todoTotal = todos.length;
 
-  let streak = 0;
-  for (let i = 0; i < 365; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const ds = localDateStr(d);
-    const dayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, d));
-    if (dayRoutines.length === 0) continue;
-    const allDone = dayRoutines.every((r) => isCompleted(r.id, ds));
-    if (allDone) streak++;
-    else break;
+  const streakBaseKey = `${todayStr}:${routineCompleted}/${routineTotal}`;
+  let streak: number;
+  if (cachedStreak.date === todayStr && cachedStreak.baseKey === streakBaseKey) {
+    streak = cachedStreak.value;
+  } else {
+    streak = 0;
+    for (let i = 0; i < 365; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const ds = localDateStr(d);
+      const dayRoutines = routines.filter((r) => isRoutineScheduledForDate(r, d));
+      if (dayRoutines.length === 0) continue;
+      const allDone = dayRoutines.every((r) => isCompleted(r.id, ds));
+      if (allDone) streak++;
+      else break;
+    }
+    cachedStreak = { date: todayStr, value: streak, baseKey: streakBaseKey };
   }
 
   const progressData = {
