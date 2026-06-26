@@ -39,6 +39,16 @@ describe('formatHHMM', () => {
     const ts = new Date('2026-06-20T12:00:00').getTime();
     expect(formatHHMM(ts)).toBe('오후 12:00');
   });
+
+  it('formats 24h morning time', () => {
+    const ts = new Date('2026-06-20T09:05:00').getTime();
+    expect(formatHHMM(ts, '24h')).toBe('09:05');
+  });
+
+  it('formats 24h afternoon time', () => {
+    const ts = new Date('2026-06-20T14:30:00').getTime();
+    expect(formatHHMM(ts, '24h')).toBe('14:30');
+  });
 });
 
 describe('groupFastingByDay', () => {

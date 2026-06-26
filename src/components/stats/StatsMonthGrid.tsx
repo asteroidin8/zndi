@@ -10,8 +10,6 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { grassCellColors, type DailyGrassActivity } from '@/utils/calendarGrass';
 import { toDateStr } from '@/utils/homeDailyBoard';
-import type { DailyFastingSummary } from '@/utils/statsHelper';
-
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_BORDER = 4;
 const CELL_SIZE = Math.floor((SCREEN_WIDTH - SCREEN_BORDER - 40 - 6 * 6) / 7);
@@ -19,15 +17,14 @@ const CELL_SIZE = Math.floor((SCREEN_WIDTH - SCREEN_BORDER - 40 - 6 * 6) / 7);
 type Props = {
   year: number;
   month: number;
-  summaries: DailyFastingSummary[];
   grassMap: Map<string, DailyGrassActivity>;
-  onSelect: (s: DailyFastingSummary) => void;
+  hasFastingRecord: (date: string) => boolean;
+  onSelectDate: (date: string) => void;
 };
 
-export function StatsMonthGrid({ year, month, summaries, grassMap, onSelect }: Props) {
+export function StatsMonthGrid({ year, month, grassMap, hasFastingRecord, onSelectDate }: Props) {
   const c = useThemeColors();
   const grassShape = useSettingsStore((s) => s.grassShape);
-  const dateMap = new Map(summaries.map((s) => [s.date, s]));
   const today = toDateStr(new Date());
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -52,9 +49,8 @@ export function StatsMonthGrid({ year, month, summaries, grassMap, onSelect }: P
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
         {cells.map((date, i) => {
           if (!date) return <View key={`empty-${i}`} style={{ width: CELL_SIZE, height: CELL_SIZE }} />;
-          const summary = dateMap.get(date);
           const isToday = date === today;
-          const hasFasting = !!summary;
+          const hasFasting = hasFastingRecord(date);
           const grass = grassMap.get(date);
           const level = grass?.level ?? 0;
           const colors = grassCellColors(level, c, isToday, hasFasting);
@@ -80,7 +76,7 @@ export function StatsMonthGrid({ year, month, summaries, grassMap, onSelect }: P
             <Animated.View key={`${year}-${month}-${date}`} entering={FadeIn.delay(staggerDelay).duration(200)}>
             <View style={{ width: CELL_SIZE, height: CELL_SIZE, alignItems: 'center', justifyContent: 'center' }}>
             <Pressable
-              onPress={() => summary && onSelect(summary)}
+              onPress={() => onSelectDate(date)}
               accessibilityRole="button"
               accessibilityLabel={a11yParts}
               style={{

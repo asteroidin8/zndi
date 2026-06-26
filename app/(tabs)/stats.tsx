@@ -33,7 +33,6 @@ import { buildMonthGrassMap } from '@/utils/calendarGrass';
 import { formatMetric } from '@/utils/formatMetric';
 import { localDateStr } from '@/utils/dateFormat';
 import { isRoutineScheduledForDate } from '@/utils/routineSchedule';
-import { type DailyFastingSummary, groupFastingByDay } from '@/utils/statsHelper';
 import { type Insight, generateInsights } from '@/utils/statsInsights';
 
 const TAB_INDEX = 4 as const;
@@ -117,18 +116,16 @@ export default function StatsScreen() {
   const now = new Date();
   const [viewYear, setViewYear] = useState(now.getFullYear());
   const [viewMonth, setViewMonth] = useState(now.getMonth());
-  const [selected, setSelected] = useState<DailyFastingSummary | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [editingRecord, setEditingRecord] = useState<FastingRecord | null>(null);
 
-  const summaries = groupFastingByDay(
-    records.map((r) => ({
-      id: r.id,
-      startedAt: r.startedAt,
-      endedAt: r.endedAt ?? r.startedAt,
-      goalHours: r.goalHours,
-      result: r.result ?? 'abandoned',
-    })),
-  );
+  const fastingDateSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of records) {
+      if (r.endedAt) set.add(localDateStr(new Date(r.startedAt)));
+    }
+    return set;
+  }, [records]);
 
   const boardTotal = countBoardRoutinesTotal(boardRoutines);
   const todayDateStr = localDateStr(now);
@@ -390,9 +387,9 @@ export default function StatsScreen() {
               <StatsMonthGrid
                 year={viewYear}
                 month={viewMonth}
-                summaries={summaries}
                 grassMap={grassMap}
-                onSelect={setSelected}
+                hasFastingRecord={(d) => fastingDateSet.has(d)}
+                onSelectDate={setSelectedDate}
               />
             </View>
 
@@ -411,14 +408,14 @@ export default function StatsScreen() {
         )}
       </ScrollView>
 
-      {selected && (
+      {selectedDate && (
         <StatsDayDetailModal
-          summary={selected}
-          onEditRecord={(r) => {
+          date={selectedDate}
+          onEditFastingRecord={(r) => {
             setEditingRecord(r);
-            setSelected(null);
+            setSelectedDate(null);
           }}
-          onClose={() => setSelected(null)}
+          onClose={() => setSelectedDate(null)}
         />
       )}
 

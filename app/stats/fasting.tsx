@@ -17,7 +17,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
 import type { FastingRecord } from '@/types';
 import { useFastingStore } from '@/stores/useFastingStore';
-import { type DailyFastingSummary, formatMinutes, groupFastingByDay } from '@/utils/statsHelper';
+import { formatMinutes, groupFastingByDay } from '@/utils/statsHelper';
 import { localDateStr } from '@/utils/dateFormat';
 import { toDateStr } from '@/utils/homeDailyBoard';
 
@@ -28,7 +28,7 @@ export default function FastingDetailScreen() {
   const c = useThemeColors();
   const records = useFastingStore((s) => s.records);
   const { removeRecord, updateRecord } = useFastingStore.getState();
-  const [selected, setSelected] = useState<DailyFastingSummary | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [editingRecord, setEditingRecord] = useState<FastingRecord | null>(null);
 
   const summaries = groupFastingByDay(
@@ -106,7 +106,7 @@ export default function FastingDetailScreen() {
             {summaries.map((s) => (
               <Pressable
                 key={s.date}
-                onPress={() => setSelected(s)}
+                onPress={() => setSelectedDate(s.date)}
                 style={{
                   flexDirection: 'row',
                   justifyContent: 'space-between',
@@ -128,14 +128,14 @@ export default function FastingDetailScreen() {
         )}
       </ScrollView>
 
-      {selected && (
+      {selectedDate && (
         <StatsDayDetailModal
-          summary={selected}
-          onEditRecord={(r) => {
+          date={selectedDate}
+          onEditFastingRecord={(r) => {
             setEditingRecord(r);
-            setSelected(null);
+            setSelectedDate(null);
           }}
-          onClose={() => setSelected(null)}
+          onClose={() => setSelectedDate(null)}
         />
       )}
 

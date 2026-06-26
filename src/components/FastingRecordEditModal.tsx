@@ -9,6 +9,7 @@ import { appAlert } from '@/stores/useAlertStore';
 import { type FastingRecord, type FastingResult } from '@/stores/useFastingStore';
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 
 type Props = {
   visible: boolean;
@@ -18,11 +19,15 @@ type Props = {
   onClose: () => void;
 };
 
-function formatDatetime(ts: number) {
+function formatDatetime(ts: number, timeFormat: '12h' | '24h') {
   const d = new Date(ts);
   const pad = (n: number) => String(n).padStart(2, '0');
+  const datePart = `${d.getMonth() + 1}/${d.getDate()}`;
+  if (timeFormat === '24h') {
+    return `${datePart} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
   const ampm = d.getHours() < 12 ? '오전' : '오후';
-  return `${d.getMonth() + 1}/${d.getDate()} ${ampm} ${d.getHours() % 12 || 12}:${pad(d.getMinutes())}`;
+  return `${datePart} ${ampm} ${d.getHours() % 12 || 12}:${pad(d.getMinutes())}`;
 }
 
 function formatDuration(startedAt: number, endedAt: number | null) {
@@ -49,10 +54,20 @@ function buildDayItems(year: number, month: number): DrumItem[] {
   return Array.from({ length: daysInMonth }, (_, i) => ({ value: i + 1, label: `${i + 1}일` }));
 }
 
-const HOUR_ITEMS: DrumItem[] = Array.from({ length: 24 }, (_, i) => ({
+const HOUR_ITEMS_24: DrumItem[] = Array.from({ length: 24 }, (_, i) => ({
   value: i,
   label: `${String(i).padStart(2, '0')}시`,
 }));
+
+const HOUR_ITEMS_12: DrumItem[] = Array.from({ length: 12 }, (_, i) => ({
+  value: i,
+  label: `${i === 0 ? 12 : i}시`,
+}));
+
+const AM_PM_ITEMS: DrumItem[] = [
+  { value: 0, label: '오전' },
+  { value: 1, label: '오후' },
+];
 
 const MINUTE_ITEMS: DrumItem[] = Array.from({ length: 12 }, (_, i) => ({
   value: i * 5,
@@ -76,6 +91,8 @@ function fieldsToTs(year: number, month: number, day: number, hour: number, minu
 
 export function FastingRecordEditModal({ visible, record, onSave, onDelete, onClose }: Props) {
   const c = useThemeColors();
+  const timeFormat = useSettingsStore((s) => s.timeFormat ?? '24h');
+  const is12h = timeFormat === '12h';
   const [result, setResult] = useState<FastingResult>('completed');
   const [editingField, setEditingField] = useState<EditingField>(null);
 
@@ -156,7 +173,7 @@ export function FastingRecordEditModal({ visible, record, onSave, onDelete, onCl
               variant="caption"
               style={isStartChanged ? { color: c.primary, fontWeight: '600' } : {}}
             >
-              {formatDatetime(editedStartTs)}
+              {formatDatetime(editedStartTs, timeFormat)}
             </AppText>
             <AppIcon
               name={editingField === 'start' ? 'ChevronUp' : 'Pencil'}
@@ -181,12 +198,29 @@ export function FastingRecordEditModal({ visible, record, onSave, onDelete, onCl
                 onSelect={(v) => setStartFields((p) => ({ ...p, day: v }))}
                 width={56}
               />
-              <DrumPicker
-                items={HOUR_ITEMS}
-                selected={startFields.hour}
-                onSelect={(v) => setStartFields((p) => ({ ...p, hour: v }))}
-                width={56}
-              />
+              {is12h ? (
+                <>
+                  <DrumPicker
+                    items={AM_PM_ITEMS}
+                    selected={Math.floor(startFields.hour / 12)}
+                    onSelect={(v) => setStartFields((p) => ({ ...p, hour: v * 12 + (p.hour % 12) }))}
+                    width={56}
+                  />
+                  <DrumPicker
+                    items={HOUR_ITEMS_12}
+                    selected={startFields.hour % 12}
+                    onSelect={(v) => setStartFields((p) => ({ ...p, hour: Math.floor(p.hour / 12) * 12 + v }))}
+                    width={56}
+                  />
+                </>
+              ) : (
+                <DrumPicker
+                  items={HOUR_ITEMS_24}
+                  selected={startFields.hour}
+                  onSelect={(v) => setStartFields((p) => ({ ...p, hour: v }))}
+                  width={56}
+                />
+              )}
               <DrumPicker
                 items={MINUTE_ITEMS}
                 selected={startFields.minute}
@@ -216,7 +250,7 @@ export function FastingRecordEditModal({ visible, record, onSave, onDelete, onCl
                   variant="caption"
                   style={isEndChanged ? { color: c.primary, fontWeight: '600' } : {}}
                 >
-                  {formatDatetime(editedEndTs!)}
+                  {formatDatetime(editedEndTs!, timeFormat)}
                 </AppText>
                 <AppIcon
                   name={editingField === 'end' ? 'ChevronUp' : 'Pencil'}
@@ -241,12 +275,29 @@ export function FastingRecordEditModal({ visible, record, onSave, onDelete, onCl
                     onSelect={(v) => setEndFields((p) => ({ ...p, day: v }))}
                     width={56}
                   />
-                  <DrumPicker
-                    items={HOUR_ITEMS}
-                    selected={endFields.hour}
-                    onSelect={(v) => setEndFields((p) => ({ ...p, hour: v }))}
-                    width={56}
-                  />
+                  {is12h ? (
+                    <>
+                      <DrumPicker
+                        items={AM_PM_ITEMS}
+                        selected={Math.floor(endFields.hour / 12)}
+                        onSelect={(v) => setEndFields((p) => ({ ...p, hour: v * 12 + (p.hour % 12) }))}
+                        width={56}
+                      />
+                      <DrumPicker
+                        items={HOUR_ITEMS_12}
+                        selected={endFields.hour % 12}
+                        onSelect={(v) => setEndFields((p) => ({ ...p, hour: Math.floor(p.hour / 12) * 12 + v }))}
+                        width={56}
+                      />
+                    </>
+                  ) : (
+                    <DrumPicker
+                      items={HOUR_ITEMS_24}
+                      selected={endFields.hour}
+                      onSelect={(v) => setEndFields((p) => ({ ...p, hour: v }))}
+                      width={56}
+                    />
+                  )}
                   <DrumPicker
                     items={MINUTE_ITEMS}
                     selected={endFields.minute}
