@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
+import { MIN_BACKGROUND_MS } from '@/constants/timing';
+
 import { useAuth } from '@/contexts/AuthProvider';
 import { getSupabase } from '@/lib/supabase';
 import { isCloudSyncSuppressed } from '@/services/sync/cloudSyncGuard';
@@ -102,7 +104,6 @@ export function useRealtimeSync() {
   const { user } = useAuth();
   const channelRef = useRef<RealtimeChannel | null>(null);
   const backgroundAtRef = useRef<number | null>(null);
-  const MIN_BACKGROUND_MS = 5000;
 
   useEffect(() => {
     if (!user?.id) return;

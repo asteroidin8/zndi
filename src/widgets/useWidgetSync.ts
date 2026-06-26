@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import { requestWidgetUpdate } from 'react-native-android-widget';
 
+import { WIDGET_DEBOUNCE_MS, WIDGET_REFRESH_MS } from '@/constants/timing';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useTodoStore } from '@/stores/useTodoStore';
@@ -127,7 +128,7 @@ export function useWidgetSync() {
 
     const debouncedSync = () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(syncWidgets, 1000);
+      debounceRef.current = setTimeout(syncWidgets, WIDGET_DEBOUNCE_MS);
     };
 
     syncWidgets();
@@ -145,7 +146,7 @@ export function useWidgetSync() {
         timerRef.current = null;
       }
       if (useFastingStore.getState().status === 'fasting') {
-        timerRef.current = setInterval(syncWidgets, 60_000);
+        timerRef.current = setInterval(syncWidgets, WIDGET_REFRESH_MS);
       }
     };
     startFastingTimer();

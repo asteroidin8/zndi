@@ -10,7 +10,7 @@ import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useTodoStore } from '@/stores/useTodoStore';
 import { useUserStore } from '@/stores/useUserStore';
 
-const PUSH_DEBOUNCE_MS = 2500;
+import { PUSH_DEBOUNCE_MS } from '@/constants/timing';
 
 /** 로그인 시 로컬 변경을 debounce push (항상 ON) */
 export function useAutoCloudSync() {
