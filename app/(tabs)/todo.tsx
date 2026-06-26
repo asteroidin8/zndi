@@ -26,6 +26,7 @@ import { FREE_LIMITS } from '@/hooks/useProGating';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { getPriorityColor } from '@/utils/dateFormat';
 import { runAfterDragAnimation } from '@/utils/deferredReorder';
+import { sortBySection } from '@/utils/sectionSort';
 import { uniqueId } from '@/utils/uniqueId';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { type Todo, type TodoGroup, type TodoPriority, useTodoStore } from '@/stores/useTodoStore';
@@ -41,25 +42,6 @@ const PRIORITY_SECTIONS: { key: TodoPriority; label: string }[] = [
 ];
 
 const PRIORITY_ORDER: Record<TodoPriority, number> = { high: 0, mid: 1, low: 2 };
-
-const SECTION_TIME_ORDER: Record<string, number> = {
-  '새벽': 0, '아침': 1, '오전': 2, '점심': 3, '오후': 4, '저녁': 5, '밤': 6,
-};
-
-function sectionSortKey(section: string | null): number {
-  if (!section) return 999;
-  return SECTION_TIME_ORDER[section] ?? 500;
-}
-
-function sortBySection(todos: Todo[]): Todo[] {
-  return [...todos].sort((a, b) => {
-    const ka = sectionSortKey(a.section);
-    const kb = sectionSortKey(b.section);
-    if (ka !== kb) return ka - kb;
-    if (ka === 500 && a.section !== b.section) return (a.section ?? '').localeCompare(b.section ?? '');
-    return (a.order ?? 0) - (b.order ?? 0);
-  });
-}
 
 // ── Unified drag list types ──
 

@@ -498,7 +498,7 @@ export default function MyScreen() {
           onClose={() => setShowProfileQR(false)}
           title="내 프로필"
           subtitle="친구가 이 QR을 스캔하면 나를 팔로우할 수 있어요"
-          value={`zndi://follow?userId=${user.id}`}
+          value={profile.nickname ? `zndi://follow?nickname=${encodeURIComponent(profile.nickname)}` : `zndi://follow?userId=${user.id.slice(0, 8)}`}
           copyLabel={profile.nickname ?? getDisplayName(null, user.id)}
         />
       )}
