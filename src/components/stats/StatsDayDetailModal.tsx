@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
@@ -8,6 +8,7 @@ import { CompletionCheckbox } from '@/components/CompletionCheckbox';
 import { Divider } from '@/components/Divider';
 import { opacity, radius, spacing } from '@/constants/spacing';
 import { STATS_LABELS } from '@/constants/statsLabels';
+import { useModalAnimation } from '@/hooks/useModalAnimation';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
@@ -39,19 +40,7 @@ export function StatsDayDetailModal({ date, onEditFastingRecord, onClose }: Prop
   const allTodos = useTodoStore((s) => s.todos);
   const records = useFastingStore((s) => s.records);
 
-  const backdropOpacity = useSharedValue(0);
-  const scale = useSharedValue(0.92);
-
-  useEffect(() => {
-    backdropOpacity.value = withTiming(1, { duration: 200 });
-    scale.value = withTiming(1, { duration: 220 });
-  }, [backdropOpacity, scale]);
-
-  const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.value }));
-  const contentStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: backdropOpacity.value,
-  }));
+  const { backdropStyle, contentStyle } = useModalAnimation();
 
   const dateObj = useMemo(() => new Date(`${date}T00:00:00`), [date]);
   const dateLabel = `${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일`;

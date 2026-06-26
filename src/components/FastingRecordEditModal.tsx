@@ -10,6 +10,7 @@ import { type FastingRecord, type FastingResult } from '@/stores/useFastingStore
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { formatDatetime, formatDuration } from '@/utils/fastingFormat';
 
 type Props = {
   visible: boolean;
@@ -18,25 +19,6 @@ type Props = {
   onDelete: () => void;
   onClose: () => void;
 };
-
-function formatDatetime(ts: number, timeFormat: '12h' | '24h') {
-  const d = new Date(ts);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  const datePart = `${d.getMonth() + 1}/${d.getDate()}`;
-  if (timeFormat === '24h') {
-    return `${datePart} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-  const ampm = d.getHours() < 12 ? '오전' : '오후';
-  return `${datePart} ${ampm} ${d.getHours() % 12 || 12}:${pad(d.getMinutes())}`;
-}
-
-function formatDuration(startedAt: number, endedAt: number | null) {
-  if (!endedAt) return '-';
-  const mins = Math.floor((endedAt - startedAt) / 60_000);
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return h > 0 ? `${h}시간 ${m}분` : `${m}분`;
-}
 
 const RESULT_OPTIONS: { value: FastingResult; label: string }[] = [
   { value: 'completed', label: '완료' },
