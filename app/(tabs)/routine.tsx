@@ -16,7 +16,7 @@ import { UndoSnackbar } from '@/components/UndoSnackbar';
 import { UngroupedHeader } from '@/components/UngroupedHeader';
 import { radius, spacing } from '@/constants/spacing';
 import { DAY_LABELS } from '@/constants/statsLabels';
-import { useTabNavigation, useTabScrollToTop } from '@/contexts/TabNavigationContext';
+import { registerBackHandler, useTabNavigation, useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useEditMode } from '@/hooks/useEditMode';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert, appPrompt } from '@/stores/useAlertStore';
@@ -80,6 +80,11 @@ export default function RoutineScreen() {
   const { editMode, selectedIds, enterEditMode: _enterEditMode, exitEditMode: _exitEditMode, toggleSelection, toggleSelectAll } = useEditMode();
   const enterEditMode = useCallback(() => { _enterEditMode(); setTabBarVisible(false); }, [_enterEditMode, setTabBarVisible]);
   const exitEditMode = useCallback(() => { _exitEditMode(); setTabBarVisible(true); }, [_exitEditMode, setTabBarVisible]);
+
+  useEffect(() => {
+    if (!editMode) return;
+    return registerBackHandler(TAB_INDEX, () => { exitEditMode(); return true; });
+  }, [editMode, exitEditMode]);
   const [isDragging, setIsDragging] = useState(false);
   const [dragTargetGroupId, setDragTargetGroupId] = useState<string | null>(null);
   const dragFromRef = useRef(-1);

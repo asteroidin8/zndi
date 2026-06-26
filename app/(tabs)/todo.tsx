@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Platform, Pressable, ScrollView, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
@@ -18,7 +18,7 @@ import { type TodoCreatePayload, TodoModal } from '@/components/TodoModal';
 import { UndoSnackbar } from '@/components/UndoSnackbar';
 import { UngroupedHeader } from '@/components/UngroupedHeader';
 import { radius, spacing } from '@/constants/spacing';
-import { useTabNavigation, useTabScrollToTop } from '@/contexts/TabNavigationContext';
+import { registerBackHandler, useTabNavigation, useTabScrollToTop } from '@/contexts/TabNavigationContext';
 import { useEditMode } from '@/hooks/useEditMode';
 import { appAlert, appPrompt } from '@/stores/useAlertStore';
 import { useProStore } from '@/stores/useProStore';
@@ -129,6 +129,11 @@ export default function TodoScreen() {
   const { editMode, selectedIds, enterEditMode: _enterEditMode, exitEditMode: _exitEditMode, toggleSelection, toggleSelectAll } = useEditMode();
   const enterEditMode = useCallback(() => { _enterEditMode(); setTabBarVisible(false); }, [_enterEditMode, setTabBarVisible]);
   const exitEditMode = useCallback(() => { _exitEditMode(); setTabBarVisible(true); }, [_exitEditMode, setTabBarVisible]);
+
+  useEffect(() => {
+    if (!editMode) return;
+    return registerBackHandler(TAB_INDEX, () => { exitEditMode(); return true; });
+  }, [editMode, exitEditMode]);
 
   const activeTodos = useMemo(() => todos.filter((t) => !t.completedAt), [todos]);
   const completedTodos = useMemo(() => todos.filter((t) => !!t.completedAt), [todos]);
