@@ -225,10 +225,41 @@ export async function fetchVerificationLogs(
     .limit(limit);
   if (error) return { error: error.message };
 
+  const logs = mapLogsWithContext(data ?? [], boardId);
+  useBoardStore.getState().setLogs(boardId, logs);
+  return {};
+}
+
+export async function fetchMoreVerificationLogs(
+  boardId: string,
+  cursor: string,
+  limit = 30,
+): Promise<{ hasMore: boolean; error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { hasMore: false, error: 'Supabase 미설정' };
+
+  const { data, error } = await supabase
+    .from('board_verification_logs')
+    .select('*')
+    .eq('board_id', boardId)
+    .lt('created_at', cursor)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) return { hasMore: false, error: error.message };
+
+  if (!data?.length) return { hasMore: false };
+
+  const newLogs = mapLogsWithContext(data, boardId);
+  const existing = useBoardStore.getState().logs[boardId] ?? [];
+  useBoardStore.getState().setLogs(boardId, [...existing, ...newLogs]);
+  return { hasMore: data.length >= limit };
+}
+
+function mapLogsWithContext(data: Record<string, unknown>[], boardId: string): BoardVerificationLog[] {
   const members = useBoardStore.getState().members[boardId] ?? [];
   const routines = useBoardStore.getState().routines[boardId] ?? [];
 
-  const logs = (data ?? []).map((row) => {
+  return data.map((row) => {
     const r = row as Record<string, unknown>;
     const photoUrl = getPhotoUrl(String(r.photo_path));
     const log = rowToLog(r, photoUrl);
@@ -241,9 +272,6 @@ export async function fetchVerificationLogs(
 
     return log;
   });
-
-  useBoardStore.getState().setLogs(boardId, logs);
-  return {};
 }
 
 export async function fetchSystemMessages(

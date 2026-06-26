@@ -48,6 +48,7 @@ import {
   createBoardRoutine,
   deleteBoardRoutine,
   fetchBoardRoutines,
+  fetchMoreVerificationLogs,
   fetchSystemMessages,
   fetchVerificationLogs,
   pickImage,
@@ -98,6 +99,7 @@ function FeedTab({
   user,
   memberNicknames,
   onDeleteLog,
+  onLoadMore,
   c,
 }: {
   logs: BoardVerificationLog[];
@@ -105,6 +107,7 @@ function FeedTab({
   user: { id: string } | null | undefined;
   memberNicknames: Map<string, string>;
   onDeleteLog: (log: BoardVerificationLog) => void;
+  onLoadMore: () => void;
   c: import('@/constants/colors').ThemeColors;
 }) {
   const merged = useMemo(() => {
@@ -191,6 +194,14 @@ function FeedTab({
           </Card>
         );
       })}
+      {logs.length >= 50 && (
+        <Pressable
+          onPress={onLoadMore}
+          style={{ alignItems: 'center', paddingVertical: spacing.md }}
+        >
+          <AppText variant="caption" tone="primary" style={{ fontWeight: '600' }}>이전 기록 더 보기</AppText>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -517,6 +528,12 @@ export default function BoardDetailScreen() {
     ]);
   }
 
+  function handleLoadMoreLogs() {
+    if (!id || logs.length === 0) return;
+    const oldest = logs[logs.length - 1].createdAt;
+    void fetchMoreVerificationLogs(id, oldest);
+  }
+
   const tabs: { key: Tab; label: string }[] = [
     { key: 'members', label: '멤버' },
     { key: 'feed', label: '피드' },
@@ -622,6 +639,7 @@ export default function BoardDetailScreen() {
             user={user}
             memberNicknames={memberNicknames}
             onDeleteLog={handleDeleteLog}
+            onLoadMore={handleLoadMoreLogs}
             c={c}
           />
         )}
