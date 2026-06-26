@@ -80,13 +80,18 @@ export default function RoutineScreen() {
   const { editMode, selectedIds, enterEditMode: _enterEditMode, exitEditMode: _exitEditMode, toggleSelection, toggleSelectAll } = useEditMode();
   const enterEditMode = useCallback(() => { _enterEditMode(); setTabBarVisible(false); }, [_enterEditMode, setTabBarVisible]);
   const exitEditMode = useCallback(() => { _exitEditMode(); setTabBarVisible(true); }, [_exitEditMode, setTabBarVisible]);
-  useEffect(() => {
-    if (!editMode) return;
-    return registerBackHandler(TAB_INDEX, () => { exitEditMode(); return true; });
-  }, [editMode, exitEditMode]);
   const [arrangeMode, setArrangeMode] = useState(false);
   const enterArrangeMode = useCallback(() => { setArrangeMode(true); setTabBarVisible(false); }, [setTabBarVisible]);
   const exitArrangeMode = useCallback(() => { setArrangeMode(false); setTabBarVisible(true); }, [setTabBarVisible]);
+
+  useEffect(() => {
+    if (!editMode && !arrangeMode) return;
+    return registerBackHandler(TAB_INDEX, () => {
+      if (arrangeMode) { exitArrangeMode(); return true; }
+      if (editMode) { exitEditMode(); return true; }
+      return false;
+    });
+  }, [editMode, arrangeMode, exitEditMode, exitArrangeMode]);
   const [isDragging, setIsDragging] = useState(false);
   const [dragTargetGroupId, setDragTargetGroupId] = useState<string | null>(null);
   const dragFromRef = useRef(-1);

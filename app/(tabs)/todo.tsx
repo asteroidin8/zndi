@@ -134,9 +134,13 @@ export default function TodoScreen() {
   const exitArrangeMode = useCallback(() => { setArrangeMode(false); setTabBarVisible(true); }, [setTabBarVisible]);
 
   useEffect(() => {
-    if (!editMode) return;
-    return registerBackHandler(TAB_INDEX, () => { exitEditMode(); return true; });
-  }, [editMode, exitEditMode]);
+    if (!editMode && !arrangeMode) return;
+    return registerBackHandler(TAB_INDEX, () => {
+      if (arrangeMode) { exitArrangeMode(); return true; }
+      if (editMode) { exitEditMode(); return true; }
+      return false;
+    });
+  }, [editMode, arrangeMode, exitEditMode, exitArrangeMode]);
 
   const activeTodos = useMemo(() => todos.filter((t) => !t.completedAt), [todos]);
   const completedTodos = useMemo(() => todos.filter((t) => !!t.completedAt), [todos]);
