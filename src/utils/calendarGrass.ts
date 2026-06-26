@@ -26,6 +26,17 @@ export function countTodosCompletedOnDate(todos: Todo[], dateStr: string): numbe
   }).length;
 }
 
+function buildTodoCompletionMap(todos: Todo[]): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const t of todos) {
+    if (!t.completedAt) continue;
+    const dateStr = localDateStr(new Date(t.completedAt));
+    if (t.deletedAt && dateStr >= localDateStr(new Date(t.deletedAt))) continue;
+    map.set(dateStr, (map.get(dateStr) ?? 0) + 1);
+  }
+  return map;
+}
+
 /** 완료한 루틴 + 할일 개수 → 0~4 잔디 농도 */
 export function scoreToGrassLevel(score: number): GrassLevel {
   if (score <= 0) return 0;
@@ -42,6 +53,7 @@ export function getDailyGrassActivity(
   isCompleted: (routineId: string, date: string) => boolean,
   todos: Todo[],
   boardData?: BoardRoutineData,
+  todoCompletionMap?: Map<string, number>,
 ): DailyGrassActivity {
   const { completed: personalCompleted, total: personalTotal } = getRoutineProgressForDate(
     dateStr,
@@ -52,7 +64,9 @@ export function getDailyGrassActivity(
   const boardCompleted = boardData?.getCompleted(dateStr) ?? 0;
   const routineCompleted = personalCompleted + boardCompleted;
   const routineTotal = personalTotal + (boardData?.total ?? 0);
-  const todosCompleted = countTodosCompletedOnDate(todos, dateStr);
+  const todosCompleted = todoCompletionMap
+    ? (todoCompletionMap.get(dateStr) ?? 0)
+    : countTodosCompletedOnDate(todos, dateStr);
   const score = routineCompleted + todosCompleted;
 
   return {
@@ -74,13 +88,14 @@ export function buildMonthGrassMap(
 ): Map<string, DailyGrassActivity> {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const map = new Map<string, DailyGrassActivity>();
+  const todoMap = buildTodoCompletionMap(todos);
 
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month, day);
     const dateStr = toDateStr(date);
     map.set(
       dateStr,
-      getDailyGrassActivity(dateStr, date.getDay(), routines, isCompleted, todos, boardData),
+      getDailyGrassActivity(dateStr, date.getDay(), routines, isCompleted, todos, boardData, todoMap),
     );
   }
 
