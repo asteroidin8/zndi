@@ -6,6 +6,7 @@ import { Divider } from '@/components/Divider';
 import { SheetModal } from '@/components/SheetModal';
 import { STATS_LABELS } from '@/constants/statsLabels';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import type { FastingRecord } from '@/types';
 import { type DailyFastingSummary, formatHHMM, formatMinutes } from '@/utils/statsHelper';
 
@@ -19,6 +20,7 @@ type Props = {
 
 export function StatsDayDetailModal({ summary, onEditRecord, onClose }: Props) {
   const c = useThemeColors();
+  const timeFormat = useSettingsStore((s) => s.timeFormat ?? '24h');
   return (
     <SheetModal
       visible
@@ -57,7 +59,7 @@ export function StatsDayDetailModal({ summary, onEditRecord, onClose }: Props) {
                 </View>
               </View>
               <AppText variant="caption" tone="tertiary">
-                {formatHHMM(r.startedAt)} {L.timeRangeSeparator} {formatHHMM(r.endedAt)}
+                {formatHHMM(r.startedAt, timeFormat)} {L.timeRangeSeparator} {formatHHMM(r.endedAt, timeFormat)}
               </AppText>
             </Pressable>
             {i < summary.records.length - 1 && <Divider />}

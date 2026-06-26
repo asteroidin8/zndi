@@ -7,6 +7,7 @@ import { estimateCaloriesBurned, getFastingMessage } from '@/constants/fastingMe
 import { radius, spacing } from '@/constants/spacing';
 import { useLiveElapsed } from '@/hooks/useLiveElapsed';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { formatElapsed, formatOverElapsed, formatRelativeDate } from '@/utils/fastingFormat';
 
@@ -26,6 +27,7 @@ export function FastingTimer({
   onEditStartTime,
 }: Props) {
   const c = useThemeColors();
+  const timeFormat = useSettingsStore((s) => s.timeFormat ?? '24h');
   const profile = useUserStore((s) => s.profile);
 
   const elapsedMs = useLiveElapsed(startedAt, true);
@@ -35,8 +37,8 @@ export function FastingTimer({
   const completionTs = startedAt + goalMs;
 
   const accent = isOverGoal ? c.booster : c.primary;
-  const start = formatRelativeDate(startedAt);
-  const end = formatRelativeDate(completionTs);
+  const start = formatRelativeDate(startedAt, timeFormat);
+  const end = formatRelativeDate(completionTs, timeFormat);
 
   const phaseMessage = getFastingMessage(elapsedMs);
   const calories =

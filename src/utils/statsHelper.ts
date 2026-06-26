@@ -41,10 +41,13 @@ export function formatMinutes(minutes: number): string {
   return `${h}시간 ${m}분`;
 }
 
-export function formatHHMM(ts: number): string {
+export function formatHHMM(ts: number, timeFormat: '12h' | '24h' = '12h'): string {
   const d = new Date(ts);
   const h = d.getHours();
   const m = d.getMinutes();
+  if (timeFormat === '24h') {
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
   const ampm = h < 12 ? '오전' : '오후';
   return `${ampm} ${h % 12 || 12}:${String(m).padStart(2, '0')}`;
 }

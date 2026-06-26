@@ -72,4 +72,16 @@ describe('formatRelativeDate', () => {
     const result = formatRelativeDate(ts);
     expect(result.timeLabel).toBe('오후 4:05');
   });
+
+  it('formats 24h time correctly', () => {
+    const ts = new Date('2026-06-20T16:05:00').getTime();
+    const result = formatRelativeDate(ts, '24h');
+    expect(result.timeLabel).toBe('16:05');
+  });
+
+  it('formats 24h morning time with leading zero', () => {
+    const ts = new Date('2026-06-20T09:05:00').getTime();
+    const result = formatRelativeDate(ts, '24h');
+    expect(result.timeLabel).toBe('09:05');
+  });
 });

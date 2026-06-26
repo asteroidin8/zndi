@@ -6,6 +6,7 @@ import { Card } from '@/components/Card';
 import { size, spacing } from '@/constants/spacing';
 import { useLiveElapsed } from '@/hooks/useLiveElapsed';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import type { FastingStatus } from '@/types';
 import { formatElapsed, formatRelativeDate } from '@/utils/fastingFormat';
 
@@ -33,6 +34,7 @@ export function FastingCardCollapsed({
   onPress,
 }: Props) {
   const c = useThemeColors();
+  const timeFormat = useSettingsStore((s) => s.timeFormat ?? '24h');
   const isFasting = status === 'fasting';
   const elapsedMs = useLiveElapsed(startedAt, isFasting);
   const goalMs = goalHours * 3_600_000;
@@ -68,8 +70,8 @@ export function FastingCardCollapsed({
     );
   }
 
-  const start = startedAt ? formatRelativeDate(startedAt) : null;
-  const end = completionTs ? formatRelativeDate(completionTs) : null;
+  const start = startedAt ? formatRelativeDate(startedAt, timeFormat) : null;
+  const end = completionTs ? formatRelativeDate(completionTs, timeFormat) : null;
 
   return (
     <Card
