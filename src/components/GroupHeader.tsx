@@ -15,6 +15,8 @@ type Props = {
   hasVisibleItems: boolean;
   showDelete: boolean;
   isDropTarget?: boolean;
+  arrangeMode?: boolean;
+  onDrag?: () => void;
   onToggleCollapse: () => void;
   onRename: () => void;
   onDelete: () => void;
@@ -27,13 +29,15 @@ export function GroupHeader({
   hasVisibleItems,
   showDelete,
   isDropTarget,
+  arrangeMode,
+  onDrag,
   onToggleCollapse,
   onRename,
   onDelete,
 }: Props) {
   const c = useThemeColors();
   const rotation = useSharedValue(group.collapsed ? -90 : 0);
-  const openBottom = hasVisibleItems && !group.collapsed;
+  const openBottom = !arrangeMode && hasVisibleItems && !group.collapsed;
 
   useEffect(() => {
     rotation.value = withTiming(group.collapsed ? -90 : 0, { duration: 200 });
@@ -48,10 +52,10 @@ export function GroupHeader({
 
   return (
     <Pressable
-      onPress={onToggleCollapse}
-      onLongPress={onRename}
+      onPress={arrangeMode ? undefined : onToggleCollapse}
+      onLongPress={arrangeMode ? onDrag : onRename}
       accessibilityRole="button"
-      accessibilityLabel={`${group.name} 그룹`}
+      accessibilityLabel={`${group.name} 그룹${arrangeMode ? ' 순서 변경' : ''}`}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -69,16 +73,22 @@ export function GroupHeader({
         borderColor,
       }}
     >
-      <Animated.View style={chevronStyle}>
-        <AppIcon name="ChevronDown" size={14} color={c.inkTertiary} />
-      </Animated.View>
+      {arrangeMode ? (
+        <Pressable onLongPress={onDrag} hitSlop={8} style={{ padding: 2 }}>
+          <AppIcon name="GripVertical" size={16} color={c.inkDisabled} />
+        </Pressable>
+      ) : (
+        <Animated.View style={chevronStyle}>
+          <AppIcon name="ChevronDown" size={14} color={c.inkTertiary} />
+        </Animated.View>
+      )}
       <AppText
         variant="body"
         style={{ fontWeight: '600', flex: 1, marginLeft: spacing.sm }}
       >
         {group.name}
       </AppText>
-      {!group.collapsed && totalCount > 0 && (
+      {!arrangeMode && !group.collapsed && totalCount > 0 && (
         <AppText variant="caption" tone="disabled">
           {completedCount}/{totalCount}
         </AppText>

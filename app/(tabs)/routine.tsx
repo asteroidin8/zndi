@@ -66,7 +66,7 @@ export default function RoutineScreen() {
   const seenHints = useSettingsStore((s) => s.seenHints);
   const {
     addRoutine, updateRoutine, removeRoutine, removeRoutines,
-    reorderRoutines, addGroup, updateGroup, removeGroup, toggleGroupCollapsed, batchUpdateRoutines,
+    reorderRoutines, reorderGroups, addGroup, updateGroup, removeGroup, toggleGroupCollapsed, batchUpdateRoutines,
   } = useRoutineStore.getState();
   const { toggleCompletion, isCompleted } = useRoutineCompletionStore.getState();
   const { markHintSeen } = useSettingsStore.getState();
@@ -80,11 +80,13 @@ export default function RoutineScreen() {
   const { editMode, selectedIds, enterEditMode: _enterEditMode, exitEditMode: _exitEditMode, toggleSelection, toggleSelectAll } = useEditMode();
   const enterEditMode = useCallback(() => { _enterEditMode(); setTabBarVisible(false); }, [_enterEditMode, setTabBarVisible]);
   const exitEditMode = useCallback(() => { _exitEditMode(); setTabBarVisible(true); }, [_exitEditMode, setTabBarVisible]);
-
   useEffect(() => {
     if (!editMode) return;
     return registerBackHandler(TAB_INDEX, () => { exitEditMode(); return true; });
   }, [editMode, exitEditMode]);
+  const [arrangeMode, setArrangeMode] = useState(false);
+  const enterArrangeMode = useCallback(() => { setArrangeMode(true); setTabBarVisible(false); }, [setTabBarVisible]);
+  const exitArrangeMode = useCallback(() => { setArrangeMode(false); setTabBarVisible(true); }, [setTabBarVisible]);
   const [isDragging, setIsDragging] = useState(false);
   const [dragTargetGroupId, setDragTargetGroupId] = useState<string | null>(null);
   const dragFromRef = useRef(-1);
@@ -331,6 +333,42 @@ export default function RoutineScreen() {
     }
 
     runAfterDragAnimation(() => batchUpdateRoutines(updates));
+  }
+
+  // ── Arrange mode (group reorder) ──
+
+  type ArrangeItem = { type: 'group-header'; key: string; group: RoutineGroup };
+
+  const arrangeItems = useMemo<ArrangeItem[]>(() => {
+    if (!arrangeMode) return [];
+    return sortedGroups.map((group) => ({
+      type: 'group-header' as const,
+      key: `ah-${group.id}`,
+      group,
+    }));
+  }, [arrangeMode, sortedGroups]);
+
+  function handleArrangeDragEnd({ data }: { data: ArrangeItem[] }) {
+    runAfterDragAnimation(() => reorderGroups(data.map((item) => item.group)));
+  }
+
+  function renderArrangeItem({ item, drag }: RenderItemParams<ArrangeItem>) {
+    return (
+      <ScaleDecorator activeScale={1.02}>
+        <GroupHeader
+          group={{ ...item.group, collapsed: true }}
+          completedCount={0}
+          totalCount={0}
+          hasVisibleItems={false}
+          showDelete={false}
+          arrangeMode
+          onDrag={drag}
+          onToggleCollapse={() => {}}
+          onRename={() => {}}
+          onDelete={() => {}}
+        />
+      </ScaleDecorator>
+    );
   }
 
   function handleTodayReorder({ data }: { data: Routine[] }) {
@@ -581,12 +619,23 @@ export default function RoutineScreen() {
         }}
       >
         <AppText variant="title">루틴</AppText>
-        {editMode && (
-          <Pressable onPress={exitEditMode} hitSlop={8} accessibilityRole="button">
+        {(editMode || arrangeMode) ? (
+          <Pressable onPress={editMode ? exitEditMode : exitArrangeMode} hitSlop={8} accessibilityRole="button">
             <AppText variant="body" tone="primary" style={{ fontWeight: '600' }}>
               완료
             </AppText>
           </Pressable>
+        ) : !isEmpty && (
+          <View style={{ flexDirection: 'row', gap: spacing.md }}>
+            {groups.length >= 2 && (
+              <Pressable onPress={enterArrangeMode} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="그룹 배치">
+                <AppIcon name="ArrowUpDown" size={20} color={c.inkTertiary} />
+              </Pressable>
+            )}
+            <Pressable onPress={enterEditMode} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="편집">
+              <AppIcon name="Pencil" size={20} color={c.inkTertiary} />
+            </Pressable>
+          </View>
         )}
       </View>
 
@@ -594,6 +643,16 @@ export default function RoutineScreen() {
         <EmptyState
           message="되고 싶은 내 모습을 추가해보세요"
           variant="routine"
+        />
+      ) : arrangeMode ? (
+        <DraggableFlatList
+          data={arrangeItems}
+          keyExtractor={(item) => item.key}
+          onDragEnd={handleArrangeDragEnd}
+          renderItem={renderArrangeItem}
+          activationDistance={4}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          showsVerticalScrollIndicator={false}
         />
       ) : hasGroups ? (
         /* ── Unified DnD list (groups exist) ── */
@@ -727,19 +786,18 @@ export default function RoutineScreen() {
           onSelectAll={handleSelectAll}
           onDelete={handleBulkDelete}
         />
-      ) : (
+      ) : !arrangeMode && (
         <SpeedDialFab
           accessibilityLabel="추가 메뉴"
           actions={[
             { label: '루틴 추가', icon: 'Plus', onPress: openAdd },
             { label: '그룹 추가', icon: 'FolderPlus', onPress: handleAddGroup },
-            ...(!isEmpty ? [{ label: '편집', icon: 'Pencil' as const, onPress: enterEditMode }] : []),
           ]}
         />
       )}
 
       <Coachmark
-        visible={showSwipeHint && !editMode}
+        visible={showSwipeHint && !editMode && !arrangeMode}
         message="← 삭제 · 완료 → 스와이프 · 길게 눌러 편집"
         onDismiss={() => {
           markHintSeen('swipeActions');
