@@ -1,12 +1,13 @@
 import { router } from 'expo-router';
-import { useEffect, useMemo, useRef } from 'react';
-import { ScrollView, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { RefreshControl, ScrollView, View } from 'react-native';
 
 import { DailySummaryRow } from '@/components/DailySummaryRow';
 import { FastingCard } from '@/components/FastingCard';
 import { HomeTopBar } from '@/components/home/HomeTopBar';
 import { HomeWeeklyGrass } from '@/components/home/HomeWeeklyGrass';
 import { InfoBanner } from '@/components/InfoBanner';
+import { SkeletonBox } from '@/components/Skeleton';
 import { spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useTabNavigation, useTabScrollToTop } from '@/contexts/TabNavigationContext';
@@ -15,6 +16,7 @@ import { useUserStore } from '@/stores/useUserStore';
 import { fetchMyBoards } from '@/services/board/boardService';
 import { fetchBoardRoutines, fetchVerificationLogs } from '@/services/board/boardRoutineService';
 import { localDateStr } from '@/utils/dateFormat';
+import { feedbackRefresh } from '@/utils/microFeedback';
 import { isProfileIncomplete } from '@/utils/profile';
 
 const TAB_INDEX = 2 as const;
@@ -31,10 +33,12 @@ export default function HomeScreen() {
   const boards = useBoardStore((s) => s.boards);
   const allRoutines = useBoardStore((s) => s.routines);
   const allLogs = useBoardStore((s) => s.logs);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (!user?.id) return;
-    void fetchMyBoards(user.id);
+    if (!user?.id) { setInitialLoading(false); return; }
+    fetchMyBoards(user.id).finally(() => setInitialLoading(false));
   }, [user?.id]);
 
   useEffect(() => {
@@ -43,6 +47,21 @@ export default function HomeScreen() {
       void fetchVerificationLogs(board.id);
     }
   }, [boards]);
+
+  const onRefresh = useCallback(async () => {
+    if (!user?.id) return;
+    feedbackRefresh();
+    setRefreshing(true);
+    try {
+      await fetchMyBoards(user.id);
+      for (const board of boards) {
+        await fetchBoardRoutines(board.id);
+        await fetchVerificationLogs(board.id);
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  }, [user?.id, boards]);
 
   const unverifiedCount = useMemo(() => {
     if (!user?.id || boards.length === 0) return 0;
@@ -78,7 +97,18 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         alwaysBounceVertical={false}
         overScrollMode="never"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
+        {initialLoading ? (
+          <View style={{ gap: spacing.section }}>
+            <SkeletonBox height={80} rounded="lg" />
+            <SkeletonBox height={120} rounded="lg" />
+            <SkeletonBox height={60} rounded="lg" />
+          </View>
+        ) : (
+        <>
         <HomeWeeklyGrass />
 
         {unverifiedCount > 0 && (
@@ -101,6 +131,8 @@ export default function HomeScreen() {
         <FastingCard />
 
         <DailySummaryRow onRoutinePress={() => navigateTo(1)} onTodoPress={() => navigateTo(3)} />
+        </>
+        )}
       </ScrollView>
     </View>
   );

@@ -328,7 +328,7 @@ export default function BoardDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             const { deleted, votes, total, error } = await voteDeleteBoard(id);
-            if (error) { feedbackError(); appAlert('오류', error); return; }
+            if (error) { feedbackError(); toast(error, 'error'); return; }
             if (deleted) {
               router.back();
             } else {
@@ -359,7 +359,7 @@ export default function BoardDetailScreen() {
           text: '철회',
           onPress: async () => {
             const { error } = await unvoteDeleteBoard(id);
-            if (error) { appAlert('오류', error); return; }
+            if (error) { toast(error, 'error'); return; }
             setHasVoted(false);
           },
         },
@@ -379,7 +379,7 @@ export default function BoardDetailScreen() {
           onPress: async () => {
             const displayName = getDisplayName(myNickname, user?.id);
             const { error } = await delegateAdmin(id, targetUserId);
-            if (error) { appAlert('오류', error); return; }
+            if (error) { toast(error, 'error'); return; }
             void insertSystemMessage(id, 'admin_changed', displayName, targetNickname);
           },
         },
@@ -400,7 +400,7 @@ export default function BoardDetailScreen() {
           onPress: async () => {
             const displayName = getDisplayName(myNickname, user?.id);
             const { error } = await kickMember(id, targetUserId);
-            if (error) { appAlert('오류', error); return; }
+            if (error) { toast(error, 'error'); return; }
             void insertSystemMessage(id, 'member_kicked', displayName, targetNickname);
             void sendBoardPush(
               id,
@@ -425,7 +425,7 @@ export default function BoardDetailScreen() {
           text: '갱신',
           onPress: async () => {
             const { newCode, error } = await refreshInviteCode(id);
-            if (error) { feedbackError(); appAlert('오류', error); }
+            if (error) { feedbackError(); toast(error, 'error'); }
             else if (newCode) { feedbackRefresh(); toast('초대 코드가 갱신되었어요'); }
           },
         },
@@ -436,12 +436,12 @@ export default function BoardDetailScreen() {
   async function handleCreateRoutine() {
     if (!user?.id || !id || !routineName.trim()) return;
     if (routines.length >= 1) {
-      appAlert('제한', '1보드 1루틴 원칙에 따라 루틴은 하나만 생성할 수 있어요.');
+      toast('1보드 1루틴 원칙에 따라 루틴은 하나만 생성할 수 있어요', 'error');
       return;
     }
     const trimmed = routineName.trim();
     const { error } = await createBoardRoutine(id, user.id, trimmed);
-    if (error) { appAlert('오류', error); return; }
+    if (error) { toast(error, 'error'); return; }
     const displayName = getDisplayName(myNickname, user.id);
     void insertSystemMessage(id, 'routine_created', displayName, undefined, trimmed);
     setRoutineName('');
@@ -488,7 +488,7 @@ export default function BoardDetailScreen() {
       const { error } = await submitVerification(id, selectedRoutineId, user.id, photoUri, memo || null);
       if (error) {
         feedbackError();
-        appAlert('오류', error);
+        toast(error, 'error');
         return;
       }
       feedbackSave();

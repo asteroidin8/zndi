@@ -9,7 +9,7 @@ import { SheetPrimaryButton } from '@/components/SheetModal';
 import { spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { appAlert } from '@/stores/useAlertStore';
+import { toast } from '@/stores/useToastStore';
 import { feedbackSuccess } from '@/utils/microFeedback';
 import { useUserStore } from '@/stores/useUserStore';
 import { joinBoard, fetchMyBoards, insertSystemMessage } from '@/services/board/boardService';
@@ -30,7 +30,7 @@ export default function BoardJoinScreen() {
     setLoading(false);
 
     if (error) {
-      appAlert('참가 실패', error);
+      toast(error, 'error');
       return;
     }
 

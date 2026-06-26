@@ -13,6 +13,7 @@ import { radius, spacing } from '@/constants/spacing';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { appAlert } from '@/stores/useAlertStore';
+import { toast } from '@/stores/useToastStore';
 import { useAvatarStore } from '@/stores/useAvatarStore';
 import { useProStore } from '@/stores/useProStore';
 import { getAvatarById } from '@/constants/avatars';
@@ -73,6 +74,7 @@ export default function MyScreen() {
     }
     setNickname(trimmed);
     setEditingNickname(false);
+    toast('닉네임이 저장되었어요');
     if (trimmed && user?.id) {
       void updateMyNicknameInBoards(user.id, trimmed);
     }
@@ -87,9 +89,9 @@ export default function MyScreen() {
     try {
       const result = await signInGoogle();
       if (result.cancelled) return;
-      if (result.error) appAlert('로그인 실패', result.error);
+      if (result.error) toast(result.error, 'error');
     } catch {
-      appAlert('로그인 실패', '로그인 중 오류가 발생했어요.');
+      toast('로그인 중 오류가 발생했어요', 'error');
     } finally {
       setBusy(false);
     }
@@ -100,7 +102,7 @@ export default function MyScreen() {
     setBusy(true);
     const result = await sendEmailOtp(email);
     setBusy(false);
-    if (result.error) appAlert('이메일 전송 실패', result.error);
+    if (result.error) toast(result.error, 'error');
     else setOtpSent(true);
   }
 
@@ -108,7 +110,7 @@ export default function MyScreen() {
     setBusy(true);
     const result = await verifyEmailOtp(email, otp);
     setBusy(false);
-    if (result.error) appAlert('인증 실패', result.error);
+    if (result.error) toast(result.error, 'error');
     else { setEmailMode(false); setOtpSent(false); setOtp(''); }
   }
 
