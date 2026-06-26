@@ -40,7 +40,6 @@ export async function resetUserData() {
     isPro: false,
     purchasedColors: [],
     purchasedShapes: [],
-    purchasedAnimations: [],
   });
   useBoardStore.getState().reset();
   useFollowStore.getState().reset();

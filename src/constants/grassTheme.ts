@@ -79,23 +79,6 @@ export function deriveThemeColors(id: GrassColorId, isDark: boolean): GrassDeriv
   };
 }
 
-export type GrassAnimationId = 'none' | 'glow' | 'pulse' | 'sparkle' | 'wave';
-
-export type GrassAnimation = {
-  id: GrassAnimationId;
-  name: string;
-  desc: string;
-  price: number | null;
-};
-
-export const GRASS_ANIMATIONS: GrassAnimation[] = [
-  { id: 'none',    name: '없음',     desc: '효과 없이 색만 채워져요',           price: null },
-  { id: 'glow',    name: '네온 글로우', desc: '완료 시 칸이 은은하게 빛나요',   price: 300 },
-  { id: 'pulse',   name: '펄스',     desc: '완료 시 칸이 부드럽게 박동해요',     price: 500 },
-  { id: 'sparkle', name: '반짝임',   desc: '완료 시 칸 위에 별이 반짝여요',      price: 500 },
-  { id: 'wave',    name: '웨이브',   desc: '완료 시 물결이 퍼져나가요',          price: 800 },
-];
-
 export const GRASS_OPACITY = [0, 0.2, 0.4, 0.65, 1.0] as const;
 
 export function getCellBorderRadius(shape: GrassCellShape, size: number): number {

@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { HintKey, ThemeMode } from '@/types';
-import type { GrassColorId, GrassCellShape, GrassAnimationId } from '@/constants/grassTheme';
+import type { GrassColorId, GrassCellShape } from '@/constants/grassTheme';
 
 export type { HintKey, ThemeMode } from '@/types';
 
@@ -15,7 +15,6 @@ type SettingsStore = {
   timeFormat: TimeFormat;
   grassColor: GrassColorId;
   grassShape: GrassCellShape;
-  grassAnimation: GrassAnimationId;
   routineNotificationsEnabled: boolean;
   todoNotificationsEnabled: boolean;
   onboardingCompleted: boolean;
@@ -25,7 +24,6 @@ type SettingsStore = {
   setTimeFormat: (format: TimeFormat) => void;
   setGrassColor: (color: GrassColorId) => void;
   setGrassShape: (shape: GrassCellShape) => void;
-  setGrassAnimation: (animation: GrassAnimationId) => void;
   setRoutineNotifications: (enabled: boolean) => void;
   setTodoNotifications: (enabled: boolean) => void;
   setOnboardingCompleted: (completed: boolean) => void;
@@ -40,7 +38,6 @@ export const useSettingsStore = create<SettingsStore>()(
       timeFormat: '24h',
       grassColor: 'green',
       grassShape: 'default',
-      grassAnimation: 'none',
       routineNotificationsEnabled: false,
       todoNotificationsEnabled: false,
       onboardingCompleted: false,
@@ -51,7 +48,6 @@ export const useSettingsStore = create<SettingsStore>()(
       setTimeFormat: (format) => set({ timeFormat: format }),
       setGrassColor: (color) => set({ grassColor: color }),
       setGrassShape: (shape) => set({ grassShape: shape }),
-      setGrassAnimation: (animation) => set({ grassAnimation: animation }),
       setRoutineNotifications: (enabled) => set({ routineNotificationsEnabled: enabled }),
       setTodoNotifications: (enabled) => set({ todoNotificationsEnabled: enabled }),
       setOnboardingCompleted: (completed) => set({ onboardingCompleted: completed }),
