@@ -191,7 +191,7 @@ export default function MyScreen() {
   } as const;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top', 'bottom']}>
       <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: spacing.screen, paddingTop: spacing.item }}>
         <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="닫기">
           <AppIcon name="X" size={20} color={c.ink} />
