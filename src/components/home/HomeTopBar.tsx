@@ -9,7 +9,7 @@ import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { getRoutineStreakDays } from '@/utils/homeDailyBoard';
 
-const ZNDI_SYMBOL = require('../../../assets/zndi-symbol.png');
+const ZNDI_SYMBOL = require('../../../assets/zndi-check-symbol.png');
 
 export function HomeTopBar() {
   const c = useThemeColors();
