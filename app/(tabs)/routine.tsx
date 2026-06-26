@@ -552,7 +552,7 @@ export default function RoutineScreen() {
               }
             >
               <View style={cardWrapStyle}>
-                <View style={{ paddingHorizontal: isGrouped ? spacing.screen : 0 }}>
+                <View style={{ paddingHorizontal: spacing.screen }}>
                   <RoutineItem
                     routine={routine}
                     isCompleted={isToday ? completed : false}
