@@ -606,7 +606,7 @@ export default function RoutineScreen() {
               </Pressable>
             )}
             <Pressable onPress={enterEditMode} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="편집">
-              <AppIcon name="CircleMinus" size={20} color={c.inkTertiary} />
+              <AppIcon name="ListMinus" size={20} color={c.inkTertiary} />
             </Pressable>
           </View>
         )}
