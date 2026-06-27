@@ -569,7 +569,7 @@ export default function BoardDetailScreen() {
             </Pressable>
           ) : (
             <Pressable onPress={handleVoteDelete} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="보드 삭제 투표">
-              <AppIcon name="Trash2" size={18} color={c.danger} />
+              <AppIcon name="LogOut" size={18} color={c.danger} />
             </Pressable>
           )}
           <Pressable onPress={handleLeave} hitSlop={8} style={{ padding: 4 }} accessibilityLabel="보드 나가기">
