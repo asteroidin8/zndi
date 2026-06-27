@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 const SCREEN = Dimensions.get('window');
-const PARTICLE_COUNT = 40;
+const PARTICLE_COUNT = 20;
 const COLORS = [
   '#22C55E', '#4ADE80', '#FFD700', '#FF6B6B',
   '#60A5FA', '#A78BFA', '#F472B6', '#34D399',
