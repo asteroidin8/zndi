@@ -114,12 +114,10 @@ export const useRoutineStore = create<RoutineStore>()(
         set({ groups: ordered.map((g, i) => ({ ...g, order: i })) });
       },
 
-      toggleGroupCollapsed: (id) => {
-        markDirty('routine_groups', id);
+      toggleGroupCollapsed: (id) =>
         set((s) => ({
           groups: s.groups.map((g) => (g.id === id ? { ...g, collapsed: !g.collapsed } : g)),
-        }));
-      },
+        })),
 
       moveRoutineToGroup: (routineId, groupId) => {
         markDirty('routines', routineId);

@@ -134,7 +134,7 @@ export const useTodoStore = create<TodoStore>()(
         set({ groups: ordered.map((g, i) => ({ ...g, order: i })) });
       },
 
-      toggleGroupCollapsed: (id) => { markDirty('todo_groups', id); set((s) => ({ groups: s.groups.map((g) => (g.id === id ? { ...g, collapsed: !g.collapsed } : g)) })); },
+      toggleGroupCollapsed: (id) => set((s) => ({ groups: s.groups.map((g) => (g.id === id ? { ...g, collapsed: !g.collapsed } : g)) })),
 
       moveTodoToGroup: (todoId, groupId) => { markDirty('todos', todoId); set((s) => ({ todos: s.todos.map((t) => (t.id === todoId ? { ...t, groupId } : t)) })); },
 
