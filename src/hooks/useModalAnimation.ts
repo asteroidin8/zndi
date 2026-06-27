@@ -1,13 +1,31 @@
 import { useEffect } from 'react';
-import { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import {
+  type WithTimingConfig,
+  type WithSpringConfig,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
-export function useModalAnimation() {
+type Options = {
+  scaleFrom?: number;
+  spring?: WithSpringConfig | false;
+  timing?: WithTimingConfig;
+};
+
+export function useModalAnimation(opts?: Options) {
+  const scaleFrom = opts?.scaleFrom ?? 0.92;
+  const useSpring = opts?.spring !== undefined && opts.spring !== false;
+
   const backdropOpacity = useSharedValue(0);
-  const scale = useSharedValue(0.92);
+  const scale = useSharedValue(scaleFrom);
 
   useEffect(() => {
     backdropOpacity.value = withTiming(1, { duration: 200 });
-    scale.value = withTiming(1, { duration: 220 });
+    scale.value = useSpring
+      ? withSpring(1, opts!.spring as WithSpringConfig)
+      : withTiming(1, opts?.timing ?? { duration: 220 });
   }, [backdropOpacity, scale]);
 
   const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.value }));
@@ -16,5 +34,5 @@ export function useModalAnimation() {
     opacity: backdropOpacity.value,
   }));
 
-  return { backdropStyle, contentStyle };
+  return { backdropOpacity, backdropStyle, contentStyle };
 }

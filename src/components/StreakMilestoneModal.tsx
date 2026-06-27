@@ -1,19 +1,18 @@
 import { useEffect } from 'react';
 import { Modal, Pressable, View } from 'react-native';
 import Animated, {
-  Easing,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withSequence,
   withSpring,
-  withTiming,
 } from 'react-native-reanimated';
 
 import { AppIcon } from './AppIcon';
 import { AppText } from './AppText';
 import { ConfettiCelebration } from './ConfettiCelebration';
 import { radius, spacing } from '@/constants/spacing';
+import { useModalAnimation } from '@/hooks/useModalAnimation';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 const MILESTONES = [7, 14, 30, 60, 100, 200, 365] as const;
@@ -51,14 +50,19 @@ export function StreakMilestoneModal({ milestone, streak, visible, onClose }: Pr
   const c = useThemeColors();
   const info = MILESTONE_INFO[milestone];
 
-  const scale = useSharedValue(0.6);
-  const opacity = useSharedValue(0);
+  const { backdropOpacity, backdropStyle: rawBackdropStyle, contentStyle: cardStyle } = useModalAnimation({
+    scaleFrom: 0.6,
+    spring: { damping: 14, stiffness: 160 },
+  });
+
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: backdropOpacity.value * 0.6,
+  }));
+
   const emojiScale = useSharedValue(0);
 
   useEffect(() => {
     if (visible) {
-      opacity.value = withTiming(1, { duration: 200 });
-      scale.value = withSpring(1, { damping: 14, stiffness: 160 });
       emojiScale.value = withDelay(
         300,
         withSequence(
@@ -67,20 +71,9 @@ export function StreakMilestoneModal({ milestone, streak, visible, onClose }: Pr
         ),
       );
     } else {
-      opacity.value = 0;
-      scale.value = 0.6;
       emojiScale.value = 0;
     }
-  }, [visible, opacity, scale, emojiScale]);
-
-  const backdropStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value * 0.6,
-  }));
-
-  const cardStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-  }));
+  }, [visible, emojiScale]);
 
   const emojiStyle = useAnimatedStyle(() => ({
     transform: [{ scale: emojiScale.value }],
