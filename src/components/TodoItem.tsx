@@ -1,4 +1,5 @@
 import { Pressable, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 import { CompletionCheckbox } from './CompletionCheckbox';
 import { AppIcon } from './AppIcon';
@@ -29,67 +30,69 @@ export function TodoItem({ todo, onToggle, onLongPress, onPress, onToggleHomePin
   }
 
   return (
-    <Pressable
-      onPress={onPress}
-      onLongPress={onLongPress}
-      delayLongPress={280}
-      accessibilityRole="button"
-      accessibilityLabel={`${todo.title}${isCompleted ? ', 완료됨' : ''}`}
-      accessibilityHint="길게 눌러 순서 변경"
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 10,
-        gap: spacing.item,
-        minHeight: 44,
-        opacity: isCompleted ? opacity.completed : 1,
-      }}
-    >
-      <CompletionCheckbox
-        checked={isCompleted}
-        onToggle={handleToggle}
-        label={`${todo.title} 완료 토글`}
-        shape="circle"
-      />
+    <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} layout={LinearTransition.duration(200)}>
+      <Pressable
+        onPress={onPress}
+        onLongPress={onLongPress}
+        delayLongPress={280}
+        accessibilityRole="button"
+        accessibilityLabel={`${todo.title}${isCompleted ? ', 완료됨' : ''}`}
+        accessibilityHint="길게 눌러 순서 변경"
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: 10,
+          gap: spacing.item,
+          minHeight: 44,
+          opacity: isCompleted ? opacity.completed : 1,
+        }}
+      >
+        <CompletionCheckbox
+          checked={isCompleted}
+          onToggle={handleToggle}
+          label={`${todo.title} 완료 토글`}
+          shape="circle"
+        />
 
-      <View style={{ flex: 1 }}>
-        <AppText
-          variant="body"
-          tone={isCompleted ? 'tertiary' : 'primary'}
-          style={isCompleted ? { textDecorationLine: 'line-through' } : {}}
-        >
-          {todo.title}
-        </AppText>
-        {todo.dueDate && !isCompleted && (() => {
-          const { label, urgency } = formatDueDate(todo.dueDate);
-          const color = getDueDateColor(urgency, c);
-          return (
-            <AppText
-              variant="caption"
-              style={color ? { color } : undefined}
-              tone={color ? undefined : 'disabled'}
-            >
-              {label}
-            </AppText>
-          );
-        })()}
-      </View>
+        <View style={{ flex: 1 }}>
+          <AppText
+            variant="body"
+            tone={isCompleted ? 'tertiary' : 'primary'}
+            style={isCompleted ? { textDecorationLine: 'line-through' } : {}}
+          >
+            {todo.title}
+          </AppText>
+          {todo.dueDate && !isCompleted && (() => {
+            const { label, urgency } = formatDueDate(todo.dueDate);
+            const color = getDueDateColor(urgency, c);
+            return (
+              <AppText
+                variant="caption"
+                style={color ? { color } : undefined}
+                tone={color ? undefined : 'disabled'}
+              >
+                {label}
+              </AppText>
+            );
+          })()}
+        </View>
 
-      {!isCompleted && onToggleHomePin && (
-        <Pressable
-          onPress={onToggleHomePin}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel={todo.pinnedToHome ? '홈 고정 해제' : '홈에 고정'}
-        >
-          <AppIcon
-            name={todo.pinnedToHome ? 'Pin' : 'PinOff'}
-            size={size.iconMd}
-            color={todo.pinnedToHome ? c.primary : c.inkDisabled}
-          />
-        </Pressable>
-      )}
-      {!isCompleted && !onToggleHomePin && <TodoPriorityBadge priority={todo.priority} />}
-    </Pressable>
+        {!isCompleted && onToggleHomePin && (
+          <Pressable
+            onPress={onToggleHomePin}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={todo.pinnedToHome ? '홈 고정 해제' : '홈에 고정'}
+          >
+            <AppIcon
+              name={todo.pinnedToHome ? 'Pin' : 'PinOff'}
+              size={size.iconMd}
+              color={todo.pinnedToHome ? c.primary : c.inkDisabled}
+            />
+          </Pressable>
+        )}
+        {!isCompleted && !onToggleHomePin && <TodoPriorityBadge priority={todo.priority} />}
+      </Pressable>
+    </Animated.View>
   );
 }

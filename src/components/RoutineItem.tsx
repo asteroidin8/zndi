@@ -1,4 +1,5 @@
 import { Pressable, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 import { CompletionCheckbox } from './CompletionCheckbox';
 import { AppText } from './AppText';
@@ -26,41 +27,43 @@ export function RoutineItem({ routine, isCompleted = false, onToggle, onLongPres
   }
 
   return (
-    <Pressable
-      onPress={onPress ?? handleToggle}
-      onLongPress={onLongPress}
-      delayLongPress={280}
-      accessibilityRole="button"
-      accessibilityLabel={`${routine.name} 루틴${isCompleted ? ', 완료됨' : ''}`}
-      accessibilityHint="길게 눌러 순서 변경"
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: spacing.md,
-        gap: spacing.item,
-        minHeight: 44,
-        opacity: isCompleted ? opacity.completed : 1,
-      }}
-    >
-      <CompletionCheckbox
-        checked={isCompleted}
-        onToggle={handleToggle}
-        label={`${routine.name} 완료 토글`}
-      />
+    <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} layout={LinearTransition.duration(200)}>
+      <Pressable
+        onPress={onPress ?? handleToggle}
+        onLongPress={onLongPress}
+        delayLongPress={280}
+        accessibilityRole="button"
+        accessibilityLabel={`${routine.name} 루틴${isCompleted ? ', 완료됨' : ''}`}
+        accessibilityHint="길게 눌러 순서 변경"
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: spacing.md,
+          gap: spacing.item,
+          minHeight: 44,
+          opacity: isCompleted ? opacity.completed : 1,
+        }}
+      >
+        <CompletionCheckbox
+          checked={isCompleted}
+          onToggle={handleToggle}
+          label={`${routine.name} 완료 토글`}
+        />
 
-      <View style={{ flex: 1, gap: spacing.xs }}>
-        <AppText
-          variant="body"
-          tone={isCompleted ? 'tertiary' : 'primary'}
-          style={isCompleted ? { textDecorationLine: 'line-through' } : {}}
-        >
-          {routine.name}
-        </AppText>
-        <AppText variant="caption" tone="disabled">
-          {formatRepeatLabel(routine)}
-          {routine.reminderTime ? `  ·  ${formatTimeDisplay(routine.reminderTime, timeFormat)}` : ''}
-        </AppText>
-      </View>
-    </Pressable>
+        <View style={{ flex: 1, gap: spacing.xs }}>
+          <AppText
+            variant="body"
+            tone={isCompleted ? 'tertiary' : 'primary'}
+            style={isCompleted ? { textDecorationLine: 'line-through' } : {}}
+          >
+            {routine.name}
+          </AppText>
+          <AppText variant="caption" tone="disabled">
+            {formatRepeatLabel(routine)}
+            {routine.reminderTime ? `  ·  ${formatTimeDisplay(routine.reminderTime, timeFormat)}` : ''}
+          </AppText>
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 }

@@ -19,6 +19,7 @@ type SettingsStore = {
   todoNotificationsEnabled: boolean;
   onboardingCompleted: boolean;
   seenHints: Partial<Record<HintKey, boolean>>;
+  celebratedStreaks: number[];
   toggleForegroundService: () => void;
   setThemeMode: (mode: ThemeMode) => void;
   setTimeFormat: (format: TimeFormat) => void;
@@ -28,6 +29,7 @@ type SettingsStore = {
   setTodoNotifications: (enabled: boolean) => void;
   setOnboardingCompleted: (completed: boolean) => void;
   markHintSeen: (key: HintKey) => void;
+  markStreakCelebrated: (milestone: number) => void;
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -42,6 +44,7 @@ export const useSettingsStore = create<SettingsStore>()(
       todoNotificationsEnabled: false,
       onboardingCompleted: false,
       seenHints: {},
+      celebratedStreaks: [],
       toggleForegroundService: () =>
         set((s) => ({ foregroundServiceEnabled: !s.foregroundServiceEnabled })),
       setThemeMode: (mode) => set({ themeMode: mode }),
@@ -53,6 +56,12 @@ export const useSettingsStore = create<SettingsStore>()(
       setOnboardingCompleted: (completed) => set({ onboardingCompleted: completed }),
       markHintSeen: (key) =>
         set((s) => ({ seenHints: { ...s.seenHints, [key]: true } })),
+      markStreakCelebrated: (milestone) =>
+        set((s) => ({
+          celebratedStreaks: s.celebratedStreaks.includes(milestone)
+            ? s.celebratedStreaks
+            : [...s.celebratedStreaks, milestone],
+        })),
     }),
     {
       name: 'settings-store',
