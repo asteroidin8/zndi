@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 
+import { ConfettiCelebration } from '@/components/ConfettiCelebration';
 import { DailySummaryRow } from '@/components/DailySummaryRow';
 import { FastingCard } from '@/components/FastingCard';
 import { HomeTopBar } from '@/components/home/HomeTopBar';
@@ -16,7 +17,7 @@ import { useUserStore } from '@/stores/useUserStore';
 import { fetchMyBoards } from '@/services/board/boardService';
 import { fetchBoardRoutines, fetchVerificationLogs } from '@/services/board/boardRoutineService';
 import { localDateStr } from '@/utils/dateFormat';
-import { feedbackRefresh } from '@/utils/microFeedback';
+import { feedbackRefresh, feedbackSuccess } from '@/utils/microFeedback';
 import { isProfileIncomplete } from '@/utils/profile';
 
 const TAB_INDEX = 2 as const;
@@ -29,6 +30,16 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const profile = useUserStore((s) => s.profile);
   const isProfileBannerVisible = isProfileIncomplete(profile);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  const handleAllComplete = useCallback(() => {
+    feedbackSuccess();
+    setShowConfetti(true);
+  }, []);
+
+  const handleConfettiFinish = useCallback(() => {
+    setShowConfetti(false);
+  }, []);
 
   const boards = useBoardStore((s) => s.boards);
   const allRoutines = useBoardStore((s) => s.routines);
@@ -130,10 +141,15 @@ export default function HomeScreen() {
 
         <FastingCard />
 
-        <DailySummaryRow onRoutinePress={() => navigateTo(1)} onTodoPress={() => navigateTo(3)} />
+        <DailySummaryRow
+          onRoutinePress={() => navigateTo(1)}
+          onTodoPress={() => navigateTo(3)}
+          onAllComplete={handleAllComplete}
+        />
         </>
         )}
       </ScrollView>
+      <ConfettiCelebration visible={showConfetti} onFinish={handleConfettiFinish} />
     </View>
   );
 }

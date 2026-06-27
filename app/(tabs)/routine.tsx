@@ -616,6 +616,8 @@ export default function RoutineScreen() {
         <EmptyState
           message="되고 싶은 내 모습을 추가해보세요"
           variant="routine"
+          ctaLabel="루틴 추가하기"
+          onCtaPress={() => setModalVisible(true)}
         />
       ) : arrangeMode ? (
         <DraggableFlatList

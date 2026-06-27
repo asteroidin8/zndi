@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -29,9 +29,10 @@ function getTodayDate() {
 type Props = {
   onRoutinePress?: () => void;
   onTodoPress?: () => void;
+  onAllComplete?: () => void;
 };
 
-export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
+export function DailySummaryRow({ onRoutinePress, onTodoPress, onAllComplete }: Props) {
   const c = useThemeColors();
   const allRoutines = useRoutineStore((s) => s.routines);
   const allTodos = useTodoStore((s) => s.todos);
@@ -80,6 +81,20 @@ export function DailySummaryRow({ onRoutinePress, onTodoPress }: Props) {
   const progressStyle = useAnimatedStyle(() => ({
     width: `${progressWidth.value * 100}%`,
   }));
+
+  const hasAnyItems = hasRoutines || hasTodos;
+  const everythingDone =
+    hasAnyItems &&
+    (!hasRoutines || allRoutinesDone) &&
+    (!hasTodos || allTodosDone);
+
+  const prevDoneRef = useRef(everythingDone);
+  useEffect(() => {
+    if (everythingDone && !prevDoneRef.current) {
+      onAllComplete?.();
+    }
+    prevDoneRef.current = everythingDone;
+  }, [everythingDone, onAllComplete]);
 
   function pulseRoutineBar() {}
   function pulseTodoBar() {}

@@ -6,12 +6,12 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 type Variant = TypographyVariant;
 type Tone = 'primary' | 'secondary' | 'tertiary' | 'disabled';
 
-type Props = TextProps & {
+export type AppTextProps = TextProps & {
   variant?: Variant;
   tone?: Tone;
 };
 
-export function AppText({ variant = 'body', tone = 'primary', style, ...props }: Props) {
+export function AppText({ variant = 'body', tone = 'primary', style, ...props }: AppTextProps) {
   const c = useThemeColors();
 
   const toneColor: Record<Tone, string> = {

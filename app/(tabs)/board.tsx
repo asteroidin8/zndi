@@ -206,6 +206,8 @@ export default function BoardTabScreen() {
             <EmptyState
               variant="stats"
               message={'보드를 만들거나\n초대 코드로 참가해보세요'}
+              ctaLabel="보드 만들기"
+              onCtaPress={() => router.push('/board/create')}
             />
           ) : (
             boards.map((board) => {
@@ -300,6 +302,8 @@ export default function BoardTabScreen() {
           <EmptyState
             variant="stats"
             message={'닉네임으로 친구를 검색하고\n잔디를 구경해보세요'}
+            ctaLabel="친구 찾기"
+            onCtaPress={() => router.push('/board/search')}
           />
         ) : (
           <>

@@ -677,6 +677,8 @@ export default function TodoScreen() {
     <EmptyState
       message={`오늘 해낼 일을 적어봐요\n작은 한 걸음이 습관이 돼요`}
       variant="todo"
+      ctaLabel="할일 추가하기"
+      onCtaPress={() => setAddModalVisible(true)}
     />
   ) : hasGroups ? (
     <DraggableFlatList
