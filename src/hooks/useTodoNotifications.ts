@@ -1,5 +1,5 @@
 import * as Notifications from 'expo-notifications';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useTodoStore } from '@/stores/useTodoStore';
@@ -11,6 +11,14 @@ export function useTodoNotifications() {
   const todos = useTodoStore((s) => s.todos);
   const todoNotificationsEnabled = useSettingsStore((s) => s.todoNotificationsEnabled);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const notifFingerprint = useMemo(() =>
+    todos
+      .filter((t) => !t.deletedAt && !t.completedAt && t.dueDate)
+      .map((t) => `${t.id}:${t.dueDate}`)
+      .join('|'),
+    [todos],
+  );
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -56,5 +64,5 @@ export function useTodoNotifications() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [todos, todoNotificationsEnabled]);
+  }, [notifFingerprint, todoNotificationsEnabled]);
 }

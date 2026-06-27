@@ -91,9 +91,15 @@ export function useBoardProgressSync() {
     syncProgress();
 
     const unsubs = [
-      useRoutineStore.subscribe(debouncedSync),
-      useTodoStore.subscribe(debouncedSync),
-      useRoutineCompletionStore.subscribe(debouncedSync),
+      useRoutineStore.subscribe((state, prev) => {
+        if (state.routines !== prev.routines) debouncedSync();
+      }),
+      useTodoStore.subscribe((state, prev) => {
+        if (state.todos !== prev.todos) debouncedSync();
+      }),
+      useRoutineCompletionStore.subscribe((state, prev) => {
+        if (state.completions !== prev.completions) debouncedSync();
+      }),
       useBoardStore.subscribe((state, prev) => {
         if (state.boards !== prev.boards) debouncedSync();
       }),

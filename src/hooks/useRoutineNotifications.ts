@@ -1,5 +1,5 @@
 import * as Notifications from 'expo-notifications';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
@@ -11,6 +11,14 @@ export function useRoutineNotifications() {
   const routines = useRoutineStore((s) => s.routines);
   const routineNotificationsEnabled = useSettingsStore((s) => s.routineNotificationsEnabled);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const notifFingerprint = useMemo(() =>
+    routines
+      .filter((r) => !r.deletedAt && r.reminderTime)
+      .map((r) => `${r.id}:${r.reminderTime}:${r.repeatType ?? 'weekly'}:${(r.repeatDays ?? []).join(',')}:${(r.monthDates ?? []).join(',')}`)
+      .join('|'),
+    [routines],
+  );
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -96,5 +104,5 @@ export function useRoutineNotifications() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [routines, routineNotificationsEnabled]);
+  }, [notifFingerprint, routineNotificationsEnabled]);
 }

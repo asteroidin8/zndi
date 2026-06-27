@@ -134,10 +134,18 @@ export function useWidgetSync() {
     syncWidgets();
 
     const unsubs = [
-      useRoutineStore.subscribe(debouncedSync),
-      useRoutineCompletionStore.subscribe(debouncedSync),
-      useTodoStore.subscribe(debouncedSync),
-      useFastingStore.subscribe(debouncedSync),
+      useRoutineStore.subscribe((state, prev) => {
+        if (state.routines !== prev.routines) debouncedSync();
+      }),
+      useRoutineCompletionStore.subscribe((state, prev) => {
+        if (state.completions !== prev.completions) debouncedSync();
+      }),
+      useTodoStore.subscribe((state, prev) => {
+        if (state.todos !== prev.todos) debouncedSync();
+      }),
+      useFastingStore.subscribe((state, prev) => {
+        if (state.status !== prev.status || state.startedAt !== prev.startedAt) debouncedSync();
+      }),
     ];
 
     const startFastingTimer = () => {

@@ -97,10 +97,24 @@ export function useAutoCloudSync() {
 
     let prevFastingRecordsLen = useFastingStore.getState().records.length;
     const unsubs = [
-      useUserStore.subscribe(() => schedulePush('user')),
-      useRoutineStore.subscribe(() => schedulePush('routines')),
-      useTodoStore.subscribe(() => schedulePush('todos')),
-      useRoutineCompletionStore.subscribe(() => schedulePush('completions')),
+      useUserStore.subscribe((state, prev) => {
+        if (state.profile !== prev.profile || state.weightRecords !== prev.weightRecords) {
+          schedulePush('user');
+        }
+      }),
+      useRoutineStore.subscribe((state, prev) => {
+        if (state.routines !== prev.routines || state.groups !== prev.groups) {
+          schedulePush('routines');
+        }
+      }),
+      useTodoStore.subscribe((state, prev) => {
+        if (state.todos !== prev.todos || state.groups !== prev.groups) {
+          schedulePush('todos');
+        }
+      }),
+      useRoutineCompletionStore.subscribe((state, prev) => {
+        if (state.completions !== prev.completions) schedulePush('completions');
+      }),
       useFastingStore.subscribe((state) => {
         if (state.records.length !== prevFastingRecordsLen) {
           prevFastingRecordsLen = state.records.length;
