@@ -21,6 +21,8 @@ import { useBoardStore } from '@/stores/useBoardStore';
 import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
 import { useRoutineStore } from '@/stores/useRoutineStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useTodoStore } from '@/stores/useTodoStore';
+import { useFastingStore } from '@/stores/useFastingStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { fetchMyBoards } from '@/services/board/boardService';
 import { fetchBoardRoutines, fetchVerificationLogs } from '@/services/board/boardRoutineService';
@@ -28,6 +30,8 @@ import { localDateStr } from '@/utils/dateFormat';
 import { getRoutineStreakDays } from '@/utils/homeDailyBoard';
 import { feedbackRefresh, feedbackSuccess } from '@/utils/microFeedback';
 import { isProfileIncomplete } from '@/utils/profile';
+import { checkAndUnlockQuestAvatars } from '@/utils/questUnlock';
+import { toast } from '@/stores/useToastStore';
 
 const TAB_INDEX = 2 as const;
 
@@ -43,8 +47,27 @@ export default function HomeScreen() {
   const [milestoneToShow, setMilestoneToShow] = useState<StreakMilestone | null>(null);
 
   const routines = useRoutineStore((s) => s.routines);
-  useRoutineCompletionStore((s) => s.completions);
+  const completions = useRoutineCompletionStore((s) => s.completions);
   const celebratedStreaks = useSettingsStore((s) => s.celebratedStreaks);
+
+  const completionCount = useMemo(() => Object.keys(completions).length, [completions]);
+  const todos = useTodoStore((s) => s.todos);
+  const completedTodoCount = useMemo(
+    () => todos.filter((t) => t.completedAt && !t.deletedAt).length,
+    [todos],
+  );
+  const fastingRecords = useFastingStore((s) => s.records);
+  const fastingEndedCount = useMemo(
+    () => fastingRecords.filter((r) => r.endedAt != null).length,
+    [fastingRecords],
+  );
+
+  useEffect(() => {
+    const unlocked = checkAndUnlockQuestAvatars();
+    for (const avatar of unlocked) {
+      toast(`🎉 ${avatar.name} 식물 획득!`);
+    }
+  }, [completionCount, completedTodoCount, fastingEndedCount]);
 
   const handleAllComplete = useCallback(() => {
     feedbackSuccess();

@@ -16,16 +16,31 @@ import {
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useAvatarStore } from '@/stores/useAvatarStore';
+import { useRoutineCompletionStore } from '@/stores/useRoutineCompletionStore';
+import { useTodoStore } from '@/stores/useTodoStore';
+import { useFastingStore } from '@/stores/useFastingStore';
 import { useAuth } from '@/contexts/AuthProvider';
 import { updateAvatarInCloud } from '@/services/sync/cloudSync';
+import { computeQuestValue } from '@/utils/questUnlock';
 
-function AvatarCell({ avatar, owned, equipped, onPress }: {
+function AvatarCell({ avatar, owned, equipped, questCurrent, onPress }: {
   avatar: AvatarDef;
   owned: boolean;
   equipped: boolean;
+  questCurrent?: number;
   onPress: () => void;
 }) {
   const c = useThemeColors();
+
+  function getBottomLabel(): string {
+    if (owned) return avatar.nameEn;
+    if (avatar.acquire !== 'quest' || !avatar.questCondition) return getAcquireLabel(avatar);
+    const q = avatar.questCondition;
+    if (q.type === 'dateEvent') return q.label;
+    const cur = Math.min(Math.floor(questCurrent ?? 0), q.target);
+    return `${cur}/${q.target}${q.unit}`;
+  }
+
   return (
     <Pressable
       onPress={onPress}
@@ -63,8 +78,8 @@ function AvatarCell({ avatar, owned, equipped, onPress }: {
       >
         {owned ? avatar.name : '???'}
       </AppText>
-      <AppText variant="caption" tone="disabled" style={{ fontSize: 9 }}>
-        {owned ? avatar.nameEn : getAcquireLabel(avatar)}
+      <AppText variant="caption" tone="disabled" style={{ fontSize: 9 }} numberOfLines={1}>
+        {getBottomLabel()}
       </AppText>
       {equipped && (
         <View
@@ -87,11 +102,12 @@ function AvatarCell({ avatar, owned, equipped, onPress }: {
   );
 }
 
-function TierSection({ tier, avatars, ownedIds, equippedId, onSelect }: {
+function TierSection({ tier, avatars, ownedIds, equippedId, questProgressMap, onSelect }: {
   tier: AvatarTier;
   avatars: AvatarDef[];
   ownedIds: string[];
   equippedId: string | null;
+  questProgressMap: Map<string, number>;
   onSelect: (avatar: AvatarDef) => void;
 }) {
   const c = useThemeColors();
@@ -126,6 +142,7 @@ function TierSection({ tier, avatars, ownedIds, equippedId, onSelect }: {
               avatar={avatar}
               owned={ownedIds.includes(avatar.id)}
               equipped={equippedId === avatar.id}
+              questCurrent={questProgressMap.get(avatar.id)}
               onPress={() => onSelect(avatar)}
             />
           </View>
@@ -140,6 +157,21 @@ export default function AvatarCollectionScreen() {
   const { ownedIds, equippedId, equip } = useAvatarStore();
   const { user } = useAuth();
   const equipped = equippedId;
+
+  const completions = useRoutineCompletionStore((s) => s.completions);
+  const todos = useTodoStore((s) => s.todos);
+  const fastingRecords = useFastingStore((s) => s.records);
+
+  const questProgressMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const avatar of AVATARS) {
+      if (avatar.acquire !== 'quest' || !avatar.questCondition) continue;
+      const { type, datePattern } = avatar.questCondition;
+      map.set(avatar.id, computeQuestValue(type, datePattern));
+    }
+    return map;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [completions, todos, fastingRecords]);
 
   const grouped = useMemo(() => {
     const map: Record<AvatarTier, AvatarDef[]> = { sprout: [], flower: [], tree: [] };
@@ -211,7 +243,7 @@ export default function AvatarCollectionScreen() {
         >
           {[
             { color: '#6B8E5A', label: '무료' },
-            { color: '#D4A03C', label: '상점' },
+            { color: '#C07830', label: '퀘스트' },
             { color: '#E07040', label: '스트릭' },
             { color: '#5B8BD0', label: '시즌' },
           ].map(({ color, label }) => (
@@ -232,6 +264,7 @@ export default function AvatarCollectionScreen() {
             avatars={grouped[tier]}
             ownedIds={ownedIds}
             equippedId={equipped}
+            questProgressMap={questProgressMap}
             onSelect={handleSelect}
           />
         ))}
@@ -251,7 +284,10 @@ export default function AvatarCollectionScreen() {
               🔥 스트릭 — 연속 달성일 마일스톤에서 자동 해금
             </AppText>
             <AppText variant="caption" tone="secondary">
-              🛒 상점 — 테마 상점에서 코인으로 구매
+              🎯 퀘스트 — 루틴·할일·단식 누적 달성 시 자동 해금
+            </AppText>
+            <AppText variant="caption" tone="secondary">
+              🗓️ 이벤트 — 특정 날짜에 앱을 열면 자동 해금
             </AppText>
             <AppText variant="caption" tone="secondary">
               🌸 시즌 — 해당 계절에만 한정 등장
