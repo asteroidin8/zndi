@@ -15,7 +15,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { AppIcon } from '@/components/AppIcon';
 import { AppText } from '@/components/AppText';
 import { MembersTab } from '@/components/board/MembersTab';
-import { Card } from '@/components/Card';
 import { QRModal } from '@/components/QRModal';
 import { SheetModal, SheetPrimaryButton } from '@/components/SheetModal';
 import { PageHeader } from '@/components/settings/MyScreenUI';
@@ -58,6 +57,8 @@ import {
 import type { BoardSystemMessage, BoardVerificationLog } from '@/types';
 import { useUserStore } from '@/stores/useUserStore';
 import { getAvatarColor, getDisplayName, getInitial } from '@/utils/avatarColor';
+import { useAvatarStore } from '@/stores/useAvatarStore';
+import { AVATARS } from '@/constants/avatars';
 import { getWeekDates, ratioToLevel } from '@/utils/boardHelpers';
 import { localDateStr } from '@/utils/dateFormat';
 
@@ -107,6 +108,9 @@ function FeedTab({
   onDeleteLog: (log: BoardVerificationLog) => void;
   c: import('@/constants/colors').ThemeColors;
 }) {
+  const equippedId = useAvatarStore((s) => s.equippedId);
+  const equippedAvatar = AVATARS.find((a) => a.id === equippedId);
+
   const merged = useMemo(() => {
     const items: FeedItem[] = [
       ...logs.map((l): FeedItem => ({ kind: 'log', item: l })),
@@ -126,12 +130,20 @@ function FeedTab({
   }
 
   return (
-    <View style={{ gap: spacing.md }}>
-      {merged.map((entry) => {
+    <View>
+      {merged.map((entry, idx) => {
         if (entry.kind === 'system') {
           const msg = entry.item;
           return (
-            <View key={`sys-${msg.id}`} style={{ alignItems: 'center', paddingVertical: spacing.sm }}>
+            <View
+              key={`sys-${msg.id}`}
+              style={{
+                alignItems: 'center',
+                paddingVertical: spacing.md,
+                borderBottomWidth: idx < merged.length - 1 ? 1 : 0,
+                borderBottomColor: c.border,
+              }}
+            >
               <AppText variant="caption" tone="tertiary" style={{ textAlign: 'center' }}>
                 {SYSTEM_MSG_TEXT[msg.type](msg)}
               </AppText>
@@ -140,55 +152,73 @@ function FeedTab({
         }
 
         const log = entry.item;
+        const nickname = memberNicknames.get(log.userId) ?? log.nickname ?? '멤버';
+        const isMe = log.userId === user?.id;
+        const showEmojiAvatar = isMe && !!equippedAvatar;
+        const avatarBg = showEmojiAvatar ? equippedAvatar!.bgColor : getAvatarColor(log.userId);
+
         return (
-          <Card key={log.id}>
-            <View style={{ gap: spacing.md }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                <View
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 14,
-                    backgroundColor: getAvatarColor(log.userId),
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <AppText variant="caption" style={{ color: '#fff', fontWeight: '700', fontSize: 11 }}>
-                    {getInitial(memberNicknames.get(log.userId) ?? log.nickname ?? '?')}
+          <View
+            key={log.id}
+            style={{
+              paddingVertical: spacing.section,
+              borderBottomWidth: idx < merged.length - 1 ? 1 : 0,
+              borderBottomColor: c.border,
+            }}
+          >
+            {/* Post header */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md }}>
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: avatarBg,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {showEmojiAvatar ? (
+                  <AppText style={{ fontSize: 20 }}>{equippedAvatar!.emoji}</AppText>
+                ) : (
+                  <AppText style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
+                    {getInitial(nickname)}
                   </AppText>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <AppText variant="body" style={{ fontWeight: '600' }}>
-                    {memberNicknames.get(log.userId) ?? log.nickname ?? '멤버'}
-                  </AppText>
-                  <AppText variant="caption" tone="tertiary">
-                    {log.routineName ?? '루틴'} · {formatLogTime(log.createdAt)}
-                  </AppText>
-                </View>
-                {log.userId === user?.id && (
-                  <Pressable onPress={() => onDeleteLog(log)} hitSlop={8} style={{ padding: 4 }}>
-                    <AppIcon name="Trash2" size={14} color={c.inkDisabled} />
-                  </Pressable>
                 )}
               </View>
-
-              <Image
-                source={{ uri: log.photoUrl }}
-                style={{
-                  width: '100%',
-                  aspectRatio: 1,
-                  borderRadius: radius.md,
-                  backgroundColor: c.surfaceMuted,
-                }}
-                resizeMode="cover"
-              />
-
-              {log.memo ? (
-                <AppText variant="body">{log.memo}</AppText>
-              ) : null}
+              <View style={{ flex: 1 }}>
+                <AppText variant="body" style={{ fontWeight: '700' }}>{nickname}</AppText>
+                <AppText variant="caption" tone="tertiary">
+                  {log.routineName ?? '루틴'} · {formatLogTime(log.createdAt)}
+                </AppText>
+              </View>
+              {isMe && (
+                <Pressable onPress={() => onDeleteLog(log)} hitSlop={12} style={{ padding: 4 }}>
+                  <AppIcon name="Trash2" size={15} color={c.inkDisabled} />
+                </Pressable>
+              )}
             </View>
-          </Card>
+
+            {/* Photo full-width */}
+            <Image
+              source={{ uri: log.photoUrl }}
+              style={{
+                width: '100%',
+                aspectRatio: 1,
+                borderRadius: radius.lg,
+                backgroundColor: c.surfaceMuted,
+              }}
+              resizeMode="cover"
+            />
+
+            {/* Memo */}
+            {log.memo ? (
+              <View style={{ marginTop: spacing.sm, flexDirection: 'row', gap: spacing.xs }}>
+                <AppText variant="body" style={{ fontWeight: '700' }}>{nickname}</AppText>
+                <AppText variant="body" style={{ flex: 1 }}>{log.memo}</AppText>
+              </View>
+            ) : null}
+          </View>
         );
       })}
     </View>

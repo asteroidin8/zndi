@@ -123,10 +123,6 @@ export default function MyScreen() {
           appAlert('로그아웃 실패', result.error);
           return;
         }
-        useSettingsStore.setState({
-          grassColor: 'green',
-          grassShape: 'default',
-        });
         useProStore.setState({
           isPro: false,
           purchasedColors: [],

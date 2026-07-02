@@ -108,32 +108,40 @@ export function QRModal({ visible, onClose, title, subtitle, value, copyLabel }:
                 backgroundColor: '#fff',
                 borderRadius: radius.lg,
                 padding: spacing.card,
+                alignItems: 'center',
+                gap: spacing.sm,
               }}
             >
               <QRCode value={value} size={180} />
+              <View style={{ alignItems: 'center', gap: 2, paddingTop: 4 }}>
+                <AppText style={{ fontWeight: '800', fontSize: 17, color: '#2D7A40', letterSpacing: 1.5 }}>
+                  zndi
+                </AppText>
+                {copyLabel && (
+                  <AppText style={{ fontSize: 12, color: '#666', fontWeight: '500' }}>
+                    {copyLabel}
+                  </AppText>
+                )}
+              </View>
             </View>
 
-            {copyLabel && (
-              <Pressable
-                onPress={handleShare}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: spacing.xs,
-                  paddingHorizontal: spacing.card,
-                  paddingVertical: spacing.sm,
-                  borderRadius: radius.md,
-                  backgroundColor: c.surfaceSubtle,
-                  borderWidth: 1,
-                  borderColor: c.border,
-                }}
-              >
-                <AppText variant="body" style={{ fontWeight: '700', letterSpacing: 2 }}>
-                  {copyLabel}
-                </AppText>
-                <AppIcon name="Share2" size={16} color={c.inkTertiary} />
-              </Pressable>
-            )}
+            <Pressable
+              onPress={handleShare}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: spacing.xs,
+                paddingHorizontal: spacing.card,
+                paddingVertical: spacing.sm,
+                borderRadius: radius.md,
+                backgroundColor: c.surfaceSubtle,
+                borderWidth: 1,
+                borderColor: c.border,
+              }}
+            >
+              <AppText variant="caption" tone="secondary">공유하기</AppText>
+              <AppIcon name="Share2" size={14} color={c.inkTertiary} />
+            </Pressable>
           </View>
 
           <View style={{ height: 1, backgroundColor: c.surfaceMuted }} />

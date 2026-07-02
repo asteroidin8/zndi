@@ -70,6 +70,15 @@ export function StatsDayDetailModal({ date, onEditFastingRecord, onClose }: Prop
     [allTodos, date],
   );
 
+  const incompleteDueTodos = useMemo(
+    () =>
+      allTodos.filter((t) => {
+        if (t.completedAt || t.deletedAt || !t.dueDate) return false;
+        return t.dueDate === date;
+      }),
+    [allTodos, date],
+  );
+
   const fastingRecords = useMemo(
     () =>
       records
@@ -90,7 +99,7 @@ export function StatsDayDetailModal({ date, onEditFastingRecord, onClose }: Prop
   );
 
   const hasRoutines = scheduledRoutines.length > 0;
-  const hasTodos = completedTodos.length > 0;
+  const hasTodos = completedTodos.length > 0 || incompleteDueTodos.length > 0;
   const hasFasting = fastingRecords.length > 0;
   const isEmpty = !hasRoutines && !hasTodos && !hasFasting;
 
@@ -174,12 +183,23 @@ export function StatsDayDetailModal({ date, onEditFastingRecord, onClose }: Prop
                         할일
                       </AppText>
                       <AppText variant="caption" tone="disabled" style={{ marginLeft: 'auto' }}>
-                        {completedTodos.length}
+                        {completedTodos.length}/{completedTodos.length + incompleteDueTodos.length}
                       </AppText>
                     </View>
-                    {completedTodos.map((todo, i) => (
+                    {incompleteDueTodos.map((todo, i) => (
                       <View key={todo.id}>
                         {i > 0 && <Divider />}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, gap: spacing.sm }}>
+                          <AppIcon name="Circle" size={14} color={c.inkDisabled} />
+                          <AppText variant="caption" numberOfLines={1} style={{ flex: 1, color: c.inkDisabled }}>
+                            {todo.title}
+                          </AppText>
+                        </View>
+                      </View>
+                    ))}
+                    {completedTodos.map((todo, i) => (
+                      <View key={todo.id}>
+                        {(i > 0 || incompleteDueTodos.length > 0) && <Divider />}
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, gap: spacing.sm }}>
                           <AppIcon name="CheckCircle2" size={14} color={c.primary} />
                           <AppText variant="caption" numberOfLines={1} style={{ flex: 1 }}>
