@@ -19,6 +19,7 @@ import { fetchFollowing, fetchFriendProgress } from '@/services/social/followSer
 import { BoardListSkeleton, FriendListSkeleton } from '@/components/Skeleton';
 import { feedbackRefresh } from '@/utils/microFeedback';
 import { getAvatarColor, getInitial } from '@/utils/avatarColor';
+import { AVATARS } from '@/constants/avatars';
 import { getWeekDates, ratioToLevel } from '@/utils/boardHelpers';
 import { localDateStr } from '@/utils/dateFormat';
 
@@ -240,6 +241,7 @@ export default function BoardTabScreen() {
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                       {visible.map((m, i) => {
                         const isBoardAdmin = m.role === 'admin';
+                        const avatarDef = m.avatarId ? AVATARS.find((a) => a.id === m.avatarId) : undefined;
                         return (
                           <View
                             key={m.userId}
@@ -258,16 +260,20 @@ export default function BoardTabScreen() {
                                 width: AVATAR_SIZE,
                                 height: AVATAR_SIZE,
                                 borderRadius: AVATAR_SIZE / 2,
-                                backgroundColor: getAvatarColor(m.userId),
+                                backgroundColor: avatarDef ? avatarDef.bgColor : getAvatarColor(m.userId),
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 borderWidth: 2,
                                 borderColor: c.surfaceSubtle,
                               }}
                             >
-                              <AppText style={{ color: '#fff', fontWeight: '700', fontSize: 11 }}>
-                                {getInitial(m.nickname)}
-                              </AppText>
+                              {avatarDef ? (
+                                <AppText style={{ fontSize: 14 }}>{avatarDef.emoji}</AppText>
+                              ) : (
+                                <AppText style={{ color: '#fff', fontWeight: '700', fontSize: 11 }}>
+                                  {getInitial(m.nickname)}
+                                </AppText>
+                              )}
                             </View>
                           </View>
                         );
