@@ -49,6 +49,7 @@ type GroupPosition = 'first' | 'middle' | 'last' | 'only';
 type ListItem =
   | { type: 'group-header'; key: string; group: RoutineGroup; completedCount: number; totalCount: number; hasVisibleItems: boolean }
   | { type: 'group-empty'; key: string; groupId: string }
+  | { type: 'group-other-header'; key: string; groupId: string; count: number; expanded: boolean; isLast: boolean }
   | { type: 'routine'; key: string; routine: Routine; groupPosition: GroupPosition | null; sectionLabel: string | null }
   | { type: 'ungrouped-header'; key: string };
 
@@ -76,6 +77,15 @@ export default function RoutineScreen() {
   const [editTarget, setEditTarget] = useState<Routine | null>(null);
   const [undoTarget, setUndoTarget] = useState<Routine | null>(null);
   const [otherExpanded, setOtherExpanded] = useState(false);
+  const [otherExpandedGroups, setOtherExpandedGroups] = useState<Set<string>>(new Set());
+  const toggleGroupOther = useCallback((groupId: string) => {
+    setOtherExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  }, []);
   const { setTabBarVisible } = useTabNavigation();
   const { editMode, selectedIds, enterEditMode: _enterEditMode, exitEditMode: _exitEditMode, toggleSelection, toggleSelectAll } = useEditMode();
   const enterEditMode = useCallback(() => { _enterEditMode(); setTabBarVisible(false); }, [_enterEditMode, setTabBarVisible]);
@@ -254,18 +264,49 @@ export default function RoutineScreen() {
       });
 
       if (!group.collapsed) {
-        const sorted = sortRoutinesBySection(groupRoutines);
-        if (sorted.length === 0) {
+        if (groupRoutines.length === 0) {
           items.push({ type: 'group-empty', key: `ge-${group.id}`, groupId: group.id });
         } else {
+          const todayInGroup = groupRoutines.filter((r) => isRoutineScheduledForDate(r, todayDate));
+          // 편집 모드에서는 전체 표시, 평소에는 오늘 루틴만 표시하고 나머지는 "그 외"로 접기
+          const visibleRoutines = editMode ? groupRoutines : todayInGroup;
+          const otherInGroup = editMode ? [] : groupRoutines.filter((r) => !isRoutineScheduledForDate(r, todayDate));
+          const sorted = sortRoutinesBySection(visibleRoutines);
+          const otherSorted = sortRoutinesBySection(otherInGroup);
+          const otherGroupExpanded = otherExpandedGroups.has(group.id);
+          const hasOther = otherSorted.length > 0;
+
           let prevSection: string | null | undefined;
           for (let i = 0; i < sorted.length; i++) {
-            const pos: GroupPosition =
-              sorted.length === 1 ? 'only' : i === 0 ? 'first' : i === sorted.length - 1 ? 'last' : 'middle';
+            const isLastVisible = i === sorted.length - 1 && !hasOther;
+            const pos: GroupPosition = isLastVisible
+              ? (sorted.length === 1 ? 'only' : 'last')
+              : i === 0 ? 'first' : 'middle';
             const curSection = sorted[i].section ?? null;
             const showLabel = curSection !== null && curSection !== prevSection;
             items.push({ type: 'routine', key: sorted[i].id, routine: sorted[i], groupPosition: pos, sectionLabel: showLabel ? curSection : null });
             prevSection = curSection;
+          }
+
+          if (hasOther) {
+            items.push({
+              type: 'group-other-header',
+              key: `go-${group.id}`,
+              groupId: group.id,
+              count: otherSorted.length,
+              expanded: otherGroupExpanded,
+              isLast: !otherGroupExpanded,
+            });
+            if (otherGroupExpanded) {
+              let prevOtherSection: string | null | undefined;
+              for (let i = 0; i < otherSorted.length; i++) {
+                const pos: GroupPosition = i === otherSorted.length - 1 ? 'last' : 'middle';
+                const curSection = otherSorted[i].section ?? null;
+                const showLabel = curSection !== null && curSection !== prevOtherSection;
+                items.push({ type: 'routine', key: otherSorted[i].id, routine: otherSorted[i], groupPosition: pos, sectionLabel: showLabel ? curSection : null });
+                prevOtherSection = curSection;
+              }
+            }
           }
         }
       }
@@ -282,7 +323,7 @@ export default function RoutineScreen() {
     }
 
     return items;
-  }, [hasGroups, sortedGroups, allRoutinesSorted, ungroupedRoutines, todayDate, todayStr, groupCompletionCounts]);
+  }, [hasGroups, sortedGroups, allRoutinesSorted, ungroupedRoutines, todayDate, todayStr, groupCompletionCounts, editMode, otherExpandedGroups]);
 
   const dragItemsRef = useRef(dragItems);
   dragItemsRef.current = dragItems;
@@ -329,8 +370,8 @@ export default function RoutineScreen() {
       } else if (item.type === 'ungrouped-header') {
         currentGroupId = null;
         order = 0;
-      } else if (item.type === 'group-empty') {
-        // skip empty placeholder
+      } else if (item.type === 'group-empty' || item.type === 'group-other-header') {
+        // skip placeholder / collapsible header
       } else {
         updates.push({ id: item.routine.id, groupId: currentGroupId, order });
         order++;
@@ -489,6 +530,41 @@ export default function RoutineScreen() {
           <AppText variant="caption" tone="disabled">
             루틴을 여기로 드래그하세요
           </AppText>
+        </View>
+      );
+    }
+
+    if (item.type === 'group-other-header') {
+      return (
+        <View
+          style={{
+            marginHorizontal: spacing.screen,
+            backgroundColor: c.surfaceSubtle,
+            borderLeftWidth: 1,
+            borderRightWidth: 1,
+            borderBottomWidth: item.isLast ? 1 : 0,
+            borderColor: c.borderNeutral,
+            borderBottomLeftRadius: item.isLast ? radius.md : 0,
+            borderBottomRightRadius: item.isLast ? radius.md : 0,
+          }}
+        >
+          <Pressable
+            onPress={() => toggleGroupOther(item.groupId)}
+            accessibilityRole="button"
+            accessibilityLabel={`그 외 ${item.count}개${item.expanded ? ', 접기' : ', 펼치기'}`}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: spacing.xs,
+              paddingHorizontal: spacing.screen,
+              paddingVertical: spacing.sm,
+            }}
+          >
+            <AppIcon name={item.expanded ? 'ChevronDown' : 'ChevronRight'} size={12} color={c.inkDisabled} />
+            <AppText variant="caption" tone="disabled">
+              그 외 {item.count}
+            </AppText>
+          </Pressable>
         </View>
       );
     }
