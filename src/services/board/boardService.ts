@@ -23,13 +23,14 @@ function rowToBoard(row: Record<string, unknown>): Board {
   };
 }
 
-function rowToMember(row: Record<string, unknown>): BoardMember {
+function rowToMember(row: Record<string, unknown>, avatarId?: string): BoardMember {
   return {
     boardId: String(row.board_id),
     userId: String(row.user_id),
     nickname: String(row.nickname),
     joinedAt: String(row.joined_at),
     role: (row.role as BoardMemberRole) ?? 'member',
+    avatarId: avatarId ?? undefined,
   };
 }
 
@@ -325,7 +326,20 @@ export async function fetchBoardMembers(boardId: string): Promise<{ error?: stri
     .eq('board_id', boardId);
   if (error) return { error: error.message };
 
-  const members = (data ?? []).map((r) => rowToMember(r as Record<string, unknown>));
+  const rows = (data ?? []) as Record<string, unknown>[];
+
+  const userIds = rows.map((r) => String(r.user_id));
+  const { data: profileRows } = userIds.length
+    ? await supabase.from('profiles').select('user_id, avatar_id').in('user_id', userIds)
+    : { data: [] };
+
+  const avatarMap = new Map(
+    ((profileRows ?? []) as Record<string, unknown>[])
+      .filter((p) => p.avatar_id)
+      .map((p) => [String(p.user_id), String(p.avatar_id)]),
+  );
+
+  const members = rows.map((r) => rowToMember(r, avatarMap.get(String(r.user_id))));
   useBoardStore.getState().setMembers(boardId, members);
   return {};
 }

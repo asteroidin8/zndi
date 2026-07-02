@@ -60,7 +60,6 @@ import {
 import type { BoardSystemMessage, BoardVerificationLog } from '@/types';
 import { useUserStore } from '@/stores/useUserStore';
 import { getAvatarColor, getDisplayName, getInitial } from '@/utils/avatarColor';
-import { useAvatarStore } from '@/stores/useAvatarStore';
 import { AVATARS } from '@/constants/avatars';
 import { getWeekDates, ratioToLevel } from '@/utils/boardHelpers';
 import { localDateStr } from '@/utils/dateFormat';
@@ -101,6 +100,7 @@ function FeedTab({
   systemMessages,
   user,
   memberNicknames,
+  memberAvatars,
   onDeleteLog,
   onLoadMore,
   c,
@@ -109,12 +109,11 @@ function FeedTab({
   systemMessages: BoardSystemMessage[];
   user: { id: string } | null | undefined;
   memberNicknames: Map<string, string>;
+  memberAvatars: Map<string, string>;
   onDeleteLog: (log: BoardVerificationLog) => void;
   onLoadMore: () => void;
   c: import('@/constants/colors').ThemeColors;
 }) {
-  const equippedId = useAvatarStore((s) => s.equippedId);
-  const equippedAvatar = AVATARS.find((a) => a.id === equippedId);
 
   const merged = useMemo(() => {
     const items: FeedItem[] = [
@@ -159,8 +158,10 @@ function FeedTab({
         const log = entry.item;
         const nickname = memberNicknames.get(log.userId) ?? log.nickname ?? '멤버';
         const isMe = log.userId === user?.id;
-        const showEmojiAvatar = isMe && !!equippedAvatar;
-        const avatarBg = showEmojiAvatar ? equippedAvatar!.bgColor : getAvatarColor(log.userId);
+        const avatarId = memberAvatars.get(log.userId);
+        const avatarDef = avatarId ? AVATARS.find((a) => a.id === avatarId) : undefined;
+        const showEmojiAvatar = !!avatarDef;
+        const avatarBg = avatarDef ? avatarDef.bgColor : getAvatarColor(log.userId);
 
         return (
           <View
@@ -184,7 +185,7 @@ function FeedTab({
                 }}
               >
                 {showEmojiAvatar ? (
-                  <AppText style={{ fontSize: 20 }}>{equippedAvatar!.emoji}</AppText>
+                  <AppText style={{ fontSize: 20 }}>{avatarDef!.emoji}</AppText>
                 ) : (
                   <AppText style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
                     {getInitial(nickname)}
@@ -270,6 +271,11 @@ export default function BoardDetailScreen() {
 
   const memberNicknames = useMemo(
     () => new Map(members.map((m) => [m.userId, m.nickname])),
+    [members],
+  );
+
+  const memberAvatars = useMemo(
+    () => new Map(members.filter((m) => m.avatarId).map((m) => [m.userId, m.avatarId!])),
     [members],
   );
 
@@ -673,6 +679,7 @@ export default function BoardDetailScreen() {
             systemMessages={systemMessages}
             user={user}
             memberNicknames={memberNicknames}
+            memberAvatars={memberAvatars}
             onDeleteLog={handleDeleteLog}
             onLoadMore={handleLoadMoreLogs}
             c={c}

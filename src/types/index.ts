@@ -94,6 +94,7 @@ export type BoardMember = {
   nickname: string;
   joinedAt: string;
   role: BoardMemberRole;
+  avatarId?: string;
 };
 
 export type BoardDailyProgress = {

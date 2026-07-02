@@ -16,6 +16,8 @@ import {
 import { radius, spacing } from '@/constants/spacing';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { useAvatarStore } from '@/stores/useAvatarStore';
+import { useAuth } from '@/contexts/AuthProvider';
+import { updateAvatarInCloud } from '@/services/sync/cloudSync';
 
 function AvatarCell({ avatar, owned, equipped, onPress }: {
   avatar: AvatarDef;
@@ -136,6 +138,7 @@ function TierSection({ tier, avatars, ownedIds, equippedId, onSelect }: {
 export default function AvatarCollectionScreen() {
   const c = useThemeColors();
   const { ownedIds, equippedId, equip } = useAvatarStore();
+  const { user } = useAuth();
   const equipped = equippedId;
 
   const grouped = useMemo(() => {
@@ -148,7 +151,11 @@ export default function AvatarCollectionScreen() {
 
   function handleSelect(avatar: AvatarDef) {
     if (!ownedIds.includes(avatar.id)) return;
-    equip(equippedId === avatar.id ? '' : avatar.id);
+    const newId = equippedId === avatar.id ? '' : avatar.id;
+    equip(newId);
+    if (user?.id) {
+      void updateAvatarInCloud(user.id, newId || null);
+    }
   }
 
   return (
